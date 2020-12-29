@@ -1,0 +1,43 @@
+--- 
+title: "Text Mining using R"
+author: "Michael Foley"
+date: "`r Sys.Date()`"
+site: bookdown::bookdown_site
+output:
+  bookdown::html_book:
+    fig_caption: true
+    lib_dir: assets
+    split_by: section
+    config:
+      toolbar:
+        position: static
+documentclass: book
+bibliography: [book.bib, packages.bib]
+biblio-style: apalike
+link-citations: yes
+description: "Background and tutorial on text mining (topic modeling, sentiment analysis) using R."
+---
+
+# Intro {-}
+
+I compiled these notes on text mining while learning from the following resources:
+
+* Text Mining with R [@Silge2017]
+* [Introduction to Natural Language Processing in R](https://campus.datacamp.com/courses/introduction-to-natural-language-processing-in-r) (DataCamp)
+* [Topic Modeling in R](https://www.datacamp.com/courses/topic-modeling-in-r) (DataCamp)
+* [Introduction to Text Analysis in R"](https://www.datacamp.com/courses/introduction-to-text-analysis-in-r) (DataCamp)
+* [String Manipulation in R with stringr](https://www.datacamp.com/courses/string-manipulation-with-stringr-in-r) (DataCamp)
+* [Text Mining with Bag-of-Words in R](https://www.datacamp.com/courses/text-mining-with-bag-of-words-in-r) (DataCamp)
+* [Sentiment Analysis in R](https://www.datacamp.com/courses/sentiment-analysis-in-r) (DataCamp)
+* [Tidy Sentiment Analysis in R](https://www.datacamp.com/community/tutorials/sentiment-analysis-R) (DataCamp)
+* Julia Silge's [The game is afoot! Topic modeling of Sherlock Holmes stories](https://juliasilge.com/blog/sherlock-holmes-stm/)
+* Julia Silge's [Training, evaluating, and interpreting topic models](https://juliasilge.com/blog/evaluating-stm/)
+* [Toward understanding 17th century English culture: A structural
+topic model of Francis Bacon's ideas](https://www.econ.umd.edu/sites/www.econ.umd.edu/files/users/pmurrell/Bacon_Grajzl-MurrellJCE2019.pdf)
+
+```{r include=FALSE}
+# automatically create a bib database for R packages
+knitr::write_bib(c(
+  .packages(), 'bookdown', 'knitr', 'rmarkdown'
+), 'packages.bib')
+```

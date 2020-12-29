@@ -1,0 +1,1235 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+<head>
+
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <title>Chapter 2 Text Mining | Text Mining using R</title>
+  <meta name="description" content="Background and tutorial on text mining (topic modeling, sentiment analysis) using R." />
+  <meta name="generator" content="bookdown 0.21 and GitBook 2.6.7" />
+
+  <meta property="og:title" content="Chapter 2 Text Mining | Text Mining using R" />
+  <meta property="og:type" content="book" />
+  
+  
+  <meta property="og:description" content="Background and tutorial on text mining (topic modeling, sentiment analysis) using R." />
+  
+
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="Chapter 2 Text Mining | Text Mining using R" />
+  
+  <meta name="twitter:description" content="Background and tutorial on text mining (topic modeling, sentiment analysis) using R." />
+  
+
+<meta name="author" content="Michael Foley" />
+
+
+<meta name="date" content="2020-11-21" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+  
+  
+<link rel="prev" href="topicmodeling.html"/>
+<link rel="next" href="drop.html"/>
+<script src="libs/jquery-2.2.3/jquery.min.js"></script>
+<link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-table.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-bookdown.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-highlight.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-search.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-fontsettings.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-clipboard.css" rel="stylesheet" />
+
+
+
+
+
+
+
+
+
+<script src="libs/accessible-code-block-0.0.1/empty-anchor.js"></script>
+<link href="libs/anchor-sections-1.0/anchor-sections.css" rel="stylesheet" />
+<script src="libs/anchor-sections-1.0/anchor-sections.js"></script>
+
+
+<style type="text/css">
+code.sourceCode > span { display: inline-block; line-height: 1.25; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode { white-space: pre; position: relative; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+code.sourceCode { white-space: pre-wrap; }
+code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+</style>
+
+<link rel="stylesheet" href="style.css" type="text/css" />
+</head>
+
+<body>
+
+
+
+  <div class="book without-animation with-summary font-size-2 font-family-1" data-basepath=".">
+
+    <div class="book-summary">
+      <nav role="navigation">
+
+<ul class="summary">
+<li><a href="./">A Minimal Book Example</a></li>
+
+<li class="divider"></li>
+<li class="chapter" data-level="" data-path="index.html"><a href="index.html"><i class="fa fa-check"></i>Intro</a></li>
+<li class="chapter" data-level="1" data-path="topicmodeling.html"><a href="topicmodeling.html"><i class="fa fa-check"></i><b>1</b> Topic Modeling</a><ul>
+<li class="chapter" data-level="1.1" data-path="topicmodeling.html"><a href="topicmodeling.html#lda"><i class="fa fa-check"></i><b>1.1</b> LDA</a></li>
+<li class="chapter" data-level="1.2" data-path="topicmodeling.html"><a href="topicmodeling.html#ctm"><i class="fa fa-check"></i><b>1.2</b> CTM</a></li>
+<li class="chapter" data-level="1.3" data-path="topicmodeling.html"><a href="topicmodeling.html#stm"><i class="fa fa-check"></i><b>1.3</b> STM</a></li>
+</ul></li>
+<li class="chapter" data-level="2" data-path="text-mining.html"><a href="text-mining.html"><i class="fa fa-check"></i><b>2</b> Text Mining</a><ul>
+<li class="chapter" data-level="2.1" data-path="text-mining.html"><a href="text-mining.html#topic-modeling-chapter"><i class="fa fa-check"></i><b>2.1</b> Topic Modeling Chapter</a><ul>
+<li class="chapter" data-level="2.1.1" data-path="text-mining.html"><a href="text-mining.html#lda-1"><i class="fa fa-check"></i><b>2.1.1</b> LDA</a></li>
+<li class="chapter" data-level="2.1.2" data-path="text-mining.html"><a href="text-mining.html#stm-1"><i class="fa fa-check"></i><b>2.1.2</b> STM</a></li>
+</ul></li>
+<li class="chapter" data-level="2.2" data-path="text-mining.html"><a href="text-mining.html#sentiment-analysis"><i class="fa fa-check"></i><b>2.2</b> Sentiment Analysis</a><ul>
+<li class="chapter" data-level="2.2.1" data-path="text-mining.html"><a href="text-mining.html#n-grams"><i class="fa fa-check"></i><b>2.2.1</b> N-Grams</a></li>
+<li class="chapter" data-level="2.2.2" data-path="text-mining.html"><a href="text-mining.html#converting-to-and-from-non-tidy-formats"><i class="fa fa-check"></i><b>2.2.2</b> Converting to and from non-tidy formats</a></li>
+<li class="chapter" data-level="2.2.3" data-path="text-mining.html"><a href="text-mining.html#example"><i class="fa fa-check"></i><b>2.2.3</b> Example</a></li>
+</ul></li>
+<li class="chapter" data-level="2.3" data-path="text-mining.html"><a href="text-mining.html#text-classification-modeling"><i class="fa fa-check"></i><b>2.3</b> Text Classification Modeling</a></li>
+<li class="chapter" data-level="2.4" data-path="text-mining.html"><a href="text-mining.html#named-entity-recognition"><i class="fa fa-check"></i><b>2.4</b> Named Entity Recognition</a></li>
+<li class="chapter" data-level="2.5" data-path="text-mining.html"><a href="text-mining.html#tidy-text"><i class="fa fa-check"></i><b>2.5</b> Tidy Text</a></li>
+<li class="chapter" data-level="2.6" data-path="text-mining.html"><a href="text-mining.html#appendix-regular-expressions"><i class="fa fa-check"></i><b>2.6</b> Appendix: Regular Expressions</a><ul>
+<li class="chapter" data-level="2.6.1" data-path="text-mining.html"><a href="text-mining.html#base-r"><i class="fa fa-check"></i><b>2.6.1</b> Base R</a></li>
+<li class="chapter" data-level="2.6.2" data-path="text-mining.html"><a href="text-mining.html#stringr"><i class="fa fa-check"></i><b>2.6.2</b> stringr</a></li>
+<li class="chapter" data-level="2.6.3" data-path="text-mining.html"><a href="text-mining.html#regular-expressions"><i class="fa fa-check"></i><b>2.6.3</b> Regular Expressions</a></li>
+</ul></li>
+<li class="chapter" data-level="2.7" data-path="text-mining.html"><a href="text-mining.html#appendix-tidytext"><i class="fa fa-check"></i><b>2.7</b> Appendix: tidytext</a></li>
+<li class="chapter" data-level="2.8" data-path="text-mining.html"><a href="text-mining.html#appendix-tm"><i class="fa fa-check"></i><b>2.8</b> Appendix: tm</a></li>
+</ul></li>
+<li class="chapter" data-level="3" data-path="drop.html"><a href="drop.html"><i class="fa fa-check"></i><b>3</b> DROP</a></li>
+<li class="chapter" data-level="4" data-path="methods.html"><a href="methods.html"><i class="fa fa-check"></i><b>4</b> Methods</a></li>
+<li class="chapter" data-level="5" data-path="applications.html"><a href="applications.html"><i class="fa fa-check"></i><b>5</b> Applications</a><ul>
+<li class="chapter" data-level="5.1" data-path="applications.html"><a href="applications.html#example-one"><i class="fa fa-check"></i><b>5.1</b> Example one</a></li>
+<li class="chapter" data-level="5.2" data-path="applications.html"><a href="applications.html#example-two"><i class="fa fa-check"></i><b>5.2</b> Example two</a></li>
+</ul></li>
+<li class="chapter" data-level="6" data-path="final-words.html"><a href="final-words.html"><i class="fa fa-check"></i><b>6</b> Final Words</a></li>
+<li class="chapter" data-level="" data-path="references.html"><a href="references.html"><i class="fa fa-check"></i>References</a></li>
+<li class="divider"></li>
+<li><a href="https://github.com/rstudio/bookdown" target="blank">Published with bookdown</a></li>
+
+</ul>
+
+      </nav>
+    </div>
+
+    <div class="book-body">
+      <div class="body-inner">
+        <div class="book-header" role="navigation">
+          <h1>
+            <i class="fa fa-circle-o-notch fa-spin"></i><a href="./">Text Mining using R</a>
+          </h1>
+        </div>
+
+        <div class="page-wrapper" tabindex="-1" role="main">
+          <div class="page-inner">
+
+            <section class="normal" id="section-">
+<div id="text-mining" class="section level1">
+<h1><span class="header-section-number">Chapter 2</span> Text Mining</h1>
+<p>Text mining is the process of distilling actionable insights from text, typically by identifying patterns with statistical pattern learning. Commong text mining tasks include topic modeling, sentiment analysis, classification modeling.</p>
+<p>Be aware that there are two main approaches to text mining. <em>Semantic parsing</em> identifies words by type and order (sentences, phrases, nouns/verbs, proper nouns, etc.). <em>Bag of words</em> simply treats words as attributes of the document. Bag of words is the simpler way to go, the only one I’ve encountered, and the one used throughout these notes.</p>
+<p>There are three packages with text mining frameworks: <strong>tidytext</strong>, <strong>stm</strong>, and <strong>tm</strong>. These notes mostly use <strong>tidytext</strong>, but I made an appendix with <strong>tm</strong> basics because <strong>tidytext</strong> uses its class structure (see <code>cast_dtm()</code>).</p>
+<p>As much as possible, I will build examples using the text from <u>The Adventures of Tom Sawyer</u>, available on <a href="https://gutenberg.org" class="uri">https://gutenberg.org</a> and accessible using the <strong>gutenbergr</strong> package. I added the chapter identifier and dropped the book id column. Each row is a line of text &lt;=80 characters long.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="text-mining.html#cb1-1"></a><span class="kw">library</span>(gutenbergr)</span>
+<span id="cb1-2"><a href="text-mining.html#cb1-2"></a>sawyer_raw &lt;-<span class="st"> </span><span class="kw">gutenberg_works</span>(title <span class="op">==</span><span class="st"> &quot;The Adventures of Tom Sawyer&quot;</span>) <span class="op">%&gt;%</span></span>
+<span id="cb1-3"><a href="text-mining.html#cb1-3"></a><span class="st">  </span><span class="kw">gutenberg_download</span>()</span>
+<span id="cb1-4"><a href="text-mining.html#cb1-4"></a></span>
+<span id="cb1-5"><a href="text-mining.html#cb1-5"></a>sawyer &lt;-<span class="st"> </span>sawyer_raw <span class="op">%&gt;%</span></span>
+<span id="cb1-6"><a href="text-mining.html#cb1-6"></a><span class="st">  </span><span class="kw">tail</span>(<span class="op">-</span><span class="dv">455</span>) <span class="op">%&gt;%</span><span class="st">  </span><span class="co"># chapter 1 starts on line 456</span></span>
+<span id="cb1-7"><a href="text-mining.html#cb1-7"></a><span class="st">  </span><span class="kw">mutate</span>(</span>
+<span id="cb1-8"><a href="text-mining.html#cb1-8"></a>    <span class="dt">is_chap =</span> <span class="kw">str_detect</span>(text, <span class="kw">regex</span>(<span class="st">&quot;^chapter [</span><span class="ch">\\</span><span class="st">divxlc]&quot;</span>, <span class="dt">ignore_case =</span> <span class="ot">TRUE</span>)),</span>
+<span id="cb1-9"><a href="text-mining.html#cb1-9"></a>    <span class="dt">chapter =</span> <span class="kw">cumsum</span>(is_chap)</span>
+<span id="cb1-10"><a href="text-mining.html#cb1-10"></a>  ) <span class="op">%&gt;%</span></span>
+<span id="cb1-11"><a href="text-mining.html#cb1-11"></a><span class="st">  </span><span class="kw">select</span>(chapter, text)</span>
+<span id="cb1-12"><a href="text-mining.html#cb1-12"></a></span>
+<span id="cb1-13"><a href="text-mining.html#cb1-13"></a>skimr<span class="op">::</span><span class="kw">skim</span>(sawyer)</span></code></pre></div>
+<table>
+<caption><span id="tab:unnamed-chunk-2">Table 2.1: </span>Data summary</caption>
+<tbody>
+<tr class="odd">
+<td align="left">Name</td>
+<td align="left">sawyer</td>
+</tr>
+<tr class="even">
+<td align="left">Number of rows</td>
+<td align="left">8377</td>
+</tr>
+<tr class="odd">
+<td align="left">Number of columns</td>
+<td align="left">2</td>
+</tr>
+<tr class="even">
+<td align="left">_______________________</td>
+<td align="left"></td>
+</tr>
+<tr class="odd">
+<td align="left">Column type frequency:</td>
+<td align="left"></td>
+</tr>
+<tr class="even">
+<td align="left">character</td>
+<td align="left">1</td>
+</tr>
+<tr class="odd">
+<td align="left">numeric</td>
+<td align="left">1</td>
+</tr>
+<tr class="even">
+<td align="left">________________________</td>
+<td align="left"></td>
+</tr>
+<tr class="odd">
+<td align="left">Group variables</td>
+<td align="left">None</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Variable type: character</strong></p>
+<table>
+<thead>
+<tr class="header">
+<th align="left">skim_variable</th>
+<th align="right">n_missing</th>
+<th align="right">complete_rate</th>
+<th align="right">min</th>
+<th align="right">max</th>
+<th align="right">empty</th>
+<th align="right">n_unique</th>
+<th align="right">whitespace</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">text</td>
+<td align="right">0</td>
+<td align="right">1</td>
+<td align="right">0</td>
+<td align="right">78</td>
+<td align="right">1993</td>
+<td align="right">6345</td>
+<td align="right">0</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Variable type: numeric</strong></p>
+<table>
+<thead>
+<tr class="header">
+<th align="left">skim_variable</th>
+<th align="right">n_missing</th>
+<th align="right">complete_rate</th>
+<th align="right">mean</th>
+<th align="right">sd</th>
+<th align="right">p0</th>
+<th align="right">p25</th>
+<th align="right">p50</th>
+<th align="right">p75</th>
+<th align="right">p100</th>
+<th align="left">hist</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">chapter</td>
+<td align="right">0</td>
+<td align="right">1</td>
+<td align="right">17.24</td>
+<td align="right">10.46</td>
+<td align="right">1</td>
+<td align="right">7</td>
+<td align="right">16</td>
+<td align="right">26</td>
+<td align="right">35</td>
+<td align="left">▇▆▆▅▇</td>
+</tr>
+</tbody>
+</table>
+<div id="topic-modeling-chapter" class="section level2">
+<h2><span class="header-section-number">2.1</span> Topic Modeling Chapter</h2>
+<p>Topic models are generative probabilistic models to quantitatively investigate a large text corpora. In generative probability models, the researcher postulates a model of a data-generating process, then uses the corpus data to find the most likely values for the parameters within the model.</p>
+<p>Topic models such as Latent Dirichlet Allocation (LDA) and Structural Topic Modeling (STM) treat documents within a corpora as a “bags of words” and identifies groups of words that tend to co-occur. These groups of words are the topics, formally conceptualized as probability distributions over vocabulary. While the topics are a product of model estimation, the topic name and interpretation are assigned by the researcher by examining the most important words for each topic and the particular texts featuring a topic most prominently. They are not produced to match words and documents to concrete issues specified in advance by the researcher as they would be in a supervised model.</p>
+<p>LDA and STM are generative models, meaning you define a data generating process for each document then use the document text to find the most likely values for the model parameters. The generative model defines document-topic and word-topic distributions generating documents. The sum of topic proportions (topical prevalence) in each document is one, and the sum of word probabilities in each topic (topical content) is one. STM differs from LDA in that it uses document metadata as covariates to explain prevalence and topical content.</p>
+<p>Whether you use LDA or STM, you’ll start by creating a bag-of-words representation of the data. In the chunk below, I <a href="https://en.wikipedia.org/wiki/Lemmatisation">lemmatize</a> the tokens and remove my own list of stop words (e.g., “tom” is so common that I don’t want to include it in anything.).</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="text-mining.html#cb2-1"></a>my_stop_words &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;tom&quot;</span>)</span>
+<span id="cb2-2"><a href="text-mining.html#cb2-2"></a></span>
+<span id="cb2-3"><a href="text-mining.html#cb2-3"></a>sawyer_tokens &lt;-<span class="st"> </span>sawyer <span class="op">%&gt;%</span></span>
+<span id="cb2-4"><a href="text-mining.html#cb2-4"></a><span class="st">  </span><span class="kw">unnest_tokens</span>(<span class="dt">output =</span> <span class="st">&quot;word&quot;</span>, <span class="dt">input =</span> text, <span class="dt">token =</span> <span class="st">&quot;words&quot;</span>) <span class="op">%&gt;%</span></span>
+<span id="cb2-5"><a href="text-mining.html#cb2-5"></a><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">word_stem =</span> <span class="kw">lemmatize_words</span>(word)) <span class="op">%&gt;%</span></span>
+<span id="cb2-6"><a href="text-mining.html#cb2-6"></a><span class="st">  </span><span class="kw">anti_join</span>(stop_words, <span class="dt">by =</span> <span class="st">&quot;word&quot;</span>) <span class="op">%&gt;%</span></span>
+<span id="cb2-7"><a href="text-mining.html#cb2-7"></a><span class="st">  </span><span class="kw">filter</span>(<span class="op">!</span>word <span class="op">%in%</span><span class="st"> </span>my_stop_words)</span></code></pre></div>
+<p>It’s a good idea to explore the data before modeling. One good way to do that is with the TF-IDF statistic. A term’s frequency (TF) is its proportion of the words in the document. The inverse document frequency (IDF) is the log of the inverse ratio of documents in which the term appears. The product of TF and IDF (TF-IDF) indicates how important a word is to a document in a collection or corpus. In this case, the TF-IDF indicates how important a word is to the chapter. A term’s TF-IDF increases with its frequency in the document (chapter) and decreases with the number of documents (chapters) in the corpus that contain it. Use <code>tidytext::bind_tf_idf()</code> to append the <code>tf</code>, <code>idf</code>, and <code>tf_idf</code> columns to your data frame. Figure <a href="text-mining.html#fig:nice-fig">2.1</a>.</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="text-mining.html#cb3-1"></a>sawywer_tf_idf &lt;-<span class="st"> </span>sawyer_tokens <span class="op">%&gt;%</span></span>
+<span id="cb3-2"><a href="text-mining.html#cb3-2"></a><span class="st">  </span><span class="kw">count</span>(chapter, word_stem, <span class="dt">sort =</span> <span class="ot">TRUE</span>) <span class="op">%&gt;%</span></span>
+<span id="cb3-3"><a href="text-mining.html#cb3-3"></a><span class="st">  </span><span class="kw">bind_tf_idf</span>(word_stem, chapter, n) <span class="op">%&gt;%</span></span>
+<span id="cb3-4"><a href="text-mining.html#cb3-4"></a><span class="st">  </span><span class="kw">group_by</span>(chapter) <span class="op">%&gt;%</span></span>
+<span id="cb3-5"><a href="text-mining.html#cb3-5"></a><span class="st">  </span><span class="kw">slice_max</span>(<span class="dt">order_by =</span> tf_idf, <span class="dt">n =</span> <span class="dv">10</span>) <span class="op">%&gt;%</span></span>
+<span id="cb3-6"><a href="text-mining.html#cb3-6"></a><span class="st">  </span><span class="kw">ungroup</span>()</span>
+<span id="cb3-7"><a href="text-mining.html#cb3-7"></a></span>
+<span id="cb3-8"><a href="text-mining.html#cb3-8"></a>sawywer_tf_idf <span class="op">%&gt;%</span></span>
+<span id="cb3-9"><a href="text-mining.html#cb3-9"></a><span class="st">  </span><span class="kw">filter</span>(chapter <span class="op">&lt;=</span><span class="st"> </span><span class="dv">6</span>) <span class="op">%&gt;%</span></span>
+<span id="cb3-10"><a href="text-mining.html#cb3-10"></a><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">word_stem =</span> <span class="kw">reorder_within</span>(word_stem, <span class="dt">by =</span> tf_idf, <span class="dt">within =</span> chapter)) <span class="op">%&gt;%</span></span>
+<span id="cb3-11"><a href="text-mining.html#cb3-11"></a><span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(word_stem, tf_idf, <span class="dt">fill =</span> <span class="kw">as.factor</span>(chapter))) <span class="op">+</span></span>
+<span id="cb3-12"><a href="text-mining.html#cb3-12"></a><span class="st">  </span><span class="kw">geom_col</span>(<span class="dt">alpha =</span> <span class="fl">0.8</span>, <span class="dt">show.legend =</span> <span class="ot">FALSE</span>) <span class="op">+</span></span>
+<span id="cb3-13"><a href="text-mining.html#cb3-13"></a><span class="st">  </span><span class="kw">scale_fill_manual</span>(<span class="dt">values =</span> RColorBrewer<span class="op">::</span><span class="kw">brewer.pal</span>(<span class="dt">n =</span> <span class="dv">6</span>, <span class="dt">name =</span> <span class="st">&quot;Set2&quot;</span>), <span class="dt">name =</span> <span class="st">&quot;Topic&quot;</span>) <span class="op">+</span></span>
+<span id="cb3-14"><a href="text-mining.html#cb3-14"></a><span class="st">  </span><span class="kw">facet_wrap</span>(<span class="op">~</span><span class="st"> </span>chapter, <span class="dt">scales =</span> <span class="st">&quot;free&quot;</span>, <span class="dt">ncol =</span> <span class="dv">3</span>) <span class="op">+</span></span>
+<span id="cb3-15"><a href="text-mining.html#cb3-15"></a><span class="st">  </span><span class="kw">scale_x_reordered</span>() <span class="op">+</span></span>
+<span id="cb3-16"><a href="text-mining.html#cb3-16"></a><span class="st">  </span><span class="kw">coord_flip</span>() <span class="op">+</span></span>
+<span id="cb3-17"><a href="text-mining.html#cb3-17"></a><span class="st">  </span><span class="kw">theme</span>(<span class="dt">strip.text=</span><span class="kw">element_text</span>(<span class="dt">size=</span><span class="dv">11</span>)) <span class="op">+</span></span>
+<span id="cb3-18"><a href="text-mining.html#cb3-18"></a><span class="st">  </span><span class="kw">labs</span>(<span class="dt">x =</span> <span class="ot">NULL</span>, <span class="dt">y =</span> <span class="st">&quot;tf-idf&quot;</span>,</span>
+<span id="cb3-19"><a href="text-mining.html#cb3-19"></a>       <span class="dt">title =</span> <span class="st">&quot;Highest tf-idf words in The Adventures of Tom Sawyer (ch 1-6)&quot;</span>,</span>
+<span id="cb3-20"><a href="text-mining.html#cb3-20"></a>       <span class="dt">subtitle =</span> <span class="st">&quot;Individual chapters focus on different characters and narrative elements&quot;</span>)</span></code></pre></div>
+<div class="figure" style="text-align: center"><span id="fig:nice-fig"></span>
+<img src="text-book_files/figure-html/nice-fig-1.png" alt="Here is a nice figure!" width="80%" />
+<p class="caption">
+Figure 2.1: Here is a nice figure!
+</p>
+</div>
+<div id="lda-1" class="section level3">
+<h3><span class="header-section-number">2.1.1</span> LDA</h3>
+<p>LDA treats each document as a mixture of topics (X% topic <em>A</em>, Y% topic <em>B</em>, etc.), and each topic as a mixture of word probabilities (x% word <em>a</em>, y% word <em>b</em>, etc.) for all words in the corpus. LDA is implemented in the <strong>topicmodels</strong> package.</p>
+<p>Prepare the data by creating a document-term matrix. You will improve performance by removing infrequently appearing tokens with <code>tm::removeSparseTemrs()</code>.</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="text-mining.html#cb4-1"></a>sawyer_dtm &lt;-<span class="st"> </span>sawyer_tokens <span class="op">%&gt;%</span></span>
+<span id="cb4-2"><a href="text-mining.html#cb4-2"></a><span class="st">  </span><span class="kw">count</span>(chapter, word_stem) <span class="op">%&gt;%</span></span>
+<span id="cb4-3"><a href="text-mining.html#cb4-3"></a><span class="st">  </span><span class="kw">cast_dtm</span>(<span class="dt">document =</span> chapter, <span class="dt">term =</span> word_stem, <span class="dt">value =</span> n) <span class="op">%&gt;%</span></span>
+<span id="cb4-4"><a href="text-mining.html#cb4-4"></a><span class="st">  </span>tm<span class="op">::</span><span class="kw">removeSparseTerms</span>(<span class="dt">sparse =</span> <span class="fl">0.9</span>)</span>
+<span id="cb4-5"><a href="text-mining.html#cb4-5"></a></span>
+<span id="cb4-6"><a href="text-mining.html#cb4-6"></a>sawyer_dtm</span></code></pre></div>
+<pre><code>## &lt;&lt;DocumentTermMatrix (documents: 35, terms: 1213)&gt;&gt;
+## Non-/sparse entries: 9933/32522
+## Sparsity           : 77%
+## Maximal term length: 13
+## Weighting          : term frequency (tf)</code></pre>
+<p>LDA is an optimization algorithm that performs a random search through the parameter space to find the model with the largest log-likelihood. There are multiple search algorithms, but the preferred one appears to be Gibbs sampling, a type of Monte Carlo Markov Chain (MCMC) algorithm.</p>
+<p>Create a topic model with <code>topicmodels::LDA()</code>. Parameter <code>k</code> specifies the number of topics. In general, you only want as many topics as are clearly distinct and that you can easily communicate to others. You can use the perplexity statistic to help identify <em>k</em>. Perplexity is a measure of how well a probability model fits a new set of data. Look for the elbow in a scree plot. Here are models with 5 - 50 topics.</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="text-mining.html#cb6-1"></a><span class="kw">set.seed</span>(<span class="dv">1012</span>)</span>
+<span id="cb6-2"><a href="text-mining.html#cb6-2"></a>train_ind &lt;-<span class="st"> </span><span class="kw">sample</span>(<span class="kw">nrow</span>(sawyer_dtm), <span class="kw">floor</span>(<span class="fl">0.75</span><span class="op">*</span><span class="kw">nrow</span>(sawyer_dtm)))</span>
+<span id="cb6-3"><a href="text-mining.html#cb6-3"></a>sawyer_train &lt;-<span class="st"> </span>sawyer_dtm[train_ind, ]</span>
+<span id="cb6-4"><a href="text-mining.html#cb6-4"></a>sawyer_test &lt;-<span class="st"> </span>sawyer_dtm[<span class="op">-</span>train_ind, ]</span>
+<span id="cb6-5"><a href="text-mining.html#cb6-5"></a></span>
+<span id="cb6-6"><a href="text-mining.html#cb6-6"></a>k =<span class="st"> </span><span class="kw">c</span>(<span class="kw">seq</span>(<span class="dt">from =</span> <span class="dv">5</span>, <span class="dt">to =</span> <span class="dv">50</span>, <span class="dt">by =</span> <span class="dv">5</span>))</span>
+<span id="cb6-7"><a href="text-mining.html#cb6-7"></a>perp &lt;-<span class="st"> </span>k <span class="op">%&gt;%</span><span class="st"> </span></span>
+<span id="cb6-8"><a href="text-mining.html#cb6-8"></a><span class="st">  </span><span class="kw">map</span>(<span class="op">~</span><span class="st"> </span><span class="kw">LDA</span>(sawyer_train, <span class="dt">k =</span> .x, <span class="dt">method =</span> <span class="st">&quot;Gibbs&quot;</span>, <span class="dt">control =</span> <span class="kw">list</span>(<span class="dt">seed =</span> <span class="dv">1234</span>))) <span class="op">%&gt;%</span></span>
+<span id="cb6-9"><a href="text-mining.html#cb6-9"></a><span class="st">  </span><span class="kw">map</span>(<span class="op">~</span><span class="st"> </span><span class="kw">perplexity</span>(.x, <span class="dt">newdata =</span> sawyer_test)) <span class="op">%&gt;%</span></span>
+<span id="cb6-10"><a href="text-mining.html#cb6-10"></a><span class="st">  </span><span class="kw">as.numeric</span>()</span>
+<span id="cb6-11"><a href="text-mining.html#cb6-11"></a></span>
+<span id="cb6-12"><a href="text-mining.html#cb6-12"></a><span class="kw">data.frame</span>(<span class="dt">k =</span> k, <span class="dt">perplexity =</span> perp) <span class="op">%&gt;%</span></span>
+<span id="cb6-13"><a href="text-mining.html#cb6-13"></a><span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(<span class="dt">x =</span> k, <span class="dt">y =</span> perplexity)) <span class="op">+</span><span class="st"> </span></span>
+<span id="cb6-14"><a href="text-mining.html#cb6-14"></a><span class="st">  </span><span class="kw">geom_point</span>() <span class="op">+</span><span class="st"> </span></span>
+<span id="cb6-15"><a href="text-mining.html#cb6-15"></a><span class="st">  </span><span class="kw">geom_smooth</span>(<span class="dt">method =</span> <span class="st">&quot;loess&quot;</span>, <span class="dt">se =</span> <span class="ot">FALSE</span>) <span class="op">+</span></span>
+<span id="cb6-16"><a href="text-mining.html#cb6-16"></a><span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;Perplexity Plot for LDM model&quot;</span>,</span>
+<span id="cb6-17"><a href="text-mining.html#cb6-17"></a>       <span class="dt">subtitle =</span> <span class="st">&quot;Elbow at k = 30?&quot;</span>)</span></code></pre></div>
+<p><img src="text-book_files/figure-html/unnamed-chunk-5-1.png" width="672" /></p>
+<p>There may be an elbow at <em>k</em> = 15 topics. Using STM, the optimal number of clusters was 30. That looks like an elbow to me too. Frankly, if my arm looked like that I would consult an orthopedic surgeon.</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="text-mining.html#cb7-1"></a>sawyer_lda &lt;-<span class="st"> </span>topicmodels<span class="op">::</span><span class="kw">LDA</span>(sawyer_dtm, <span class="dt">k =</span> <span class="dv">30</span>, <span class="dt">method =</span> <span class="st">&quot;Gibbs&quot;</span>, <span class="dt">control =</span> <span class="kw">list</span>(<span class="dt">seed =</span> <span class="dv">1234</span>))</span></code></pre></div>
+<p><code>LDA()</code> returns two outputs: a “beta” matrix of probabilities of terms belonging to topics; a “gamma” matrix of probabilities of topics contributing to documents. The tidytext package provides a <code>tidy()</code> method for extracting these matrices.</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="text-mining.html#cb8-1"></a>sawyer_lda_beta &lt;-<span class="st"> </span><span class="kw">tidy</span>(sawyer_lda, <span class="dt">matrix =</span> <span class="st">&quot;beta&quot;</span>) </span>
+<span id="cb8-2"><a href="text-mining.html#cb8-2"></a>sawyer_lda_gamma &lt;-<span class="st"> </span><span class="kw">tidy</span>(sawyer_lda, <span class="dt">matrix =</span> <span class="st">&quot;gamma&quot;</span>, <span class="dt">document_names =</span> <span class="kw">rownames</span>(sawyer_dfm)) </span>
+<span id="cb8-3"><a href="text-mining.html#cb8-3"></a></span>
+<span id="cb8-4"><a href="text-mining.html#cb8-4"></a><span class="co"># All sums equal 1</span></span>
+<span id="cb8-5"><a href="text-mining.html#cb8-5"></a><span class="co"># sawyer_lda_beta %&gt;% group_by(topic) %&gt;% summarize(.groups = &quot;drop&quot;, sum_beta = sum(beta))</span></span>
+<span id="cb8-6"><a href="text-mining.html#cb8-6"></a><span class="co"># sawyer_lda_gamma %&gt;% group_by(document) %&gt;% summarize(.groups = &quot;drop&quot;, sum_beta = sum(gamma))</span></span></code></pre></div>
+<p>I have 30 topics here, so it would be hard to show the top words per topic, but here are the first six topics.</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="text-mining.html#cb9-1"></a>sawyer_lda_beta <span class="op">%&gt;%</span></span>
+<span id="cb9-2"><a href="text-mining.html#cb9-2"></a><span class="st">  </span><span class="kw">filter</span>(topic <span class="op">&lt;=</span><span class="st"> </span><span class="dv">6</span>) <span class="op">%&gt;%</span></span>
+<span id="cb9-3"><a href="text-mining.html#cb9-3"></a><span class="st">  </span><span class="kw">group_by</span>(topic) <span class="op">%&gt;%</span></span>
+<span id="cb9-4"><a href="text-mining.html#cb9-4"></a><span class="st">  </span><span class="kw">slice_max</span>(<span class="dt">order_by =</span> beta, <span class="dt">n =</span> <span class="dv">10</span>, <span class="dt">with_ties =</span> <span class="ot">FALSE</span>) <span class="op">%&gt;%</span></span>
+<span id="cb9-5"><a href="text-mining.html#cb9-5"></a><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">term =</span> <span class="kw">reorder_within</span>(term, beta, topic)) <span class="op">%&gt;%</span></span>
+<span id="cb9-6"><a href="text-mining.html#cb9-6"></a><span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(<span class="dt">x =</span> term, <span class="dt">y =</span> beta, <span class="dt">fill =</span> <span class="kw">factor</span>(topic))) <span class="op">+</span></span>
+<span id="cb9-7"><a href="text-mining.html#cb9-7"></a><span class="st">  </span><span class="kw">geom_col</span>(<span class="dt">show.legend =</span> <span class="ot">FALSE</span>) <span class="op">+</span></span>
+<span id="cb9-8"><a href="text-mining.html#cb9-8"></a><span class="st">  </span><span class="kw">scale_fill_manual</span>(<span class="dt">values =</span> RColorBrewer<span class="op">::</span><span class="kw">brewer.pal</span>(<span class="dt">n =</span> <span class="dv">6</span>, <span class="dt">name =</span> <span class="st">&quot;Set2&quot;</span>), <span class="dt">name =</span> <span class="st">&quot;Topic&quot;</span>) <span class="op">+</span></span>
+<span id="cb9-9"><a href="text-mining.html#cb9-9"></a><span class="st">  </span><span class="kw">scale_x_reordered</span>() <span class="op">+</span></span>
+<span id="cb9-10"><a href="text-mining.html#cb9-10"></a><span class="st">  </span><span class="kw">coord_flip</span>() <span class="op">+</span></span>
+<span id="cb9-11"><a href="text-mining.html#cb9-11"></a><span class="st">  </span><span class="kw">facet_wrap</span>(<span class="op">~</span><span class="st"> </span>topic, <span class="dt">scales =</span> <span class="st">&quot;free&quot;</span>) <span class="op">+</span></span>
+<span id="cb9-12"><a href="text-mining.html#cb9-12"></a><span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;LDA Beta Matrix for first six topics&quot;</span>,</span>
+<span id="cb9-13"><a href="text-mining.html#cb9-13"></a>       <span class="dt">subtitle =</span> <span class="st">&quot;Showing top 10 word probabilities&quot;</span>)</span></code></pre></div>
+<p><img src="text-book_files/figure-html/unnamed-chunk-8-1.png" width="672" /></p>
+<p>You can use a Word cloud as an alternative to the bar chart. The advantage of the word cloud is that it creates an instantaneous impression rather than providing you the analytic means to construct the same conclusion. Here are word clouds for the first two topics.</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="text-mining.html#cb10-1"></a>colors6 &lt;-<span class="st"> </span>RColorBrewer<span class="op">::</span><span class="kw">brewer.pal</span>(<span class="dt">n =</span> <span class="dv">6</span>, <span class="dt">name =</span> <span class="st">&quot;Set2&quot;</span>)</span>
+<span id="cb10-2"><a href="text-mining.html#cb10-2"></a>x &lt;-<span class="st"> </span><span class="kw">map</span>(<span class="kw">c</span>(<span class="dv">1</span><span class="op">:</span><span class="dv">2</span>), <span class="op">~</span><span class="st"> </span><span class="kw">with</span>(sawyer_lda_beta <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">filter</span>(topic <span class="op">==</span><span class="st"> </span>.x), </span>
+<span id="cb10-3"><a href="text-mining.html#cb10-3"></a>                        wordcloud<span class="op">::</span><span class="kw">wordcloud</span>(term, beta, <span class="dt">max.words =</span> <span class="dv">20</span>,</span>
+<span id="cb10-4"><a href="text-mining.html#cb10-4"></a>                                             <span class="dt">colors =</span> colors6[.x])))</span></code></pre></div>
+<p><img src="text-book_files/figure-html/unnamed-chunk-9-1.png" width="672" /><img src="text-book_files/figure-html/unnamed-chunk-9-2.png" width="672" /></p>
+<p>And here are the most prevalent topics across chapters. The figure shows the average probability that the topic appears in the chapter for all chapters.</p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="text-mining.html#cb11-1"></a>top_terms &lt;-<span class="st"> </span>sawyer_lda_beta <span class="op">%&gt;%</span></span>
+<span id="cb11-2"><a href="text-mining.html#cb11-2"></a><span class="st">  </span><span class="kw">group_by</span>(topic) <span class="op">%&gt;%</span></span>
+<span id="cb11-3"><a href="text-mining.html#cb11-3"></a><span class="st">  </span><span class="kw">slice_max</span>(<span class="dt">order_by =</span> beta, <span class="dt">n =</span> <span class="dv">7</span>) <span class="op">%&gt;%</span></span>
+<span id="cb11-4"><a href="text-mining.html#cb11-4"></a><span class="st">  </span><span class="kw">summarise</span>(<span class="dt">.groups =</span> <span class="st">&quot;drop&quot;</span>, <span class="dt">terms =</span> <span class="kw">list</span>(term)) <span class="op">%&gt;%</span></span>
+<span id="cb11-5"><a href="text-mining.html#cb11-5"></a><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">terms =</span> <span class="kw">map</span>(terms, paste, <span class="dt">collapse =</span> <span class="st">&quot;, &quot;</span>)) <span class="op">%&gt;%</span></span>
+<span id="cb11-6"><a href="text-mining.html#cb11-6"></a><span class="st">  </span><span class="kw">unnest</span>(terms)</span>
+<span id="cb11-7"><a href="text-mining.html#cb11-7"></a></span>
+<span id="cb11-8"><a href="text-mining.html#cb11-8"></a>sawyer_lda_gamma <span class="op">%&gt;%</span></span>
+<span id="cb11-9"><a href="text-mining.html#cb11-9"></a><span class="st">  </span><span class="kw">group_by</span>(topic) <span class="op">%&gt;%</span></span>
+<span id="cb11-10"><a href="text-mining.html#cb11-10"></a><span class="st">  </span><span class="kw">summarize</span>(<span class="dt">.groups =</span> <span class="st">&quot;drop&quot;</span>, <span class="dt">gamma =</span> <span class="kw">mean</span>(gamma)) <span class="op">%&gt;%</span></span>
+<span id="cb11-11"><a href="text-mining.html#cb11-11"></a><span class="st">  </span><span class="kw">left_join</span>(top_terms, <span class="dt">by =</span> <span class="st">&quot;topic&quot;</span>) <span class="op">%&gt;%</span></span>
+<span id="cb11-12"><a href="text-mining.html#cb11-12"></a><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">topic =</span> <span class="kw">paste</span>(<span class="st">&quot;topic&quot;</span>, topic),</span>
+<span id="cb11-13"><a href="text-mining.html#cb11-13"></a>         <span class="dt">topic =</span> <span class="kw">fct_reorder</span>(topic, gamma)) <span class="op">%&gt;%</span></span>
+<span id="cb11-14"><a href="text-mining.html#cb11-14"></a><span class="st">  </span><span class="kw">slice_max</span>(<span class="dt">order_by =</span> gamma, <span class="dt">n =</span> <span class="dv">10</span>) <span class="op">%&gt;%</span></span>
+<span id="cb11-15"><a href="text-mining.html#cb11-15"></a><span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(<span class="dt">x =</span> topic, <span class="dt">y =</span> gamma, <span class="dt">label =</span> terms)) <span class="op">+</span></span>
+<span id="cb11-16"><a href="text-mining.html#cb11-16"></a><span class="st">  </span><span class="kw">geom_col</span>(<span class="dt">fill =</span> <span class="st">&quot;#D8A7B1&quot;</span>, <span class="dt">show.legend =</span> <span class="ot">FALSE</span>) <span class="op">+</span></span>
+<span id="cb11-17"><a href="text-mining.html#cb11-17"></a><span class="st">  </span><span class="kw">geom_text</span>(<span class="dt">hjust =</span> <span class="dv">0</span>, <span class="dt">nudge_y =</span> <span class="fl">0.0005</span>, <span class="dt">size =</span> <span class="dv">3</span>) <span class="op">+</span></span>
+<span id="cb11-18"><a href="text-mining.html#cb11-18"></a><span class="st">  </span><span class="kw">coord_flip</span>() <span class="op">+</span></span>
+<span id="cb11-19"><a href="text-mining.html#cb11-19"></a><span class="st">  </span><span class="kw">scale_y_continuous</span>(<span class="dt">expand =</span> <span class="kw">c</span>(<span class="dv">0</span>,<span class="dv">0</span>),</span>
+<span id="cb11-20"><a href="text-mining.html#cb11-20"></a>                     <span class="dt">limits =</span> <span class="kw">c</span>(<span class="dv">0</span>, <span class="fl">0.09</span>),</span>
+<span id="cb11-21"><a href="text-mining.html#cb11-21"></a>                     <span class="dt">labels =</span> scales<span class="op">::</span><span class="kw">percent_format</span>()) <span class="op">+</span></span>
+<span id="cb11-22"><a href="text-mining.html#cb11-22"></a><span class="st">  </span><span class="kw">theme_minimal</span>() <span class="op">+</span></span>
+<span id="cb11-23"><a href="text-mining.html#cb11-23"></a><span class="st">  </span><span class="kw">theme</span>(<span class="dt">panel.grid =</span> <span class="kw">element_blank</span>()) <span class="op">+</span></span>
+<span id="cb11-24"><a href="text-mining.html#cb11-24"></a><span class="st">  </span><span class="kw">labs</span>(<span class="dt">x =</span> <span class="ot">NULL</span>, <span class="dt">y =</span> <span class="kw">expression</span>(gamma),</span>
+<span id="cb11-25"><a href="text-mining.html#cb11-25"></a>       <span class="dt">title =</span> <span class="st">&quot;Top 10 LDA topics by prevalence in The Adentures of Tom Sawyer&quot;</span>,</span>
+<span id="cb11-26"><a href="text-mining.html#cb11-26"></a>       <span class="dt">subtitle =</span> <span class="st">&quot;With top words in each topic&quot;</span>)</span></code></pre></div>
+<p><img src="text-book_files/figure-html/unnamed-chunk-10-1.png" width="672" /></p>
+<p>Another way to look at the betas is to identify terms that had the greatest difference in beta between the first and second most probable topic. A good way to do this is with their log ratio, <span class="math inline">\(log_2(\beta_2 / \beta_1)\)</span>. Filter for relatively common words having a beta greater than 1/100 in at least one topic.</p>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="text-mining.html#cb12-1"></a>sawyer_lda_beta <span class="op">%&gt;%</span><span class="st"> </span></span>
+<span id="cb12-2"><a href="text-mining.html#cb12-2"></a><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">topic =</span> <span class="kw">paste0</span>(<span class="st">&quot;topic&quot;</span>, topic)) <span class="op">%&gt;%</span></span>
+<span id="cb12-3"><a href="text-mining.html#cb12-3"></a><span class="st">  </span><span class="kw">group_by</span>(term) <span class="op">%&gt;%</span></span>
+<span id="cb12-4"><a href="text-mining.html#cb12-4"></a><span class="st">  </span><span class="kw">slice_max</span>(<span class="dt">order_by =</span> beta, <span class="dt">n =</span> <span class="dv">2</span>) <span class="op">%&gt;%</span></span>
+<span id="cb12-5"><a href="text-mining.html#cb12-5"></a><span class="st">  </span><span class="kw">summarize</span>(<span class="dt">.groups =</span> <span class="st">&quot;drop&quot;</span>, <span class="dt">min_beta =</span> <span class="kw">min</span>(beta), <span class="dt">max_beta =</span> <span class="kw">max</span>(beta)) <span class="op">%&gt;%</span></span>
+<span id="cb12-6"><a href="text-mining.html#cb12-6"></a><span class="st">  </span><span class="kw">filter</span>(max_beta <span class="op">&gt;</span><span class="st"> </span><span class="fl">0.01</span>) <span class="op">%&gt;%</span></span>
+<span id="cb12-7"><a href="text-mining.html#cb12-7"></a><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">log_ratio =</span> <span class="kw">log2</span>(max_beta <span class="op">/</span><span class="st"> </span>min_beta)) <span class="op">%&gt;%</span></span>
+<span id="cb12-8"><a href="text-mining.html#cb12-8"></a><span class="st">  </span><span class="kw">top_n</span>(<span class="dt">n =</span> <span class="dv">20</span>, <span class="dt">w =</span> <span class="kw">abs</span>(log_ratio)) <span class="op">%&gt;%</span></span>
+<span id="cb12-9"><a href="text-mining.html#cb12-9"></a><span class="st">  </span><span class="kw">arrange</span>(<span class="op">-</span>log_ratio) <span class="op">%&gt;%</span></span>
+<span id="cb12-10"><a href="text-mining.html#cb12-10"></a><span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(<span class="dt">x =</span> <span class="kw">fct_rev</span>(<span class="kw">fct_inorder</span>(term)), <span class="dt">y =</span> log_ratio)) <span class="op">+</span></span>
+<span id="cb12-11"><a href="text-mining.html#cb12-11"></a><span class="st">  </span><span class="kw">geom_col</span>(<span class="dt">fill =</span> <span class="st">&quot;#D8A7B1&quot;</span>) <span class="op">+</span></span>
+<span id="cb12-12"><a href="text-mining.html#cb12-12"></a><span class="st">  </span><span class="kw">theme_minimal</span>() <span class="op">+</span></span>
+<span id="cb12-13"><a href="text-mining.html#cb12-13"></a><span class="st">  </span><span class="kw">coord_flip</span>() <span class="op">+</span><span class="st"> </span></span>
+<span id="cb12-14"><a href="text-mining.html#cb12-14"></a><span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;LDA beta matrix log ratios&quot;</span>,</span>
+<span id="cb12-15"><a href="text-mining.html#cb12-15"></a>       <span class="dt">subtitle =</span> <span class="st">&quot;showing greatest differences in beta values&quot;</span>,</span>
+<span id="cb12-16"><a href="text-mining.html#cb12-16"></a>       <span class="dt">x =</span> <span class="st">&quot;&quot;</span>, <span class="dt">y =</span> <span class="st">&quot;log(beta ratio)&quot;</span>)</span></code></pre></div>
+<p><img src="text-book_files/figure-html/unnamed-chunk-11-1.png" width="672" /></p>
+</div>
+<div id="stm-1" class="section level3">
+<h3><span class="header-section-number">2.1.2</span> STM</h3>
+<p>Prepare the data by creating a document-term matrix, just as you would with LDA, except this time use the <code>cast_dfm()</code> to create a document <em>feature</em> matrix for the <strong>quanteda</strong> package (the <strong>stm</strong> package uses <strong>quanteda</strong>). As LDA, you will improve performance by removing infrequently appearing tokens, this time with <code>tm::removeSparseTemrs()</code>.</p>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="text-mining.html#cb13-1"></a>sawyer_dfm &lt;-<span class="st"> </span>sawyer_tokens <span class="op">%&gt;%</span></span>
+<span id="cb13-2"><a href="text-mining.html#cb13-2"></a><span class="st">  </span><span class="kw">count</span>(chapter, word_stem) <span class="op">%&gt;%</span></span>
+<span id="cb13-3"><a href="text-mining.html#cb13-3"></a><span class="st">  </span><span class="kw">cast_dfm</span>(<span class="dt">document =</span> chapter, <span class="dt">term =</span> word_stem, <span class="dt">value =</span> n) <span class="op">%&gt;%</span></span>
+<span id="cb13-4"><a href="text-mining.html#cb13-4"></a><span class="st">  </span>quanteda<span class="op">::</span><span class="kw">dfm_trim</span>(<span class="dt">min_docfreq =</span> <span class="fl">0.1</span>, <span class="dt">docfreq_type =</span> <span class="st">&quot;prop&quot;</span>)</span>
+<span id="cb13-5"><a href="text-mining.html#cb13-5"></a></span>
+<span id="cb13-6"><a href="text-mining.html#cb13-6"></a>sawyer_dfm</span></code></pre></div>
+<pre><code>## Document-feature matrix of: 35 documents, 1,213 features (76.6% sparse).
+##     features
+## docs _do_ _got_ _is_ _will_ advantage adventure afraid afternoon age air
+##    1    3     1    1      3         2         1      2         1   1   2
+##    2    0     0    0      0         0         0      0         1   0   1
+##    3    0     0    1      0         0         0      0         0   1   3
+##    4    0     0    1      0         0         0      3         0   3   1
+##    5    0     0    0      0         0         0      0         0   2   0
+##    6    0     0    1      1         0         0      0         0   0   1
+## [ reached max_ndoc ... 29 more documents, reached max_nfeat ... 1,203 more features ]</code></pre>
+<p>Create a topic model with <code>stm::stm()</code>. Parameter <code>K</code> specifies the number of topics. In LDA I used perplexity to determine the optimal number of clusters, in part because that is the only optimizing metric it <code>LDA()</code> offers. <code>stm</code> offers other metrics, including the held-out likelihood and coherence. Here are models with 5 - 50 topics. This process can take a while, but the <strong>furrr</strong> package and <code>future_map()</code> function leverage parallel processing to make it quicker.</p>
+<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="text-mining.html#cb15-1"></a><span class="kw">library</span>(furrr)</span></code></pre></div>
+<pre><code>## Warning: package &#39;furrr&#39; was built under R version 4.0.3</code></pre>
+<pre><code>## Loading required package: future</code></pre>
+<pre><code>## Warning: package &#39;future&#39; was built under R version 4.0.3</code></pre>
+<div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb19-1"><a href="text-mining.html#cb19-1"></a><span class="kw">plan</span>(multiprocess)</span></code></pre></div>
+<pre><code>## Warning: Strategy &#39;multiprocess&#39; is deprecated in future (&gt;= 1.20.0). Instead,
+## explicitly specify either &#39;multisession&#39; or &#39;multicore&#39;. In the current R
+## session, &#39;multiprocess&#39; equals &#39;multisession&#39;.</code></pre>
+<div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb21-1"><a href="text-mining.html#cb21-1"></a>sawyer_stm_mdls &lt;-<span class="st"> </span><span class="kw">data_frame</span>(<span class="dt">K =</span> <span class="kw">seq</span>(<span class="dt">from =</span> <span class="dv">5</span>, <span class="dt">to =</span> <span class="dv">50</span>, <span class="dt">by =</span> <span class="dv">5</span>)) <span class="op">%&gt;%</span></span>
+<span id="cb21-2"><a href="text-mining.html#cb21-2"></a><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">mdl =</span> <span class="kw">future_map</span>(K, <span class="op">~</span><span class="kw">stm</span>(sawyer_dfm, <span class="dt">K =</span> ., <span class="dt">verbose =</span> <span class="ot">FALSE</span>),</span>
+<span id="cb21-3"><a href="text-mining.html#cb21-3"></a>                          <span class="dt">.options =</span> <span class="kw">furrr_options</span>(<span class="dt">seed =</span> <span class="dv">123</span>)))</span></code></pre></div>
+<pre><code>## Warning: `data_frame()` is deprecated as of tibble 1.1.0.
+## Please use `tibble()` instead.
+## This warning is displayed once every 8 hours.
+## Call `lifecycle::last_warnings()` to see where this warning was generated.</code></pre>
+<pre><code>## Loading required package: quanteda</code></pre>
+<pre><code>## Warning: Problem with `mutate()` input `mdl`.
+## i package &#39;quanteda&#39; was built under R version 4.0.2
+## i Input `mdl` is `future_map(K, ~stm(sawyer_dfm, K = ., verbose = FALSE), .options = furrr_options(seed = 123))`.</code></pre>
+<pre><code>## Warning: package &#39;quanteda&#39; was built under R version 4.0.2</code></pre>
+<pre><code>## Package version: 2.1.2</code></pre>
+<pre><code>## Parallel computing: 2 of 8 threads used.</code></pre>
+<pre><code>## See https://quanteda.io for tutorials and examples.</code></pre>
+<pre><code>## 
+## Attaching package: &#39;quanteda&#39;</code></pre>
+<pre><code>## The following object is masked from &#39;package:utils&#39;:
+## 
+##     View</code></pre>
+<pre><code>## Loading required package: quanteda</code></pre>
+<pre><code>## Warning: Problem with `mutate()` input `mdl`.
+## i package &#39;quanteda&#39; was built under R version 4.0.2
+## i Input `mdl` is `future_map(K, ~stm(sawyer_dfm, K = ., verbose = FALSE), .options = furrr_options(seed = 123))`.
+
+## Warning: package &#39;quanteda&#39; was built under R version 4.0.2</code></pre>
+<pre><code>## Package version: 2.1.2</code></pre>
+<pre><code>## Parallel computing: 2 of 8 threads used.</code></pre>
+<pre><code>## See https://quanteda.io for tutorials and examples.</code></pre>
+<pre><code>## 
+## Attaching package: &#39;quanteda&#39;</code></pre>
+<pre><code>## The following object is masked from &#39;package:utils&#39;:
+## 
+##     View</code></pre>
+<pre><code>## Loading required package: quanteda</code></pre>
+<pre><code>## Warning: Problem with `mutate()` input `mdl`.
+## i package &#39;quanteda&#39; was built under R version 4.0.2
+## i Input `mdl` is `future_map(K, ~stm(sawyer_dfm, K = ., verbose = FALSE), .options = furrr_options(seed = 123))`.
+
+## Warning: package &#39;quanteda&#39; was built under R version 4.0.2</code></pre>
+<pre><code>## Package version: 2.1.2</code></pre>
+<pre><code>## Parallel computing: 2 of 8 threads used.</code></pre>
+<pre><code>## See https://quanteda.io for tutorials and examples.</code></pre>
+<pre><code>## 
+## Attaching package: &#39;quanteda&#39;</code></pre>
+<pre><code>## The following object is masked from &#39;package:utils&#39;:
+## 
+##     View</code></pre>
+<pre><code>## Loading required package: quanteda</code></pre>
+<pre><code>## Warning: Problem with `mutate()` input `mdl`.
+## i package &#39;quanteda&#39; was built under R version 4.0.2
+## i Input `mdl` is `future_map(K, ~stm(sawyer_dfm, K = ., verbose = FALSE), .options = furrr_options(seed = 123))`.
+
+## Warning: package &#39;quanteda&#39; was built under R version 4.0.2</code></pre>
+<pre><code>## Package version: 2.1.2</code></pre>
+<pre><code>## Parallel computing: 2 of 8 threads used.</code></pre>
+<pre><code>## See https://quanteda.io for tutorials and examples.</code></pre>
+<pre><code>## 
+## Attaching package: &#39;quanteda&#39;</code></pre>
+<pre><code>## The following object is masked from &#39;package:utils&#39;:
+## 
+##     View</code></pre>
+<pre><code>## Loading required package: quanteda</code></pre>
+<pre><code>## Warning: Problem with `mutate()` input `mdl`.
+## i package &#39;quanteda&#39; was built under R version 4.0.2
+## i Input `mdl` is `future_map(K, ~stm(sawyer_dfm, K = ., verbose = FALSE), .options = furrr_options(seed = 123))`.
+
+## Warning: package &#39;quanteda&#39; was built under R version 4.0.2</code></pre>
+<pre><code>## Package version: 2.1.2</code></pre>
+<pre><code>## Parallel computing: 2 of 8 threads used.</code></pre>
+<pre><code>## See https://quanteda.io for tutorials and examples.</code></pre>
+<pre><code>## 
+## Attaching package: &#39;quanteda&#39;</code></pre>
+<pre><code>## The following object is masked from &#39;package:utils&#39;:
+## 
+##     View</code></pre>
+<pre><code>## Loading required package: quanteda</code></pre>
+<pre><code>## Warning: Problem with `mutate()` input `mdl`.
+## i package &#39;quanteda&#39; was built under R version 4.0.2
+## i Input `mdl` is `future_map(K, ~stm(sawyer_dfm, K = ., verbose = FALSE), .options = furrr_options(seed = 123))`.
+
+## Warning: package &#39;quanteda&#39; was built under R version 4.0.2</code></pre>
+<pre><code>## Package version: 2.1.2</code></pre>
+<pre><code>## Parallel computing: 2 of 8 threads used.</code></pre>
+<pre><code>## See https://quanteda.io for tutorials and examples.</code></pre>
+<pre><code>## 
+## Attaching package: &#39;quanteda&#39;</code></pre>
+<pre><code>## The following object is masked from &#39;package:utils&#39;:
+## 
+##     View</code></pre>
+<pre><code>## Loading required package: quanteda</code></pre>
+<pre><code>## Warning: Problem with `mutate()` input `mdl`.
+## i package &#39;quanteda&#39; was built under R version 4.0.2
+## i Input `mdl` is `future_map(K, ~stm(sawyer_dfm, K = ., verbose = FALSE), .options = furrr_options(seed = 123))`.
+
+## Warning: package &#39;quanteda&#39; was built under R version 4.0.2</code></pre>
+<pre><code>## Package version: 2.1.2</code></pre>
+<pre><code>## Parallel computing: 2 of 8 threads used.</code></pre>
+<pre><code>## See https://quanteda.io for tutorials and examples.</code></pre>
+<pre><code>## 
+## Attaching package: &#39;quanteda&#39;</code></pre>
+<pre><code>## The following object is masked from &#39;package:utils&#39;:
+## 
+##     View</code></pre>
+<pre><code>## Loading required package: quanteda</code></pre>
+<pre><code>## Warning: Problem with `mutate()` input `mdl`.
+## i package &#39;quanteda&#39; was built under R version 4.0.2
+## i Input `mdl` is `future_map(K, ~stm(sawyer_dfm, K = ., verbose = FALSE), .options = furrr_options(seed = 123))`.
+
+## Warning: package &#39;quanteda&#39; was built under R version 4.0.2</code></pre>
+<pre><code>## Package version: 2.1.2</code></pre>
+<pre><code>## Parallel computing: 2 of 8 threads used.</code></pre>
+<pre><code>## See https://quanteda.io for tutorials and examples.</code></pre>
+<pre><code>## 
+## Attaching package: &#39;quanteda&#39;</code></pre>
+<pre><code>## The following object is masked from &#39;package:utils&#39;:
+## 
+##     View</code></pre>
+<div class="sourceCode" id="cb80"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb80-1"><a href="text-mining.html#cb80-1"></a>heldout &lt;-<span class="st"> </span><span class="kw">make.heldout</span>(sawyer_dfm)</span>
+<span id="cb80-2"><a href="text-mining.html#cb80-2"></a></span>
+<span id="cb80-3"><a href="text-mining.html#cb80-3"></a>k_result &lt;-<span class="st"> </span>sawyer_stm_mdls <span class="op">%&gt;%</span></span>
+<span id="cb80-4"><a href="text-mining.html#cb80-4"></a><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">exclusivity        =</span> <span class="kw">map</span>(mdl, exclusivity),</span>
+<span id="cb80-5"><a href="text-mining.html#cb80-5"></a>         <span class="dt">semantic_coherence =</span> <span class="kw">map</span>(mdl, semanticCoherence, sawyer_dfm),</span>
+<span id="cb80-6"><a href="text-mining.html#cb80-6"></a>         <span class="dt">eval_heldout       =</span> <span class="kw">map</span>(mdl, eval.heldout, heldout<span class="op">$</span>missing),</span>
+<span id="cb80-7"><a href="text-mining.html#cb80-7"></a>         <span class="dt">residual           =</span> <span class="kw">map</span>(mdl, checkResiduals, sawyer_dfm),</span>
+<span id="cb80-8"><a href="text-mining.html#cb80-8"></a>         <span class="dt">bound              =</span> <span class="kw">map_dbl</span>(mdl, <span class="op">~</span><span class="kw">max</span>(.<span class="op">$</span>convergence<span class="op">$</span>bound)),</span>
+<span id="cb80-9"><a href="text-mining.html#cb80-9"></a>         <span class="dt">lfact              =</span> <span class="kw">map_dbl</span>(mdl, <span class="op">~</span><span class="kw">lfactorial</span>(.<span class="op">$</span>settings<span class="op">$</span>dim<span class="op">$</span>K)),</span>
+<span id="cb80-10"><a href="text-mining.html#cb80-10"></a>         <span class="dt">lbound             =</span> bound <span class="op">+</span><span class="st"> </span>lfact,</span>
+<span id="cb80-11"><a href="text-mining.html#cb80-11"></a>         <span class="dt">iterations         =</span> <span class="kw">map_dbl</span>(mdl, <span class="op">~</span><span class="kw">length</span>(.<span class="op">$</span>convergence<span class="op">$</span>bound)))</span>
+<span id="cb80-12"><a href="text-mining.html#cb80-12"></a></span>
+<span id="cb80-13"><a href="text-mining.html#cb80-13"></a>k_result <span class="op">%&gt;%</span></span>
+<span id="cb80-14"><a href="text-mining.html#cb80-14"></a><span class="st">  </span><span class="kw">transmute</span>(K,</span>
+<span id="cb80-15"><a href="text-mining.html#cb80-15"></a>            <span class="st">`</span><span class="dt">Lower bound</span><span class="st">`</span> =<span class="st"> </span>lbound,</span>
+<span id="cb80-16"><a href="text-mining.html#cb80-16"></a>            <span class="dt">Residuals =</span> <span class="kw">map_dbl</span>(residual, <span class="st">&quot;dispersion&quot;</span>),</span>
+<span id="cb80-17"><a href="text-mining.html#cb80-17"></a>            <span class="st">`</span><span class="dt">Semantic coherence</span><span class="st">`</span> =<span class="st"> </span><span class="kw">map_dbl</span>(semantic_coherence, mean),</span>
+<span id="cb80-18"><a href="text-mining.html#cb80-18"></a>            <span class="st">`</span><span class="dt">Held-out likelihood</span><span class="st">`</span> =<span class="st"> </span><span class="kw">map_dbl</span>(eval_heldout, <span class="st">&quot;expected.heldout&quot;</span>)) <span class="op">%&gt;%</span></span>
+<span id="cb80-19"><a href="text-mining.html#cb80-19"></a><span class="st">  </span><span class="kw">gather</span>(Metric, Value, <span class="op">-</span>K) <span class="op">%&gt;%</span></span>
+<span id="cb80-20"><a href="text-mining.html#cb80-20"></a><span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(K, Value, <span class="dt">color =</span> Metric)) <span class="op">+</span></span>
+<span id="cb80-21"><a href="text-mining.html#cb80-21"></a><span class="st">  </span><span class="kw">geom_line</span>(<span class="dt">size =</span> <span class="fl">1.5</span>, <span class="dt">alpha =</span> <span class="fl">0.7</span>, <span class="dt">show.legend =</span> <span class="ot">FALSE</span>) <span class="op">+</span></span>
+<span id="cb80-22"><a href="text-mining.html#cb80-22"></a><span class="st">  </span><span class="kw">facet_wrap</span>(<span class="op">~</span>Metric, <span class="dt">scales =</span> <span class="st">&quot;free_y&quot;</span>) <span class="op">+</span></span>
+<span id="cb80-23"><a href="text-mining.html#cb80-23"></a><span class="st">  </span><span class="kw">labs</span>(<span class="dt">x =</span> <span class="st">&quot;K (number of topics)&quot;</span>,</span>
+<span id="cb80-24"><a href="text-mining.html#cb80-24"></a>       <span class="dt">y =</span> <span class="ot">NULL</span>,</span>
+<span id="cb80-25"><a href="text-mining.html#cb80-25"></a>       <span class="dt">title =</span> <span class="st">&quot;Model diagnostics by number of topics&quot;</span>,</span>
+<span id="cb80-26"><a href="text-mining.html#cb80-26"></a>       <span class="dt">subtitle =</span> <span class="st">&quot;These diagnostics indicate that a good number of topics would be around 60&quot;</span>)</span></code></pre></div>
+<p><img src="text-book_files/figure-html/unnamed-chunk-13-1.png" width="672" />
+The held-out likelihood is highest between 30 and 50, and the residuals are lowest at 20, so 30 might be the right number. Semantic coherence is maximized when the most probable words in a given topic frequently co-occur together. Coherence tends to fall as exclusivity increases. You’ll want the topic size that balances the trade-off.</p>
+<div class="sourceCode" id="cb81"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb81-1"><a href="text-mining.html#cb81-1"></a>k_result <span class="op">%&gt;%</span></span>
+<span id="cb81-2"><a href="text-mining.html#cb81-2"></a><span class="st">  </span><span class="kw">select</span>(K, exclusivity, semantic_coherence) <span class="op">%&gt;%</span></span>
+<span id="cb81-3"><a href="text-mining.html#cb81-3"></a><span class="st">  </span><span class="kw">filter</span>(K <span class="op">%in%</span><span class="st"> </span><span class="kw">c</span>(<span class="dv">20</span>, <span class="dv">25</span>, <span class="dv">30</span>)) <span class="op">%&gt;%</span></span>
+<span id="cb81-4"><a href="text-mining.html#cb81-4"></a><span class="st">  </span><span class="kw">unnest</span>(<span class="dt">cols =</span> <span class="kw">c</span>(exclusivity, semantic_coherence)) <span class="op">%&gt;%</span></span>
+<span id="cb81-5"><a href="text-mining.html#cb81-5"></a><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">K =</span> <span class="kw">as.factor</span>(K)) <span class="op">%&gt;%</span></span>
+<span id="cb81-6"><a href="text-mining.html#cb81-6"></a><span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(semantic_coherence, exclusivity, <span class="dt">color =</span> K)) <span class="op">+</span></span>
+<span id="cb81-7"><a href="text-mining.html#cb81-7"></a><span class="st">  </span><span class="kw">geom_point</span>(<span class="dt">size =</span> <span class="dv">2</span>, <span class="dt">alpha =</span> <span class="fl">0.7</span>) <span class="op">+</span></span>
+<span id="cb81-8"><a href="text-mining.html#cb81-8"></a><span class="st">  </span><span class="kw">labs</span>(<span class="dt">x =</span> <span class="st">&quot;Semantic coherence&quot;</span>,</span>
+<span id="cb81-9"><a href="text-mining.html#cb81-9"></a>       <span class="dt">y =</span> <span class="st">&quot;Exclusivity&quot;</span>,</span>
+<span id="cb81-10"><a href="text-mining.html#cb81-10"></a>       <span class="dt">title =</span> <span class="st">&quot;Comparing exclusivity and semantic coherence&quot;</span>,</span>
+<span id="cb81-11"><a href="text-mining.html#cb81-11"></a>       <span class="dt">subtitle =</span> <span class="st">&quot;Models with fewer topics have higher semantic coherence for more topics, but lower exclusivity&quot;</span>)</span></code></pre></div>
+<p><img src="text-book_files/figure-html/unnamed-chunk-14-1.png" width="672" /></p>
+<p>It looks like <em>k</em> = 30 may be optimal.</p>
+<div class="sourceCode" id="cb82"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb82-1"><a href="text-mining.html#cb82-1"></a>sawyer_stm &lt;-<span class="st"> </span>sawyer_stm_mdls <span class="op">%&gt;%</span></span>
+<span id="cb82-2"><a href="text-mining.html#cb82-2"></a><span class="st">  </span><span class="kw">filter</span>(K <span class="op">==</span><span class="st"> </span><span class="dv">30</span>) <span class="op">%&gt;%</span></span>
+<span id="cb82-3"><a href="text-mining.html#cb82-3"></a><span class="st">  </span><span class="kw">pull</span>(mdl) <span class="op">%&gt;%</span><span class="st"> </span></span>
+<span id="cb82-4"><a href="text-mining.html#cb82-4"></a><span class="st">  </span><span class="kw">pluck</span>(<span class="dv">1</span>)</span></code></pre></div>
+<p>Like <code>LDA()</code>, <code>stm()</code> returns two outputs: a “beta” matrix of probabilities of terms belonging to topics; a “gamma” matrix of probabilities of topics contributing to documents. The tidytext package provides a <code>tidy()</code> method for extracting these matrices.</p>
+<div class="sourceCode" id="cb83"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb83-1"><a href="text-mining.html#cb83-1"></a>sawyer_stm_beta &lt;-<span class="st"> </span><span class="kw">tidy</span>(sawyer_stm, <span class="dt">matrix =</span> <span class="st">&quot;beta&quot;</span>) </span>
+<span id="cb83-2"><a href="text-mining.html#cb83-2"></a>sawyer_stm_gamma &lt;-<span class="st"> </span><span class="kw">tidy</span>(sawyer_stm, <span class="dt">matrix =</span> <span class="st">&quot;gamma&quot;</span>, <span class="dt">document_names =</span> <span class="kw">rownames</span>(sawyer_dfm)) </span></code></pre></div>
+<p>I have 30 topics here, so it would be hard to show the top words per topic, but here are the first six topics.</p>
+<div class="sourceCode" id="cb84"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb84-1"><a href="text-mining.html#cb84-1"></a>sawyer_stm_beta <span class="op">%&gt;%</span></span>
+<span id="cb84-2"><a href="text-mining.html#cb84-2"></a><span class="st">  </span><span class="kw">filter</span>(topic <span class="op">&lt;=</span><span class="st"> </span><span class="dv">6</span>) <span class="op">%&gt;%</span></span>
+<span id="cb84-3"><a href="text-mining.html#cb84-3"></a><span class="st">  </span><span class="kw">group_by</span>(topic) <span class="op">%&gt;%</span></span>
+<span id="cb84-4"><a href="text-mining.html#cb84-4"></a><span class="st">  </span><span class="kw">slice_max</span>(<span class="dt">order_by =</span> beta, <span class="dt">n =</span> <span class="dv">10</span>, <span class="dt">with_ties =</span> <span class="ot">FALSE</span>) <span class="op">%&gt;%</span></span>
+<span id="cb84-5"><a href="text-mining.html#cb84-5"></a><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">term =</span> <span class="kw">reorder_within</span>(term, beta, topic)) <span class="op">%&gt;%</span></span>
+<span id="cb84-6"><a href="text-mining.html#cb84-6"></a><span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(<span class="dt">x =</span> term, <span class="dt">y =</span> beta, <span class="dt">fill =</span> <span class="kw">factor</span>(topic))) <span class="op">+</span></span>
+<span id="cb84-7"><a href="text-mining.html#cb84-7"></a><span class="st">  </span><span class="kw">geom_col</span>(<span class="dt">show.legend =</span> <span class="ot">FALSE</span>) <span class="op">+</span></span>
+<span id="cb84-8"><a href="text-mining.html#cb84-8"></a><span class="st">  </span><span class="kw">scale_fill_manual</span>(<span class="dt">values =</span> RColorBrewer<span class="op">::</span><span class="kw">brewer.pal</span>(<span class="dt">n =</span> <span class="dv">6</span>, <span class="dt">name =</span> <span class="st">&quot;Set2&quot;</span>), <span class="dt">name =</span> <span class="st">&quot;Topic&quot;</span>) <span class="op">+</span></span>
+<span id="cb84-9"><a href="text-mining.html#cb84-9"></a><span class="st">  </span><span class="kw">scale_x_reordered</span>() <span class="op">+</span></span>
+<span id="cb84-10"><a href="text-mining.html#cb84-10"></a><span class="st">  </span><span class="kw">coord_flip</span>() <span class="op">+</span></span>
+<span id="cb84-11"><a href="text-mining.html#cb84-11"></a><span class="st">  </span><span class="kw">facet_wrap</span>(<span class="op">~</span><span class="st"> </span>topic, <span class="dt">scales =</span> <span class="st">&quot;free&quot;</span>) <span class="op">+</span></span>
+<span id="cb84-12"><a href="text-mining.html#cb84-12"></a><span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;STM Beta Matrix for first six topics&quot;</span>,</span>
+<span id="cb84-13"><a href="text-mining.html#cb84-13"></a>       <span class="dt">subtitle =</span> <span class="st">&quot;Showing top 10 word probabilities&quot;</span>)</span></code></pre></div>
+<p><img src="text-book_files/figure-html/unnamed-chunk-17-1.png" width="672" /></p>
+<p>Here is a Word cloud representation.</p>
+<div class="sourceCode" id="cb85"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb85-1"><a href="text-mining.html#cb85-1"></a>colors6 &lt;-<span class="st"> </span>RColorBrewer<span class="op">::</span><span class="kw">brewer.pal</span>(<span class="dt">n =</span> <span class="dv">6</span>, <span class="dt">name =</span> <span class="st">&quot;Set2&quot;</span>)</span>
+<span id="cb85-2"><a href="text-mining.html#cb85-2"></a>x &lt;-<span class="st"> </span><span class="kw">map</span>(<span class="kw">c</span>(<span class="dv">1</span><span class="op">:</span><span class="dv">2</span>), <span class="op">~</span><span class="st"> </span><span class="kw">with</span>(sawyer_stm_beta <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">filter</span>(topic <span class="op">==</span><span class="st"> </span>.x), </span>
+<span id="cb85-3"><a href="text-mining.html#cb85-3"></a>                        wordcloud<span class="op">::</span><span class="kw">wordcloud</span>(term, beta, <span class="dt">max.words =</span> <span class="dv">20</span>,</span>
+<span id="cb85-4"><a href="text-mining.html#cb85-4"></a>                                             <span class="dt">colors =</span> colors6[.x])))</span></code></pre></div>
+<p><img src="text-book_files/figure-html/unnamed-chunk-18-1.png" width="672" /><img src="text-book_files/figure-html/unnamed-chunk-18-2.png" width="672" /></p>
+<p>And here are the most prevalent topics across chapters.</p>
+<div class="sourceCode" id="cb86"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb86-1"><a href="text-mining.html#cb86-1"></a>top_terms &lt;-<span class="st"> </span>sawyer_stm_beta <span class="op">%&gt;%</span></span>
+<span id="cb86-2"><a href="text-mining.html#cb86-2"></a><span class="st">  </span><span class="kw">group_by</span>(topic) <span class="op">%&gt;%</span></span>
+<span id="cb86-3"><a href="text-mining.html#cb86-3"></a><span class="st">  </span><span class="kw">slice_max</span>(<span class="dt">order_by =</span> beta, <span class="dt">n =</span> <span class="dv">7</span>) <span class="op">%&gt;%</span></span>
+<span id="cb86-4"><a href="text-mining.html#cb86-4"></a><span class="st">  </span><span class="kw">summarise</span>(<span class="dt">.groups =</span> <span class="st">&quot;drop&quot;</span>, <span class="dt">terms =</span> <span class="kw">list</span>(term)) <span class="op">%&gt;%</span></span>
+<span id="cb86-5"><a href="text-mining.html#cb86-5"></a><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">terms =</span> <span class="kw">map</span>(terms, paste, <span class="dt">collapse =</span> <span class="st">&quot;, &quot;</span>)) <span class="op">%&gt;%</span></span>
+<span id="cb86-6"><a href="text-mining.html#cb86-6"></a><span class="st">  </span><span class="kw">unnest</span>(terms)</span>
+<span id="cb86-7"><a href="text-mining.html#cb86-7"></a></span>
+<span id="cb86-8"><a href="text-mining.html#cb86-8"></a>sawyer_stm_gamma <span class="op">%&gt;%</span></span>
+<span id="cb86-9"><a href="text-mining.html#cb86-9"></a><span class="st">  </span><span class="kw">group_by</span>(topic) <span class="op">%&gt;%</span></span>
+<span id="cb86-10"><a href="text-mining.html#cb86-10"></a><span class="st">  </span><span class="kw">summarize</span>(<span class="dt">.groups =</span> <span class="st">&quot;drop&quot;</span>, <span class="dt">gamma =</span> <span class="kw">mean</span>(gamma)) <span class="op">%&gt;%</span></span>
+<span id="cb86-11"><a href="text-mining.html#cb86-11"></a><span class="st">  </span><span class="kw">left_join</span>(top_terms, <span class="dt">by =</span> <span class="st">&quot;topic&quot;</span>) <span class="op">%&gt;%</span></span>
+<span id="cb86-12"><a href="text-mining.html#cb86-12"></a><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">topic =</span> <span class="kw">paste</span>(<span class="st">&quot;topic&quot;</span>, topic),</span>
+<span id="cb86-13"><a href="text-mining.html#cb86-13"></a>         <span class="dt">topic =</span> <span class="kw">fct_reorder</span>(topic, gamma)) <span class="op">%&gt;%</span></span>
+<span id="cb86-14"><a href="text-mining.html#cb86-14"></a><span class="st">  </span><span class="kw">slice_max</span>(<span class="dt">order_by =</span> gamma, <span class="dt">n =</span> <span class="dv">10</span>) <span class="op">%&gt;%</span></span>
+<span id="cb86-15"><a href="text-mining.html#cb86-15"></a><span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(<span class="dt">x =</span> topic, <span class="dt">y =</span> gamma, <span class="dt">label =</span> terms)) <span class="op">+</span></span>
+<span id="cb86-16"><a href="text-mining.html#cb86-16"></a><span class="st">  </span><span class="kw">geom_col</span>(<span class="dt">fill =</span> <span class="st">&quot;#D8A7B1&quot;</span>, <span class="dt">show.legend =</span> <span class="ot">FALSE</span>) <span class="op">+</span></span>
+<span id="cb86-17"><a href="text-mining.html#cb86-17"></a><span class="st">  </span><span class="kw">geom_text</span>(<span class="dt">hjust =</span> <span class="dv">0</span>, <span class="dt">nudge_y =</span> <span class="fl">0.0005</span>, <span class="dt">size =</span> <span class="dv">3</span>) <span class="op">+</span></span>
+<span id="cb86-18"><a href="text-mining.html#cb86-18"></a><span class="st">  </span><span class="kw">coord_flip</span>() <span class="op">+</span></span>
+<span id="cb86-19"><a href="text-mining.html#cb86-19"></a><span class="st">  </span><span class="kw">scale_y_continuous</span>(<span class="dt">expand =</span> <span class="kw">c</span>(<span class="dv">0</span>,<span class="dv">0</span>),</span>
+<span id="cb86-20"><a href="text-mining.html#cb86-20"></a>                     <span class="dt">limits =</span> <span class="kw">c</span>(<span class="dv">0</span>, <span class="fl">0.09</span>),</span>
+<span id="cb86-21"><a href="text-mining.html#cb86-21"></a>                     <span class="dt">labels =</span> scales<span class="op">::</span><span class="kw">percent_format</span>()) <span class="op">+</span></span>
+<span id="cb86-22"><a href="text-mining.html#cb86-22"></a><span class="st">  </span><span class="kw">theme_minimal</span>() <span class="op">+</span></span>
+<span id="cb86-23"><a href="text-mining.html#cb86-23"></a><span class="st">  </span><span class="kw">theme</span>(<span class="dt">panel.grid =</span> <span class="kw">element_blank</span>()) <span class="op">+</span></span>
+<span id="cb86-24"><a href="text-mining.html#cb86-24"></a><span class="st">  </span><span class="kw">labs</span>(<span class="dt">x =</span> <span class="ot">NULL</span>, <span class="dt">y =</span> <span class="kw">expression</span>(gamma),</span>
+<span id="cb86-25"><a href="text-mining.html#cb86-25"></a>       <span class="dt">title =</span> <span class="st">&quot;Top 10 STM topics by prevalence in The Adentures of Tom Sawyer&quot;</span>,</span>
+<span id="cb86-26"><a href="text-mining.html#cb86-26"></a>       <span class="dt">subtitle =</span> <span class="st">&quot;With top words in each topic&quot;</span>)</span></code></pre></div>
+<p><img src="text-book_files/figure-html/unnamed-chunk-19-1.png" width="672" /></p>
+<p>Another way to look at the betas is to identify terms that had the greatest difference in beta between the first and second most probable topic. A good way to do this is with their log ratio, <span class="math inline">\(log_2(\beta_2 / \beta_1)\)</span>. Filter for relatively common words having a beta greater than 1/100 in at least one topic.</p>
+<div class="sourceCode" id="cb87"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb87-1"><a href="text-mining.html#cb87-1"></a>sawyer_stm_beta <span class="op">%&gt;%</span><span class="st"> </span></span>
+<span id="cb87-2"><a href="text-mining.html#cb87-2"></a><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">topic =</span> <span class="kw">paste0</span>(<span class="st">&quot;topic&quot;</span>, topic)) <span class="op">%&gt;%</span></span>
+<span id="cb87-3"><a href="text-mining.html#cb87-3"></a><span class="st">  </span><span class="kw">group_by</span>(term) <span class="op">%&gt;%</span></span>
+<span id="cb87-4"><a href="text-mining.html#cb87-4"></a><span class="st">  </span><span class="kw">slice_max</span>(<span class="dt">order_by =</span> beta, <span class="dt">n =</span> <span class="dv">2</span>) <span class="op">%&gt;%</span></span>
+<span id="cb87-5"><a href="text-mining.html#cb87-5"></a><span class="st">  </span><span class="kw">summarize</span>(<span class="dt">.groups =</span> <span class="st">&quot;drop&quot;</span>, <span class="dt">min_beta =</span> <span class="kw">min</span>(beta)<span class="op">+</span>.<span class="dv">001</span>, <span class="dt">max_beta =</span> <span class="kw">max</span>(beta)<span class="op">+</span>.<span class="dv">001</span>) <span class="op">%&gt;%</span></span>
+<span id="cb87-6"><a href="text-mining.html#cb87-6"></a><span class="st">  </span><span class="kw">filter</span>(max_beta <span class="op">&gt;</span><span class="st"> </span><span class="fl">0.01</span>) <span class="op">%&gt;%</span></span>
+<span id="cb87-7"><a href="text-mining.html#cb87-7"></a><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">log_ratio =</span> <span class="kw">log2</span>(max_beta <span class="op">/</span><span class="st"> </span>min_beta)) <span class="op">%&gt;%</span></span>
+<span id="cb87-8"><a href="text-mining.html#cb87-8"></a><span class="st">  </span><span class="kw">top_n</span>(<span class="dt">n =</span> <span class="dv">20</span>, <span class="dt">w =</span> <span class="kw">abs</span>(log_ratio)) <span class="op">%&gt;%</span></span>
+<span id="cb87-9"><a href="text-mining.html#cb87-9"></a><span class="st">  </span><span class="kw">arrange</span>(<span class="op">-</span>log_ratio) <span class="op">%&gt;%</span></span>
+<span id="cb87-10"><a href="text-mining.html#cb87-10"></a><span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(<span class="dt">x =</span> <span class="kw">fct_rev</span>(<span class="kw">fct_inorder</span>(term)), <span class="dt">y =</span> log_ratio)) <span class="op">+</span></span>
+<span id="cb87-11"><a href="text-mining.html#cb87-11"></a><span class="st">  </span><span class="kw">geom_col</span>(<span class="dt">fill =</span> <span class="st">&quot;#D8A7B1&quot;</span>) <span class="op">+</span></span>
+<span id="cb87-12"><a href="text-mining.html#cb87-12"></a><span class="st">  </span><span class="kw">theme_minimal</span>() <span class="op">+</span></span>
+<span id="cb87-13"><a href="text-mining.html#cb87-13"></a><span class="st">  </span><span class="kw">coord_flip</span>() <span class="op">+</span><span class="st"> </span></span>
+<span id="cb87-14"><a href="text-mining.html#cb87-14"></a><span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;STM beta matrix log ratios&quot;</span>,</span>
+<span id="cb87-15"><a href="text-mining.html#cb87-15"></a>       <span class="dt">subtitle =</span> <span class="st">&quot;showing greatest differences in beta values&quot;</span>,</span>
+<span id="cb87-16"><a href="text-mining.html#cb87-16"></a>       <span class="dt">x =</span> <span class="st">&quot;&quot;</span>, <span class="dt">y =</span> <span class="st">&quot;log(beta ratio)&quot;</span>)</span></code></pre></div>
+<p><img src="text-book_files/figure-html/unnamed-chunk-20-1.png" width="672" /></p>
+</div>
+</div>
+<div id="sentiment-analysis" class="section level2">
+<h2><span class="header-section-number">2.2</span> Sentiment Analysis</h2>
+<p>A typical sentiment analysis involves unnesting tokens with <code>unnest_tokens()</code>, assigning sentiments with <code>inner_join(sentiments)</code>, counting tokens with <code>count()</code>, and summarizing and visualizing.</p>
+<p>The tidytext package contains four sentiment lexicons, all based on unigrams.</p>
+<ul>
+<li><strong>nrc</strong>. binary “yes”/“no” for categories positive, negative, anger, anticipation, disgust, fear, joy, sadness, surprise, and trust.</li>
+<li><strong>bing</strong>. “positive”/“negative” classification.</li>
+<li><strong>AFINN</strong>. score between -5 (most negative) and 5 (most positive).</li>
+<li><strong>loughran</strong>. “positive”/“negative”/“litigious”/“uncertainty”/“constraining”/“superflous” classification.</li>
+</ul>
+<p>You can view the sentiment assignments with <code>get_sentiments(lexicon = c("afinn", "bing", nrc", "laughlin"))</code></p>
+<div class="sourceCode" id="cb88"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb88-1"><a href="text-mining.html#cb88-1"></a>x1 &lt;-<span class="st"> </span><span class="kw">get_sentiments</span>(<span class="dt">lexicon =</span> <span class="st">&quot;nrc&quot;</span>) <span class="op">%&gt;%</span></span>
+<span id="cb88-2"><a href="text-mining.html#cb88-2"></a><span class="st">  </span><span class="kw">count</span>(sentiment) <span class="op">%&gt;%</span></span>
+<span id="cb88-3"><a href="text-mining.html#cb88-3"></a><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">lexicon =</span> <span class="st">&quot;nrc&quot;</span>)</span>
+<span id="cb88-4"><a href="text-mining.html#cb88-4"></a>x2 &lt;-<span class="st"> </span><span class="kw">get_sentiments</span>(<span class="dt">lexicon =</span> <span class="st">&quot;bing&quot;</span>) <span class="op">%&gt;%</span></span>
+<span id="cb88-5"><a href="text-mining.html#cb88-5"></a><span class="st">  </span><span class="kw">count</span>(sentiment) <span class="op">%&gt;%</span></span>
+<span id="cb88-6"><a href="text-mining.html#cb88-6"></a><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">lexicon =</span> <span class="st">&quot;bing&quot;</span>)</span>
+<span id="cb88-7"><a href="text-mining.html#cb88-7"></a>x3 &lt;-<span class="st"> </span><span class="kw">get_sentiments</span>(<span class="dt">lexicon =</span> <span class="st">&quot;afinn&quot;</span>) <span class="op">%&gt;%</span></span>
+<span id="cb88-8"><a href="text-mining.html#cb88-8"></a><span class="st">  </span><span class="kw">count</span>(value) <span class="op">%&gt;%</span></span>
+<span id="cb88-9"><a href="text-mining.html#cb88-9"></a><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">lexicon =</span> <span class="st">&quot;afinn&quot;</span>) <span class="op">%&gt;%</span></span>
+<span id="cb88-10"><a href="text-mining.html#cb88-10"></a><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">sentiment =</span> <span class="kw">as.character</span>(value)) <span class="op">%&gt;%</span></span>
+<span id="cb88-11"><a href="text-mining.html#cb88-11"></a><span class="st">  </span><span class="kw">select</span>(<span class="op">-</span>value)</span>
+<span id="cb88-12"><a href="text-mining.html#cb88-12"></a>x4 &lt;-<span class="st"> </span><span class="kw">get_sentiments</span>(<span class="dt">lexicon =</span> <span class="st">&quot;loughran&quot;</span>) <span class="op">%&gt;%</span></span>
+<span id="cb88-13"><a href="text-mining.html#cb88-13"></a><span class="st">  </span><span class="kw">count</span>(sentiment) <span class="op">%&gt;%</span></span>
+<span id="cb88-14"><a href="text-mining.html#cb88-14"></a><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">lexicon =</span> <span class="st">&quot;loughran&quot;</span>)</span>
+<span id="cb88-15"><a href="text-mining.html#cb88-15"></a>x &lt;-<span class="st"> </span><span class="kw">bind_rows</span>(x1, x2, x3, x4)</span>
+<span id="cb88-16"><a href="text-mining.html#cb88-16"></a></span>
+<span id="cb88-17"><a href="text-mining.html#cb88-17"></a><span class="kw">ggplot</span>(x, <span class="kw">aes</span>(<span class="dt">x =</span> <span class="kw">fct_reorder</span>(sentiment, n), <span class="dt">y =</span> n, <span class="dt">fill =</span> lexicon)) <span class="op">+</span></span>
+<span id="cb88-18"><a href="text-mining.html#cb88-18"></a><span class="st">  </span><span class="kw">geom_col</span>(<span class="dt">show.legend =</span> <span class="ot">FALSE</span>) <span class="op">+</span></span>
+<span id="cb88-19"><a href="text-mining.html#cb88-19"></a><span class="st">  </span><span class="kw">coord_flip</span>() <span class="op">+</span></span>
+<span id="cb88-20"><a href="text-mining.html#cb88-20"></a><span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;Sentiment Counts&quot;</span>, <span class="dt">x =</span> <span class="st">&quot;&quot;</span>, <span class="dt">y =</span> <span class="st">&quot;&quot;</span>) <span class="op">+</span></span>
+<span id="cb88-21"><a href="text-mining.html#cb88-21"></a><span class="st">  </span><span class="kw">facet_wrap</span>(<span class="op">~</span><span class="st"> </span>lexicon, <span class="dt">scales =</span> <span class="st">&quot;free&quot;</span>)</span></code></pre></div>
+<p><img src="text-book_files/figure-html/unnamed-chunk-21-1.png" width="672" /></p>
+<p>Here is a sentiment analysis of sections of 80 lines of Jane Austin’s books. <em>(Small sections may not have enough words to get a good estimate of sentiment, and large sections can wash out the narrative structure. 80 lines seems about right.)</em></p>
+<div class="sourceCode" id="cb89"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb89-1"><a href="text-mining.html#cb89-1"></a><span class="co"># austin_tidy %&gt;%</span></span>
+<span id="cb89-2"><a href="text-mining.html#cb89-2"></a><span class="co">#   inner_join(get_sentiments(&quot;bing&quot;)) %&gt;%</span></span>
+<span id="cb89-3"><a href="text-mining.html#cb89-3"></a><span class="co">#   count(book, index = linenumber %/% 80, sentiment) %&gt;%</span></span>
+<span id="cb89-4"><a href="text-mining.html#cb89-4"></a><span class="co">#   pivot_wider(names_from = sentiment, values_from = n, values_fill = list(n = 0)) %&gt;%</span></span>
+<span id="cb89-5"><a href="text-mining.html#cb89-5"></a><span class="co">#   mutate(sentiment = positive - negative) %&gt;%</span></span>
+<span id="cb89-6"><a href="text-mining.html#cb89-6"></a><span class="co">#   ggplot(aes(x = index, y = sentiment, fill = book)) +</span></span>
+<span id="cb89-7"><a href="text-mining.html#cb89-7"></a><span class="co">#   geom_col(show.legend = FALSE) +</span></span>
+<span id="cb89-8"><a href="text-mining.html#cb89-8"></a><span class="co">#   facet_wrap(~book, ncol = 2, scales = &quot;free_x&quot;)</span></span></code></pre></div>
+<p>Fair to say Jane Austin novels tend to have a happy ending? The three sentiment lexicons provide different views of THE data. Here is a comparison of the lexicons using one of Jane Austin’s novels, “Pride and Prejudice”.</p>
+<div class="sourceCode" id="cb90"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb90-1"><a href="text-mining.html#cb90-1"></a><span class="co"># # AFINN lexicon measures sentiment with a numeric score between -5 and 5.</span></span>
+<span id="cb90-2"><a href="text-mining.html#cb90-2"></a><span class="co"># afinn &lt;- austin_tidy %&gt;% </span></span>
+<span id="cb90-3"><a href="text-mining.html#cb90-3"></a><span class="co">#   filter(book == &quot;Pride &amp; Prejudice&quot;) %&gt;%</span></span>
+<span id="cb90-4"><a href="text-mining.html#cb90-4"></a><span class="co">#   inner_join(get_sentiments(&quot;afinn&quot;), by = &quot;word&quot;) %&gt;% </span></span>
+<span id="cb90-5"><a href="text-mining.html#cb90-5"></a><span class="co">#   group_by(index = linenumber %/% 80) %&gt;% </span></span>
+<span id="cb90-6"><a href="text-mining.html#cb90-6"></a><span class="co">#   summarise(sentiment = sum(value)) %&gt;% </span></span>
+<span id="cb90-7"><a href="text-mining.html#cb90-7"></a><span class="co">#   mutate(method = &quot;AFINN&quot;)</span></span>
+<span id="cb90-8"><a href="text-mining.html#cb90-8"></a><span class="co"># </span></span>
+<span id="cb90-9"><a href="text-mining.html#cb90-9"></a><span class="co"># # Bing and nrc categorize words in a binary fashion, either positive or negative.</span></span>
+<span id="cb90-10"><a href="text-mining.html#cb90-10"></a><span class="co"># bing &lt;- austin_tidy %&gt;%</span></span>
+<span id="cb90-11"><a href="text-mining.html#cb90-11"></a><span class="co">#   filter(book == &quot;Pride &amp; Prejudice&quot;) %&gt;%</span></span>
+<span id="cb90-12"><a href="text-mining.html#cb90-12"></a><span class="co">#   inner_join(get_sentiments(&quot;bing&quot;), by = &quot;word&quot;) %&gt;% </span></span>
+<span id="cb90-13"><a href="text-mining.html#cb90-13"></a><span class="co">#   count(index = linenumber %/% 80, sentiment) %&gt;%</span></span>
+<span id="cb90-14"><a href="text-mining.html#cb90-14"></a><span class="co">#   pivot_wider(names_from = sentiment, values_from =  n, values_fill = list(n = 0)) %&gt;%</span></span>
+<span id="cb90-15"><a href="text-mining.html#cb90-15"></a><span class="co">#   mutate(sentiment = positive - negative) %&gt;% </span></span>
+<span id="cb90-16"><a href="text-mining.html#cb90-16"></a><span class="co">#   mutate(method = &quot;Bing&quot;) %&gt;%</span></span>
+<span id="cb90-17"><a href="text-mining.html#cb90-17"></a><span class="co">#   select(index, sentiment, method)</span></span>
+<span id="cb90-18"><a href="text-mining.html#cb90-18"></a><span class="co"># </span></span>
+<span id="cb90-19"><a href="text-mining.html#cb90-19"></a><span class="co"># nrc &lt;- austin_tidy %&gt;%</span></span>
+<span id="cb90-20"><a href="text-mining.html#cb90-20"></a><span class="co">#   filter(book == &quot;Pride &amp; Prejudice&quot;) %&gt;%</span></span>
+<span id="cb90-21"><a href="text-mining.html#cb90-21"></a><span class="co">#   inner_join(get_sentiments(&quot;nrc&quot;) %&gt;% filter(sentiment %in% c(&quot;positive&quot;, &quot;negative&quot;)), by = &quot;word&quot;) %&gt;% </span></span>
+<span id="cb90-22"><a href="text-mining.html#cb90-22"></a><span class="co">#   count(index = linenumber %/% 80, sentiment) %&gt;%</span></span>
+<span id="cb90-23"><a href="text-mining.html#cb90-23"></a><span class="co">#   pivot_wider(names_from = sentiment, values_from = n, values_fill = list(n = 0)) %&gt;%</span></span>
+<span id="cb90-24"><a href="text-mining.html#cb90-24"></a><span class="co">#   mutate(sentiment = positive - negative) %&gt;% </span></span>
+<span id="cb90-25"><a href="text-mining.html#cb90-25"></a><span class="co">#   mutate(method = &quot;NRC&quot;) %&gt;%</span></span>
+<span id="cb90-26"><a href="text-mining.html#cb90-26"></a><span class="co">#   select(index, sentiment, method)</span></span>
+<span id="cb90-27"><a href="text-mining.html#cb90-27"></a><span class="co"># </span></span>
+<span id="cb90-28"><a href="text-mining.html#cb90-28"></a><span class="co"># bind_rows(afinn, bing, nrc) %&gt;%</span></span>
+<span id="cb90-29"><a href="text-mining.html#cb90-29"></a><span class="co">#   ggplot(aes(index, sentiment, fill = method)) +</span></span>
+<span id="cb90-30"><a href="text-mining.html#cb90-30"></a><span class="co">#   geom_col(show.legend = FALSE) +</span></span>
+<span id="cb90-31"><a href="text-mining.html#cb90-31"></a><span class="co">#   facet_wrap(~method, ncol = 1, scales = &quot;free_y&quot;)</span></span></code></pre></div>
+<p>In this example, and in general, <strong>NRC</strong> sentiment tends to be high, <strong>AFINN</strong> sentiment has more variance, and <strong>Bing</strong> sentiment finds longer stretches of similar text. However, all three agree roughly on the overall trends in the sentiment through a narrative arc.</p>
+<p>What are the top-10 positive and negative words? Using the Bing lexicon, get the counts, then <code>group_by(sentiment)</code> and <code>top_n()</code> to the top 10 in each category.</p>
+<div class="sourceCode" id="cb91"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb91-1"><a href="text-mining.html#cb91-1"></a><span class="co"># austin_tidy %&gt;%</span></span>
+<span id="cb91-2"><a href="text-mining.html#cb91-2"></a><span class="co">#   filter(book == &quot;Pride &amp; Prejudice&quot;) %&gt;%</span></span>
+<span id="cb91-3"><a href="text-mining.html#cb91-3"></a><span class="co">#   inner_join(get_sentiments(&quot;bing&quot;), by = &quot;word&quot;) %&gt;% </span></span>
+<span id="cb91-4"><a href="text-mining.html#cb91-4"></a><span class="co">#   count(word, sentiment, sort = TRUE) %&gt;%</span></span>
+<span id="cb91-5"><a href="text-mining.html#cb91-5"></a><span class="co">#   group_by(sentiment) %&gt;%</span></span>
+<span id="cb91-6"><a href="text-mining.html#cb91-6"></a><span class="co">#   top_n(n = 10, wt = n) %&gt;%</span></span>
+<span id="cb91-7"><a href="text-mining.html#cb91-7"></a><span class="co">#   ggplot(aes(x = fct_reorder(word, n), y = n, fill = sentiment)) +</span></span>
+<span id="cb91-8"><a href="text-mining.html#cb91-8"></a><span class="co">#   geom_col(show.legend = FALSE) +</span></span>
+<span id="cb91-9"><a href="text-mining.html#cb91-9"></a><span class="co">#   facet_wrap(~sentiment, scales = &quot;free_y&quot;) +</span></span>
+<span id="cb91-10"><a href="text-mining.html#cb91-10"></a><span class="co">#   coord_flip() +</span></span>
+<span id="cb91-11"><a href="text-mining.html#cb91-11"></a><span class="co">#   labs(y = &quot;Contribution to Sentiment&quot;,</span></span>
+<span id="cb91-12"><a href="text-mining.html#cb91-12"></a><span class="co">#        x = &quot;&quot;)</span></span></code></pre></div>
+<p>Uh oh, “miss” is a red-herring - in Jane Austin novels it often refers to an unmarried woman. Drop it from the analysis by appending it to the stop-words list.</p>
+<div class="sourceCode" id="cb92"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb92-1"><a href="text-mining.html#cb92-1"></a><span class="co"># austin_tidy %&gt;%</span></span>
+<span id="cb92-2"><a href="text-mining.html#cb92-2"></a><span class="co">#   anti_join(bind_rows(stop_words,</span></span>
+<span id="cb92-3"><a href="text-mining.html#cb92-3"></a><span class="co">#                       tibble(word = c(&quot;miss&quot;), lexicon = c(&quot;custom&quot;)))) %&gt;%</span></span>
+<span id="cb92-4"><a href="text-mining.html#cb92-4"></a><span class="co">#   filter(book == &quot;Pride &amp; Prejudice&quot;) %&gt;%</span></span>
+<span id="cb92-5"><a href="text-mining.html#cb92-5"></a><span class="co">#   inner_join(get_sentiments(&quot;bing&quot;)) %&gt;% </span></span>
+<span id="cb92-6"><a href="text-mining.html#cb92-6"></a><span class="co">#   count(word, sentiment, sort = TRUE) %&gt;%</span></span>
+<span id="cb92-7"><a href="text-mining.html#cb92-7"></a><span class="co">#   group_by(sentiment) %&gt;%</span></span>
+<span id="cb92-8"><a href="text-mining.html#cb92-8"></a><span class="co">#   top_n(n = 10, wt = n) %&gt;%</span></span>
+<span id="cb92-9"><a href="text-mining.html#cb92-9"></a><span class="co">#   ggplot(aes(x = fct_reorder(word, n), y = n, fill = sentiment)) +</span></span>
+<span id="cb92-10"><a href="text-mining.html#cb92-10"></a><span class="co">#   geom_col(show.legend = FALSE) +</span></span>
+<span id="cb92-11"><a href="text-mining.html#cb92-11"></a><span class="co">#   facet_wrap(~sentiment, scales = &quot;free_y&quot;) +</span></span>
+<span id="cb92-12"><a href="text-mining.html#cb92-12"></a><span class="co">#   coord_flip() +</span></span>
+<span id="cb92-13"><a href="text-mining.html#cb92-13"></a><span class="co">#   labs(y = &quot;Contribution to Sentiment&quot;,</span></span>
+<span id="cb92-14"><a href="text-mining.html#cb92-14"></a><span class="co">#        x = &quot;&quot;)</span></span></code></pre></div>
+<p>Better!</p>
+<p>A common way to visualize sentiments is with a word cloud.</p>
+<div class="sourceCode" id="cb93"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb93-1"><a href="text-mining.html#cb93-1"></a><span class="co"># austin_tidy %&gt;%</span></span>
+<span id="cb93-2"><a href="text-mining.html#cb93-2"></a><span class="co">#   anti_join(bind_rows(stop_words,</span></span>
+<span id="cb93-3"><a href="text-mining.html#cb93-3"></a><span class="co">#                       tibble(word = c(&quot;miss&quot;), lexicon = c(&quot;custom&quot;)))) %&gt;%</span></span>
+<span id="cb93-4"><a href="text-mining.html#cb93-4"></a><span class="co">#   filter(book == &quot;Pride &amp; Prejudice&quot;) %&gt;%</span></span>
+<span id="cb93-5"><a href="text-mining.html#cb93-5"></a><span class="co">#   count(word) %&gt;%</span></span>
+<span id="cb93-6"><a href="text-mining.html#cb93-6"></a><span class="co">#   with(wordcloud(word, n, max.words = 100))</span></span></code></pre></div>
+<p><code>comparison.cloud</code> is another implementation of a word cloud. It takes a matrix input.</p>
+<div class="sourceCode" id="cb94"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb94-1"><a href="text-mining.html#cb94-1"></a><span class="co"># x &lt;- austin_tidy %&gt;%</span></span>
+<span id="cb94-2"><a href="text-mining.html#cb94-2"></a><span class="co">#   anti_join(bind_rows(stop_words,</span></span>
+<span id="cb94-3"><a href="text-mining.html#cb94-3"></a><span class="co">#                       tibble(word = c(&quot;miss&quot;), lexicon = c(&quot;custom&quot;)))) %&gt;%</span></span>
+<span id="cb94-4"><a href="text-mining.html#cb94-4"></a><span class="co">#   inner_join(get_sentiments(&quot;bing&quot;)) %&gt;% </span></span>
+<span id="cb94-5"><a href="text-mining.html#cb94-5"></a><span class="co">#   filter(book == &quot;Pride &amp; Prejudice&quot;) %&gt;%</span></span>
+<span id="cb94-6"><a href="text-mining.html#cb94-6"></a><span class="co">#   count(word, sentiment, sort = TRUE) %&gt;%</span></span>
+<span id="cb94-7"><a href="text-mining.html#cb94-7"></a><span class="co">#   pivot_wider(names_from = sentiment, values_from = n, values_fill = list(n = 0)) %&gt;%</span></span>
+<span id="cb94-8"><a href="text-mining.html#cb94-8"></a><span class="co">#   as.data.frame()</span></span>
+<span id="cb94-9"><a href="text-mining.html#cb94-9"></a><span class="co"># rownames(x) &lt;- x[,1]</span></span>
+<span id="cb94-10"><a href="text-mining.html#cb94-10"></a><span class="co"># comparison.cloud(x[, 2:3])</span></span>
+<span id="cb94-11"><a href="text-mining.html#cb94-11"></a><span class="co"># rm(x)</span></span></code></pre></div>
+<p>Sometimes it makes more sense to analyze entire sentences. Specify <code>unnest_tokens(..., token = "sentences")</code> to override the default <code>token = "word"</code>.</p>
+<div class="sourceCode" id="cb95"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb95-1"><a href="text-mining.html#cb95-1"></a><span class="co"># austen_books() %&gt;%</span></span>
+<span id="cb95-2"><a href="text-mining.html#cb95-2"></a><span class="co">#   group_by(book) %&gt;%</span></span>
+<span id="cb95-3"><a href="text-mining.html#cb95-3"></a><span class="co">#   mutate(linenumber = row_number(),</span></span>
+<span id="cb95-4"><a href="text-mining.html#cb95-4"></a><span class="co">#          chapter = cumsum(str_detect(text, regex(&quot;^chapter [\\divxlc]&quot;,</span></span>
+<span id="cb95-5"><a href="text-mining.html#cb95-5"></a><span class="co">#                                                  ignore_case = TRUE)))) %&gt;%</span></span>
+<span id="cb95-6"><a href="text-mining.html#cb95-6"></a><span class="co">#   ungroup() %&gt;%</span></span>
+<span id="cb95-7"><a href="text-mining.html#cb95-7"></a><span class="co">#   unnest_tokens(output = word, input = text, token = &quot;sentences&quot;)</span></span></code></pre></div>
+<div id="n-grams" class="section level3">
+<h3><span class="header-section-number">2.2.1</span> N-Grams</h3>
+<p>Create n-grams by specifying <code>unnest_tokens(..., token = "ngrams", n)</code> where <code>n = 2</code> is a bigram, etc. To remove the stop words, <code>separate</code> the n-grams, then filter on the <code>stop_words</code> data set.</p>
+<div class="sourceCode" id="cb96"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb96-1"><a href="text-mining.html#cb96-1"></a><span class="co"># austin.2gram &lt;- austen_books() %&gt;%</span></span>
+<span id="cb96-2"><a href="text-mining.html#cb96-2"></a><span class="co">#   group_by(book) %&gt;%</span></span>
+<span id="cb96-3"><a href="text-mining.html#cb96-3"></a><span class="co">#   mutate(linenumber = row_number(),</span></span>
+<span id="cb96-4"><a href="text-mining.html#cb96-4"></a><span class="co">#          chapter = cumsum(str_detect(text, regex(&quot;^chapter [\\divxlc]&quot;,</span></span>
+<span id="cb96-5"><a href="text-mining.html#cb96-5"></a><span class="co">#                                                  ignore_case = TRUE)))) %&gt;%</span></span>
+<span id="cb96-6"><a href="text-mining.html#cb96-6"></a><span class="co">#   ungroup() %&gt;%</span></span>
+<span id="cb96-7"><a href="text-mining.html#cb96-7"></a><span class="co">#   unnest_tokens(output = bigram, input = text, token = &quot;ngrams&quot;, n = 2)</span></span>
+<span id="cb96-8"><a href="text-mining.html#cb96-8"></a><span class="co"># </span></span>
+<span id="cb96-9"><a href="text-mining.html#cb96-9"></a><span class="co"># austin.2gram &lt;- austin.2gram %&gt;%</span></span>
+<span id="cb96-10"><a href="text-mining.html#cb96-10"></a><span class="co">#   separate(bigram, c(&quot;word1&quot;, &quot;word2&quot;), sep = &quot; &quot;) %&gt;%</span></span>
+<span id="cb96-11"><a href="text-mining.html#cb96-11"></a><span class="co">#   filter(!word1 %in% stop_words$word &amp;</span></span>
+<span id="cb96-12"><a href="text-mining.html#cb96-12"></a><span class="co">#            !word2 %in% stop_words$word &amp;</span></span>
+<span id="cb96-13"><a href="text-mining.html#cb96-13"></a><span class="co">#            !is.na(word1) &amp; !is.na(word2)) %&gt;%</span></span>
+<span id="cb96-14"><a href="text-mining.html#cb96-14"></a><span class="co">#   unite(bigram, word1, word2, sep = &quot; &quot;)</span></span>
+<span id="cb96-15"><a href="text-mining.html#cb96-15"></a><span class="co"># </span></span>
+<span id="cb96-16"><a href="text-mining.html#cb96-16"></a><span class="co"># austin.2gram %&gt;%</span></span>
+<span id="cb96-17"><a href="text-mining.html#cb96-17"></a><span class="co">#   count(book, bigram, sort = TRUE)</span></span></code></pre></div>
+<p>Here are the most commonly mentioned streets in Austin’s novels.</p>
+<div class="sourceCode" id="cb97"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb97-1"><a href="text-mining.html#cb97-1"></a><span class="co"># austin.2gram %&gt;%</span></span>
+<span id="cb97-2"><a href="text-mining.html#cb97-2"></a><span class="co">#   separate(bigram, c(&quot;word1&quot;, &quot;word2&quot;), sep = &quot; &quot;) %&gt;%</span></span>
+<span id="cb97-3"><a href="text-mining.html#cb97-3"></a><span class="co">#   filter(word2 == &quot;street&quot;) %&gt;%</span></span>
+<span id="cb97-4"><a href="text-mining.html#cb97-4"></a><span class="co">#   count(book, word1, sort = TRUE)</span></span></code></pre></div>
+<p>Use the TF-IDF statistic to compare words among documents. Calculate the cosine similarity, the angle in multidimensional space between two vectors (<span class="math inline">\(cos(\theta) = (A \cdot B) / ||A||||B||)\)</span>), to determine how similar two items are. Use <code>widyr::pairwise_similarity()</code> to calculate the cosine similarity of all pairs of items in a tidy table.</p>
+<div class="sourceCode" id="cb98"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb98-1"><a href="text-mining.html#cb98-1"></a><span class="co"># austen %&gt;%</span></span>
+<span id="cb98-2"><a href="text-mining.html#cb98-2"></a><span class="co">#   unnest_tokens(output = &quot;word&quot;, input = &quot;text&quot;, token = &quot;words&quot;) %&gt;%</span></span>
+<span id="cb98-3"><a href="text-mining.html#cb98-3"></a><span class="co">#   anti_join(stop_words, by = &quot;word&quot;) %&gt;%</span></span>
+<span id="cb98-4"><a href="text-mining.html#cb98-4"></a><span class="co">#   count(book, word) %&gt;%</span></span>
+<span id="cb98-5"><a href="text-mining.html#cb98-5"></a><span class="co">#   bind_tf_idf(term = word, document = book, n = n) %&gt;%</span></span>
+<span id="cb98-6"><a href="text-mining.html#cb98-6"></a><span class="co">#   pairwise_similarity(item = book, feature = word, value = tf_idf) %&gt;%</span></span>
+<span id="cb98-7"><a href="text-mining.html#cb98-7"></a><span class="co">#   arrange(desc(similarity))</span></span></code></pre></div>
+<div class="sourceCode" id="cb99"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb99-1"><a href="text-mining.html#cb99-1"></a><span class="co"># austen_books() %&gt;%</span></span>
+<span id="cb99-2"><a href="text-mining.html#cb99-2"></a><span class="co">#   group_by(book) %&gt;%</span></span>
+<span id="cb99-3"><a href="text-mining.html#cb99-3"></a><span class="co">#   mutate(linenumber = row_number(),</span></span>
+<span id="cb99-4"><a href="text-mining.html#cb99-4"></a><span class="co">#          chapter = cumsum(str_detect(text, regex(&quot;^chapter [\\divxlc]&quot;,</span></span>
+<span id="cb99-5"><a href="text-mining.html#cb99-5"></a><span class="co">#                                                  ignore_case = TRUE)))) %&gt;%</span></span>
+<span id="cb99-6"><a href="text-mining.html#cb99-6"></a><span class="co">#   ungroup() %&gt;%</span></span>
+<span id="cb99-7"><a href="text-mining.html#cb99-7"></a><span class="co">#   unnest_tokens(output = bigram, input = text, token = &quot;ngrams&quot;, n = 2) %&gt;%</span></span>
+<span id="cb99-8"><a href="text-mining.html#cb99-8"></a><span class="co">#   separate(bigram, c(&quot;word1&quot;, &quot;word2&quot;), sep = &quot; &quot;) %&gt;%</span></span>
+<span id="cb99-9"><a href="text-mining.html#cb99-9"></a><span class="co">#   filter(!word1 %in% stop_words$word &amp;</span></span>
+<span id="cb99-10"><a href="text-mining.html#cb99-10"></a><span class="co">#            !word2 %in% stop_words$word &amp;</span></span>
+<span id="cb99-11"><a href="text-mining.html#cb99-11"></a><span class="co">#            !is.na(word1) &amp; !is.na(word2)) %&gt;%</span></span>
+<span id="cb99-12"><a href="text-mining.html#cb99-12"></a><span class="co">#   unite(bigram, word1, word2, sep = &quot; &quot;)</span></span>
+<span id="cb99-13"><a href="text-mining.html#cb99-13"></a><span class="co"># austin.2gram %&gt;%</span></span>
+<span id="cb99-14"><a href="text-mining.html#cb99-14"></a><span class="co">#   count(book, bigram) %&gt;%</span></span>
+<span id="cb99-15"><a href="text-mining.html#cb99-15"></a><span class="co">#   bind_tf_idf(bigram, book, n) %&gt;%</span></span>
+<span id="cb99-16"><a href="text-mining.html#cb99-16"></a><span class="co">#   group_by(book) %&gt;%</span></span>
+<span id="cb99-17"><a href="text-mining.html#cb99-17"></a><span class="co">#   top_n(n = 10, wt = tf_idf) %&gt;%</span></span>
+<span id="cb99-18"><a href="text-mining.html#cb99-18"></a><span class="co">#   ggplot(aes(x = fct_reorder(bigram, n), y = tf_idf, fill = book)) +</span></span>
+<span id="cb99-19"><a href="text-mining.html#cb99-19"></a><span class="co">#   geom_col(show.legend = FALSE) +</span></span>
+<span id="cb99-20"><a href="text-mining.html#cb99-20"></a><span class="co">#   facet_wrap(~book, scales = &quot;free_y&quot;, ncol = 2) +</span></span>
+<span id="cb99-21"><a href="text-mining.html#cb99-21"></a><span class="co">#   labs(y = &quot;tf-idf of bigram to novel&quot;) +</span></span>
+<span id="cb99-22"><a href="text-mining.html#cb99-22"></a><span class="co">#   coord_flip() </span></span></code></pre></div>
+<p>A good way to visualize bigrams is with a network graph. Packages <code>igraph</code> and <code>ggraph</code> provides tools for this purpose.</p>
+<div class="sourceCode" id="cb100"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb100-1"><a href="text-mining.html#cb100-1"></a><span class="co"># set.seed(2016)</span></span>
+<span id="cb100-2"><a href="text-mining.html#cb100-2"></a><span class="co"># </span></span>
+<span id="cb100-3"><a href="text-mining.html#cb100-3"></a><span class="co"># austen_books() %&gt;%</span></span>
+<span id="cb100-4"><a href="text-mining.html#cb100-4"></a><span class="co">#   group_by(book) %&gt;%</span></span>
+<span id="cb100-5"><a href="text-mining.html#cb100-5"></a><span class="co">#   mutate(linenumber = row_number(),</span></span>
+<span id="cb100-6"><a href="text-mining.html#cb100-6"></a><span class="co">#          chapter = cumsum(str_detect(text, regex(&quot;^chapter [\\divxlc]&quot;,</span></span>
+<span id="cb100-7"><a href="text-mining.html#cb100-7"></a><span class="co">#                                                  ignore_case = TRUE)))) %&gt;%</span></span>
+<span id="cb100-8"><a href="text-mining.html#cb100-8"></a><span class="co">#   ungroup() %&gt;%</span></span>
+<span id="cb100-9"><a href="text-mining.html#cb100-9"></a><span class="co">#   unnest_tokens(output = bigram, input = text, token = &quot;ngrams&quot;, n = 2) %&gt;%</span></span>
+<span id="cb100-10"><a href="text-mining.html#cb100-10"></a><span class="co">#   separate(bigram, c(&quot;word1&quot;, &quot;word2&quot;), sep = &quot; &quot;) %&gt;%</span></span>
+<span id="cb100-11"><a href="text-mining.html#cb100-11"></a><span class="co">#   filter(!word1 %in% stop_words$word &amp;</span></span>
+<span id="cb100-12"><a href="text-mining.html#cb100-12"></a><span class="co">#            !word2 %in% stop_words$word &amp;</span></span>
+<span id="cb100-13"><a href="text-mining.html#cb100-13"></a><span class="co">#            !is.na(word1) &amp; !is.na(word2)) %&gt;%</span></span>
+<span id="cb100-14"><a href="text-mining.html#cb100-14"></a><span class="co">#   count(word1, word2) %&gt;%</span></span>
+<span id="cb100-15"><a href="text-mining.html#cb100-15"></a><span class="co">#   filter(n &gt; 20) %&gt;%</span></span>
+<span id="cb100-16"><a href="text-mining.html#cb100-16"></a><span class="co">#   graph_from_data_frame() %&gt;%  # creates unformatted &quot;graph&quot;</span></span>
+<span id="cb100-17"><a href="text-mining.html#cb100-17"></a><span class="co">#   ggraph(layout = &quot;fr&quot;) +</span></span>
+<span id="cb100-18"><a href="text-mining.html#cb100-18"></a><span class="co">#   geom_edge_link(aes(edge_alpha = n), </span></span>
+<span id="cb100-19"><a href="text-mining.html#cb100-19"></a><span class="co">#                  show.legend = FALSE,</span></span>
+<span id="cb100-20"><a href="text-mining.html#cb100-20"></a><span class="co">#                  arrow = grid::arrow(type = &quot;closed&quot;, </span></span>
+<span id="cb100-21"><a href="text-mining.html#cb100-21"></a><span class="co">#                                      length = unit(.15, &quot;inches&quot;)), </span></span>
+<span id="cb100-22"><a href="text-mining.html#cb100-22"></a><span class="co">#                  end_cap = circle(.07, &#39;inches&#39;)) +</span></span>
+<span id="cb100-23"><a href="text-mining.html#cb100-23"></a><span class="co">#   geom_node_point(color = &quot;lightblue&quot;, </span></span>
+<span id="cb100-24"><a href="text-mining.html#cb100-24"></a><span class="co">#                   size = 5) +</span></span>
+<span id="cb100-25"><a href="text-mining.html#cb100-25"></a><span class="co">#   geom_node_text(aes(label = name), vjust = 1, hjust = 1) +</span></span>
+<span id="cb100-26"><a href="text-mining.html#cb100-26"></a><span class="co">#   theme_void()</span></span></code></pre></div>
+<p>If you want to count the number of times that two words appear within the same document, or to see how correlated they are, widen the data with the <code>widyr</code> package.</p>
+<div class="sourceCode" id="cb101"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb101-1"><a href="text-mining.html#cb101-1"></a><span class="co"># austen_books() %&gt;%</span></span>
+<span id="cb101-2"><a href="text-mining.html#cb101-2"></a><span class="co">#   filter(book == &quot;Pride &amp; Prejudice&quot;) %&gt;%</span></span>
+<span id="cb101-3"><a href="text-mining.html#cb101-3"></a><span class="co">#   mutate(section = row_number() %/% 10) %&gt;%</span></span>
+<span id="cb101-4"><a href="text-mining.html#cb101-4"></a><span class="co">#   filter(section &gt; 0) %&gt;%</span></span>
+<span id="cb101-5"><a href="text-mining.html#cb101-5"></a><span class="co">#   unnest_tokens(word, text) %&gt;%</span></span>
+<span id="cb101-6"><a href="text-mining.html#cb101-6"></a><span class="co">#   filter(!word %in% stop_words$word) %&gt;%</span></span>
+<span id="cb101-7"><a href="text-mining.html#cb101-7"></a><span class="co">#   pairwise_count(word, section, sort = TRUE)</span></span></code></pre></div>
+<p>The correlation among words is how often they appear together relative to how often they appear separately. The phi coefficient is defined</p>
+<p><span class="math display">\[\phi = \frac{n_{11}n_{00} - n_{10}n_{01}}{\sqrt{n_{1.}n_{0.}n_{.1}n_{.0}}}\]</span></p>
+<p>where <span class="math inline">\(n_{10}\)</span> means number of times section has word x, but not word y, and <span class="math inline">\(n_{1.}\)</span> means total times section has word x. This lets us pick particular interesting words and find the other words most associated with them.</p>
+<div class="sourceCode" id="cb102"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb102-1"><a href="text-mining.html#cb102-1"></a><span class="co"># austen_books() %&gt;%</span></span>
+<span id="cb102-2"><a href="text-mining.html#cb102-2"></a><span class="co">#   filter(book == &quot;Pride &amp; Prejudice&quot;) %&gt;%</span></span>
+<span id="cb102-3"><a href="text-mining.html#cb102-3"></a><span class="co">#   mutate(section = row_number() %/% 10) %&gt;%</span></span>
+<span id="cb102-4"><a href="text-mining.html#cb102-4"></a><span class="co">#   filter(section &gt; 0) %&gt;%</span></span>
+<span id="cb102-5"><a href="text-mining.html#cb102-5"></a><span class="co">#   unnest_tokens(word, text) %&gt;%</span></span>
+<span id="cb102-6"><a href="text-mining.html#cb102-6"></a><span class="co">#   filter(!word %in% stop_words$word) %&gt;%</span></span>
+<span id="cb102-7"><a href="text-mining.html#cb102-7"></a><span class="co">#   pairwise_cor(word, section, sort = TRUE) %&gt;%</span></span>
+<span id="cb102-8"><a href="text-mining.html#cb102-8"></a><span class="co">#   filter(item1 %in% c(&quot;elizabeth&quot;, &quot;pounds&quot;, &quot;married&quot;, &quot;pride&quot;)) %&gt;%</span></span>
+<span id="cb102-9"><a href="text-mining.html#cb102-9"></a><span class="co">#   group_by(item1) %&gt;%</span></span>
+<span id="cb102-10"><a href="text-mining.html#cb102-10"></a><span class="co">#   top_n(n = 4) %&gt;%</span></span>
+<span id="cb102-11"><a href="text-mining.html#cb102-11"></a><span class="co">#   ungroup() %&gt;%</span></span>
+<span id="cb102-12"><a href="text-mining.html#cb102-12"></a><span class="co">#   mutate(item2 = reorder(item2, correlation)) %&gt;%</span></span>
+<span id="cb102-13"><a href="text-mining.html#cb102-13"></a><span class="co">#   ggplot(aes(x = item2, y = correlation)) +</span></span>
+<span id="cb102-14"><a href="text-mining.html#cb102-14"></a><span class="co">#   geom_bar(stat = &quot;identity&quot;) +</span></span>
+<span id="cb102-15"><a href="text-mining.html#cb102-15"></a><span class="co">#   facet_wrap(~ item1, scales = &quot;free&quot;) +</span></span>
+<span id="cb102-16"><a href="text-mining.html#cb102-16"></a><span class="co">#   coord_flip()</span></span></code></pre></div>
+<p>You can use the correlation to set a threshold for a graph.</p>
+</div>
+<div id="converting-to-and-from-non-tidy-formats" class="section level3">
+<h3><span class="header-section-number">2.2.2</span> Converting to and from non-tidy formats</h3>
+<p>One of the most common objects in text mining packages is the document term matrix (DTM) where each row is a document, each column a term, and each value an appearance count. The <code>broom</code> package contains functions to convert between DTM and tidy formats.</p>
+<p>Convert a DTM object into a tidy data frame with <code>tidy()</code>. Convert a tidy object into a sparse matrix with <code>cast_sparse()</code>, into a DTM with <code>cast_dtm()</code>, and into a “dfm” for quanteda with <code>cast_dfm()</code>.</p>
+<p>Create a tidy version of <code>AssociatedPress</code> with <code>tidy()</code>.</p>
+<p>The document-feature matrix <code>dfm</code> class from the <code>quanteda</code> text-mining package is another implementation of a document-term matrix. Here are the terms most specific (highest tf-idf) from each of four selected inaugural addresses.</p>
+<p>And here is word frequency trend ocer time for six selected terms. (problem with <code>extract()</code> below).</p>
+<p>Cast tidy data into document-term matrix with <code>cast_dtm()</code>, quanteda’s dfm with <code>cast_dfm()</code>, and sparese matrix with <code>cast_sparse()</code>.</p>
+<p>An untokenized document collection is called a <em>corpus</em>. The corpuse may include metadata, such as ID, date/time, title, language, etc. Corpus metadata is usually stored as lists. Use <code>tidy()</code> to construct a table, one row per document.</p>
+</div>
+<div id="example" class="section level3">
+<h3><span class="header-section-number">2.2.3</span> Example</h3>
+<p>Library <code>tm.plugin.webmining</code> connects to online feeds to retrieve news articles based on a keyword.</p>
+</div>
+</div>
+<div id="text-classification-modeling" class="section level2">
+<h2><span class="header-section-number">2.3</span> Text Classification Modeling</h2>
+<p>The <code>tweets</code> data set contains politically charged tweets. Can you train a model to predict the <code>account_type</code> (Left or Right) from the tweet text?</p>
+<p>Prepare the data by filtering to just the relevant tweets, tokenizing, and creatiing a document-term matrix with TFIDF weighting. If resources are an issue, experiment with values of parameter <code>sparse</code> in <code>dt::removeSparseTerms()</code> to get less terms. Below, <code>sparse = 0.9999</code> finally gets a respectable term count 14% the size of the orginal count.</p>
+<p>Split the data into an 80:20 train:test split and fit a random forest model.</p>
+</div>
+<div id="named-entity-recognition" class="section level2">
+<h2><span class="header-section-number">2.4</span> Named Entity Recognition</h2>
+<p>The <strong>qdap</strong> package provides parsing tools for preparing transcript data.</p>
+<div class="sourceCode" id="cb103"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb103-1"><a href="text-mining.html#cb103-1"></a><span class="kw">library</span>(qdap)</span></code></pre></div>
+<p>For example, <code>freq_terms()</code> parses text and counts the terms.</p>
+<p>You can also plot the terms.</p>
+<p>There are two kinds of the corpus data types, the permanent corpus, <strong>PCorpus</strong>, and the volatile corpus, <strong>VCorpus</strong>. The volatile corpus is held in RAM rather than saved to disk. Create a volatile corpus with <code>tm::vCorpous()</code>. vCorpous() takes either a text source created with <code>tm::VectorSource()</code> or a dataframe source created with <code>Dataframe Source()</code> where the input dataframe has cols <code>doc_id</code>, <code>text_id</code> and zero or more metadata columns.</p>
+<p>In bag of words text mining, cleaning helps aggregate terms, especially words with common stems like “miner” and “mining”. There are several functions useful for preprocessing: <code>tolower()</code>, <code>tm::removePunctuation()</code>, <code>tm::removeNumbers()</code>, <code>tm::stripWhiteSpace()</code>, and <code>removeWords()</code>. Apply these functions to the documents in a <code>VCorpus</code> object with <code>tm_map()</code>. If the function is not one of the pre-defined functions, wrap it in <code>content_transformer()</code>. Another preprocessing function is <code>stemDocument()</code>.</p>
+<p>The <strong>qdap</strong> package offers other preprocessing functions.</p>
+<p><code>tm::stopwords("en")</code> returns a vector of stop words. You can add to the list with concatenation.</p>
+<p><code>tm::stemDocument()</code> and <code>tm::stemCompletion()</code> reduce the variation in terms.</p>
+<p>To perform the analysis of the tweets, convert the corpus into either a document term matrix (DTM, documents as rows, terms as cols), or a term document matrix (TDM, terms as rows, documents as cols).</p>
+</div>
+<div id="tidy-text" class="section level2">
+<h2><span class="header-section-number">2.5</span> Tidy Text</h2>
+<p>Here are four Jane Austin books from the <code>janeaustenr</code>. “Sense &amp; Sensibility” acts as the baseline count, and the other books are faceted for comparison.</p>
+</div>
+<div id="appendix-regular-expressions" class="section level2">
+<h2><span class="header-section-number">2.6</span> Appendix: Regular Expressions</h2>
+<p>There are two choices for string manipulation. Base R has <code>grep()</code> and <code>gsub()</code>. Or you can use the <strong>stringr</strong> package. Both will use the same regular expression patterns. Here are some important ones.</p>
+<div id="base-r" class="section level3">
+<h3><span class="header-section-number">2.6.1</span> Base R</h3>
+<p><code>grep()</code> returns the indices of pattern matches in a vector of strings. Specify parameter <code>value = TRUE</code> to get the strings that match the pattern.</p>
+<div class="sourceCode" id="cb104"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb104-1"><a href="text-mining.html#cb104-1"></a>str &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;abc123&quot;</span>, <span class="st">&quot;xyz   789.&quot;</span>)</span>
+<span id="cb104-2"><a href="text-mining.html#cb104-2"></a><span class="kw">grep</span>(<span class="st">&quot;</span><span class="ch">\\</span><span class="st">w+123&quot;</span>, str)   <span class="co"># \w any alphanumeric, + for any length</span></span>
+<span id="cb104-3"><a href="text-mining.html#cb104-3"></a><span class="co">## [1] 1</span></span>
+<span id="cb104-4"><a href="text-mining.html#cb104-4"></a><span class="kw">grep</span>(<span class="st">&quot;abc</span><span class="ch">\\</span><span class="st">d&quot;</span>, str)  <span class="co"># \d any digit</span></span>
+<span id="cb104-5"><a href="text-mining.html#cb104-5"></a><span class="co">## [1] 1</span></span>
+<span id="cb104-6"><a href="text-mining.html#cb104-6"></a><span class="kw">grep</span>(<span class="st">&quot;</span><span class="ch">\\</span><span class="st">s&quot;</span>, str) <span class="co"># s spaces, \S non-spaces</span></span>
+<span id="cb104-7"><a href="text-mining.html#cb104-7"></a><span class="co">## [1] 2</span></span>
+<span id="cb104-8"><a href="text-mining.html#cb104-8"></a><span class="kw">grep</span>(<span class="st">&quot;</span><span class="ch">\\</span><span class="st">.&quot;</span>, str) <span class="co"># . anything, so \. for period</span></span>
+<span id="cb104-9"><a href="text-mining.html#cb104-9"></a><span class="co">## [1] 2</span></span></code></pre></div>
+</div>
+<div id="stringr" class="section level3">
+<h3><span class="header-section-number">2.6.2</span> stringr</h3>
+<p>The <strong>stringr</strong> package is a simple wrapper around the more complete <strong>stringi</strong> package.</p>
+<p>Example of finding rows in data frame of book text with “chapter [#]”. In <code>regex()</code>, “[]” means “any of”, “\d” is any number, and “v”, “x”, “l”, and “c” are just roman numerals. Here is the word-count per chapter.</p>
+<div class="sourceCode" id="cb105"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb105-1"><a href="text-mining.html#cb105-1"></a>austen &lt;-<span class="st"> </span>janeaustenr<span class="op">::</span><span class="kw">austen_books</span>()</span>
+<span id="cb105-2"><a href="text-mining.html#cb105-2"></a>chapter_regex &lt;-<span class="st"> </span>stringr<span class="op">::</span><span class="kw">regex</span>(<span class="st">&quot;^chapter [</span><span class="ch">\\</span><span class="st">divxlc]&quot;</span>, <span class="dt">ignore_case =</span> <span class="ot">TRUE</span>)</span>
+<span id="cb105-3"><a href="text-mining.html#cb105-3"></a>austen <span class="op">%&gt;%</span></span>
+<span id="cb105-4"><a href="text-mining.html#cb105-4"></a><span class="st">  </span><span class="kw">filter</span>(book <span class="op">==</span><span class="st"> &quot;Emma&quot;</span>) <span class="op">%&gt;%</span></span>
+<span id="cb105-5"><a href="text-mining.html#cb105-5"></a><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">linenumber =</span> <span class="kw">row_number</span>(),</span>
+<span id="cb105-6"><a href="text-mining.html#cb105-6"></a>         <span class="dt">chapter =</span> <span class="kw">cumsum</span>(<span class="kw">str_detect</span>(text, chapter_regex))) <span class="op">%&gt;%</span></span>
+<span id="cb105-7"><a href="text-mining.html#cb105-7"></a><span class="st">  </span><span class="kw">ungroup</span>() <span class="op">%&gt;%</span></span>
+<span id="cb105-8"><a href="text-mining.html#cb105-8"></a><span class="st">  </span><span class="kw">unnest_tokens</span>(<span class="dt">output =</span> <span class="st">&quot;word&quot;</span>, <span class="dt">input =</span> text, <span class="dt">token =</span> <span class="st">&quot;words&quot;</span>) <span class="op">%&gt;%</span></span>
+<span id="cb105-9"><a href="text-mining.html#cb105-9"></a><span class="st">  </span><span class="kw">count</span>(chapter)</span></code></pre></div>
+<pre><code>## # A tibble: 56 x 2
+##    chapter     n
+##      &lt;int&gt; &lt;int&gt;
+##  1       0     6
+##  2       1  3326
+##  3       2  1767
+##  4       3  1878
+##  5       4  3537
+##  6       5  1992
+##  7       6  2777
+##  8       7  2427
+##  9       8  4316
+## 10       9  4780
+## # ... with 46 more rows</code></pre>
+<ul>
+<li><code>str_c()</code> concatenates strings, similar to with <code>paste()</code> and <code>paste0()</code>.</li>
+</ul>
+<div class="sourceCode" id="cb107"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb107-1"><a href="text-mining.html#cb107-1"></a><span class="kw">str_c</span>(<span class="st">&quot;hello&quot;</span>, <span class="st">&quot;world&quot;</span>, <span class="dt">sep =</span> <span class="st">&quot; &quot;</span>)</span></code></pre></div>
+<pre><code>## [1] &quot;hello world&quot;</code></pre>
+<ul>
+<li><code>str_replace(string, pattern, replacment)</code> replaces <code>pattern</code> with <code>replacement</code>.</li>
+</ul>
+<div class="sourceCode" id="cb109"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb109-1"><a href="text-mining.html#cb109-1"></a><span class="kw">str_replace</span>(<span class="st">&quot;If the future&#39;s looking bleek&quot;</span>, <span class="dt">pattern =</span> <span class="kw">fixed</span>(<span class="st">&quot;bleek&quot;</span>), <span class="dt">replacement =</span> <span class="st">&quot;dark&quot;</span>)</span></code></pre></div>
+<pre><code>## [1] &quot;If the future&#39;s looking dark&quot;</code></pre>
+<ul>
+<li><code>str_replace_na(string, replacement)</code> replaces NAs.</li>
+</ul>
+<div class="sourceCode" id="cb111"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb111-1"><a href="text-mining.html#cb111-1"></a><span class="kw">str_replace_na</span>(<span class="kw">c</span>(<span class="st">&quot;We&#39;re the ones &quot;</span>, <span class="ot">NA</span>, <span class="st">&quot;have to shine&quot;</span>), <span class="dt">replacement =</span> <span class="st">&quot;who &quot;</span>)</span></code></pre></div>
+<pre><code>## [1] &quot;We&#39;re the ones &quot; &quot;who &quot;            &quot;have to shine&quot;</code></pre>
+<ul>
+<li><code>str_split(string, pattern, simplify = FALSE)</code> splits <code>string</code> by <code>pattern</code> into a list of vectors, or matrix if <code>simplify = TRUE</code>.</li>
+</ul>
+<div class="sourceCode" id="cb113"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb113-1"><a href="text-mining.html#cb113-1"></a><span class="kw">str_split</span>(<span class="st">&quot;If there&#39;s no one in control&quot;</span>, <span class="dt">pattern =</span> <span class="st">&quot; &quot;</span>, <span class="dt">simplify =</span> <span class="ot">TRUE</span>)</span></code></pre></div>
+<pre><code>##      [,1] [,2]      [,3] [,4]  [,5] [,6]     
+## [1,] &quot;If&quot; &quot;there&#39;s&quot; &quot;no&quot; &quot;one&quot; &quot;in&quot; &quot;control&quot;</code></pre>
+<ul>
+<li><code>str_c(..., sep)</code> concatenates a vector of strings, separated by <code>sep</code>.</li>
+</ul>
+<div class="sourceCode" id="cb115"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb115-1"><a href="text-mining.html#cb115-1"></a><span class="kw">str_c</span>(<span class="st">&quot;we&#39;re&quot;</span>, <span class="st">&quot;the&quot;</span>, <span class="st">&quot;ones&quot;</span>, <span class="st">&quot;who&quot;</span>, <span class="st">&quot;draw&quot;</span>, <span class="st">&quot;the&quot;</span>, <span class="st">&quot;line&quot;</span>, <span class="dt">sep =</span> <span class="st">&quot; &quot;</span>)</span></code></pre></div>
+<pre><code>## [1] &quot;we&#39;re the ones who draw the line&quot;</code></pre>
+<p><code>str_sub(string, start, end)</code> returns substring of <code>string</code> from <code>start</code> to <code>end</code>. Use negatives to start from the end of the string.</p>
+<div class="sourceCode" id="cb117"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb117-1"><a href="text-mining.html#cb117-1"></a>my_str &lt;-<span class="st"> &quot;Although we live in trying times&quot;</span></span>
+<span id="cb117-2"><a href="text-mining.html#cb117-2"></a><span class="kw">str_sub</span>(my_str, <span class="dt">start =</span> <span class="dv">1</span>, <span class="dt">end =</span> <span class="dv">5</span>)</span></code></pre></div>
+<pre><code>## [1] &quot;Altho&quot;</code></pre>
+<div class="sourceCode" id="cb119"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb119-1"><a href="text-mining.html#cb119-1"></a><span class="kw">str_sub</span>(my_str, <span class="dt">start =</span> <span class="dv">-4</span>, <span class="dt">end =</span> <span class="dv">-1</span>)</span></code></pre></div>
+<pre><code>## [1] &quot;imes&quot;</code></pre>
+<ul>
+<li><code>str_length(string)</code> returns the number of characters in a string.</li>
+</ul>
+<div class="sourceCode" id="cb121"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb121-1"><a href="text-mining.html#cb121-1"></a><span class="kw">str_length</span>(<span class="st">&quot;We&#39;re the ones who have to try&quot;</span>)</span></code></pre></div>
+<pre><code>## [1] 30</code></pre>
+<ul>
+<li><code>str_detect(string, pattern)</code> returns booleans where <code>string</code> matches <code>pattern</code>.</li>
+</ul>
+<div class="sourceCode" id="cb123"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb123-1"><a href="text-mining.html#cb123-1"></a><span class="kw">str_detect</span>(<span class="kw">c</span>(<span class="st">&quot;Although we know&quot;</span>, <span class="st">&quot;that time&quot;</span>,  <span class="st">&quot;has wings&quot;</span>), <span class="dt">pattern =</span> <span class="kw">fixed</span>(<span class="st">&quot;wings&quot;</span>))</span></code></pre></div>
+<pre><code>## [1] FALSE FALSE  TRUE</code></pre>
+<ul>
+<li><code>str_match(string, pattern)</code> returns matching strings where <code>string</code> matches <code>pattern</code>.</li>
+</ul>
+<div class="sourceCode" id="cb125"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb125-1"><a href="text-mining.html#cb125-1"></a><span class="kw">str_match</span>(<span class="kw">c</span>(<span class="st">&quot;Although we know&quot;</span>, <span class="st">&quot;that time&quot;</span>,  <span class="st">&quot;has wings&quot;</span>), <span class="dt">pattern =</span> <span class="st">&quot;wings&quot;</span>)</span></code></pre></div>
+<pre><code>##      [,1]   
+## [1,] NA     
+## [2,] NA     
+## [3,] &quot;wings&quot;</code></pre>
+<ul>
+<li><code>str_subset(string, pattern)</code> returns string matches where <code>string</code> matches <code>pattern</code>.</li>
+</ul>
+<div class="sourceCode" id="cb127"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb127-1"><a href="text-mining.html#cb127-1"></a><span class="kw">str_subset</span>(<span class="kw">c</span>(<span class="st">&quot;Although we know&quot;</span>, <span class="st">&quot;that time&quot;</span>,  <span class="st">&quot;has wings&quot;</span>), <span class="dt">pattern =</span> <span class="kw">fixed</span>(<span class="st">&quot;wings&quot;</span>))</span></code></pre></div>
+<pre><code>## [1] &quot;has wings&quot;</code></pre>
+<ul>
+<li><code>str_count(string, pattern)</code> returns a count of matches where <code>string</code> matches <code>pattern</code>.</li>
+</ul>
+<div class="sourceCode" id="cb129"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb129-1"><a href="text-mining.html#cb129-1"></a><span class="kw">str_count</span>(<span class="kw">c</span>(<span class="st">&quot;Although we know&quot;</span>, <span class="st">&quot;that time&quot;</span>,  <span class="st">&quot;has wings&quot;</span>), <span class="dt">pattern =</span> <span class="kw">fixed</span>(<span class="st">&quot;wings&quot;</span>))</span></code></pre></div>
+<pre><code>## [1] 0 0 1</code></pre>
+<ul>
+<li><code>str_extract(string, pattern)</code> returns the part of the <code>string</code> matching <code>pattern</code>.</li>
+</ul>
+<div class="sourceCode" id="cb131"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb131-1"><a href="text-mining.html#cb131-1"></a><span class="kw">str_extract</span>(<span class="kw">c</span>(<span class="st">&quot;We&#39;re the ones&quot;</span>, <span class="st">&quot;who have to fly&quot;</span>), <span class="dt">pattern =</span> <span class="st">&quot; t..&quot;</span>)</span></code></pre></div>
+<pre><code>## [1] &quot; the&quot; &quot; to &quot;</code></pre>
+</div>
+<div id="regular-expressions" class="section level3">
+<h3><span class="header-section-number">2.6.3</span> Regular Expressions</h3>
+<p>The <strong>stringr</strong> package functions use <a href="https://unicode-org.github.io/icu/">ICU regular expressions</a>. Here are common regular expressions.</p>
+<div class="sourceCode" id="cb133"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb133-1"><a href="text-mining.html#cb133-1"></a><span class="kw">str_subset</span>(sawyer<span class="op">$</span>text, <span class="st">&quot;^tom&quot;</span>)  <span class="co"># starts with &quot;tom&quot;</span></span>
+<span id="cb133-2"><a href="text-mining.html#cb133-2"></a><span class="kw">str_subset</span>(sawyer<span class="op">$</span>text, <span class="st">&quot;[0-9]&quot;</span>)  <span class="co"># contains a digit</span></span>
+<span id="cb133-3"><a href="text-mining.html#cb133-3"></a><span class="kw">str_subset</span>(sawyer<span class="op">$</span>text, <span class="st">&quot;^[0-9]&quot;</span>)  <span class="co"># begins with a digit</span></span>
+<span id="cb133-4"><a href="text-mining.html#cb133-4"></a><span class="kw">str_subset</span>(sawyer<span class="op">$</span>text, <span class="st">&quot;[^0-9]&quot;</span>)  <span class="co"># does not contain a digit</span></span>
+<span id="cb133-5"><a href="text-mining.html#cb133-5"></a><span class="kw">str_subset</span>(sawyer<span class="op">$</span>text, <span class="st">&quot;.handsome.&quot;</span>)  <span class="co"># contains &quot;handsome&quot;</span></span>
+<span id="cb133-6"><a href="text-mining.html#cb133-6"></a>sawyer <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">filter</span>(<span class="kw">str_detect</span>(sawyer<span class="op">$</span>text, <span class="st">&quot;handsome&quot;</span>))  <span class="co"># rows with &quot;handsome&quot;</span></span>
+<span id="cb133-7"><a href="text-mining.html#cb133-7"></a>sawyer <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">filter</span>(<span class="kw">str_detect</span>(sawyer<span class="op">$</span>text, <span class="st">&quot;.handsome.&quot;</span>))  <span class="co"># same thing</span></span>
+<span id="cb133-8"><a href="text-mining.html#cb133-8"></a></span>
+<span id="cb133-9"><a href="text-mining.html#cb133-9"></a><span class="co"># Using perl-style regexp, </span></span>
+<span id="cb133-10"><a href="text-mining.html#cb133-10"></a><span class="co"># &quot;(.)&quot; is a subexpression (defined with parens) consisting of any character </span></span>
+<span id="cb133-11"><a href="text-mining.html#cb133-11"></a><span class="co"># defined with a dot. &quot;\\U&quot; makes the next character uppercase. \\1 is a </span></span>
+<span id="cb133-12"><a href="text-mining.html#cb133-12"></a><span class="co"># reference to subexpression 1</span></span>
+<span id="cb133-13"><a href="text-mining.html#cb133-13"></a><span class="kw">sub</span>(<span class="st">&quot;(.)&quot;</span>, (<span class="st">&quot;</span><span class="ch">\\</span><span class="st">U</span><span class="ch">\\</span><span class="st">1&quot;</span>), sawyer_tokens<span class="op">$</span>word, <span class="dt">perl=</span><span class="ot">TRUE</span>)</span>
+<span id="cb133-14"><a href="text-mining.html#cb133-14"></a><span class="kw">str_to_title</span>(sawyer_tokens<span class="op">$</span>word)  <span class="co"># nearly the same - converts first letter, not char</span></span>
+<span id="cb133-15"><a href="text-mining.html#cb133-15"></a><span class="kw">str_to_title</span>(sawyer<span class="op">$</span>text)</span>
+<span id="cb133-16"><a href="text-mining.html#cb133-16"></a></span>
+<span id="cb133-17"><a href="text-mining.html#cb133-17"></a><span class="co"># [] defines a set of chars</span></span>
+<span id="cb133-18"><a href="text-mining.html#cb133-18"></a><span class="kw">str_subset</span>(sawyer<span class="op">$</span>text, <span class="st">&quot;^[qQ]&quot;</span>)  <span class="co"># starts with &quot;q&quot; or &quot;Q&quot;</span></span>
+<span id="cb133-19"><a href="text-mining.html#cb133-19"></a><span class="kw">str_subset</span>(sawyer<span class="op">$</span>text, <span class="st">&quot;(^[</span><span class="ch">\\</span><span class="st">_])(.*-)&quot;</span>)  <span class="co"># starts with &quot;_&quot; and contains &quot;-&quot;</span></span>
+<span id="cb133-20"><a href="text-mining.html#cb133-20"></a><span class="kw">str_subset</span>(sawyer<span class="op">$</span>text, <span class="st">&quot;dog.*tricks|tricks.*dog&quot;</span>)  <span class="co"># contains &quot;dog&quot; &amp; &quot;tricks&quot;</span></span></code></pre></div>
+</div>
+</div>
+<div id="appendix-tidytext" class="section level2">
+<h2><span class="header-section-number">2.7</span> Appendix: tidytext</h2>
+<p>The tidy text format is a table with one token (meaningful unit of text, such as a word) per row. The <strong>tidytext</strong> package assists with the major tasks in text analysis.</p>
+<p>A typical text analysis using tidy data principles unnests tokens with <code>unnest_tokens()</code>, anti-joins unimportant “stop words” from <code>tidytext::stop_words</code>, and summarizes token counts <code>count()</code>. In between you might also reduce words to their stems with <code>SnowballC::wordStem()</code>.</p>
+<p>Summarize the tidy text into a “bag of words” (table of word frequencies). Once in a bag of words format, you can feed into a word cloud or other ggplot geom.</p>
+<p>To perform topic modeling, cast the bag of words into a document term matrix with <code>cast_dtm()</code>.</p>
+<p>After performing a topic model, cast the output (either a beta matrix or gamma matrix) into tidy format with <code>tidy()</code>.</p>
+</div>
+<div id="appendix-tm" class="section level2">
+<h2><span class="header-section-number">2.8</span> Appendix: tm</h2>
+<p>The Text Mining package <strong>tm</strong> is a text mining framework for importing data, handling a corpus, and creating term-document matrices.</p>
+<p>The main structure document structure is a corpus, implemented either as an in-memory <em>volatile corpus</em> <code>VCorpus()</code> or on-disk <em>permanent corpus</em> <code>Pcorpus()</code>. Create a corpus from a directory of text documents</p>
+<div class="sourceCode" id="cb134"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb134-1"><a href="text-mining.html#cb134-1"></a>my_rmd_corpus &lt;-<span class="st"> </span><span class="kw">VCorpus</span>(<span class="kw">DirSource</span>(<span class="dt">pattern =</span> <span class="st">&quot;*.Rmd&quot;</span>))</span></code></pre></div>
+<p>or from a data frame using helper function <code>VectorSource()</code>.</p>
+<p>A corpus is a list of document objects, each containing <code>meta</code> data and <code>content</code>. Here is the first document of the one I just created.</p>
+<p>You can perform transformations on your <code>tm</code> object, including removing extra whitespace <code>tm_map(x, stripWhitespace)</code>, converting to lowercase <code>tm_map(x, content_transformer(tolower))</code>, removing stopwords <code>tm_map(x, removeWords, stopwords("english"))</code>, and stemming <code>tm_map(x stemDocument)</code>.</p>
+<p>Some packages (e.g., <strong>topicmodels</strong>) operate on a “bag of words” representation called a <em>document term matrix</em>. A bag of words is a frequency count of words. Convert the <em>tm</em> object into a matrix with <code>TermDocumentMatrix()</code> or <code>DocumentTermMatrix()</code> (the first presents terms as rows and documents as columns).</p>
+<p>Here is a quick analysis of the Russian Tweets data loaded at the beginning of the chapter.</p>
+</div>
+</div>
+            </section>
+
+          </div>
+        </div>
+      </div>
+<a href="topicmodeling.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+<a href="drop.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
+    </div>
+  </div>
+<script src="libs/gitbook-2.6.7/js/app.min.js"></script>
+<script src="libs/gitbook-2.6.7/js/lunr.js"></script>
+<script src="libs/gitbook-2.6.7/js/clipboard.min.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-search.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-sharing.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-fontsettings.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-bookdown.js"></script>
+<script src="libs/gitbook-2.6.7/js/jquery.highlight.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-clipboard.js"></script>
+<script>
+gitbook.require(["gitbook"], function(gitbook) {
+gitbook.start({
+"sharing": {
+"github": false,
+"facebook": true,
+"twitter": true,
+"linkedin": false,
+"weibo": false,
+"instapaper": false,
+"vk": false,
+"all": ["facebook", "twitter", "linkedin", "weibo", "instapaper"]
+},
+"fontsettings": {
+"theme": "white",
+"family": "sans",
+"size": 2
+},
+"edit": {
+"link": null,
+"text": null
+},
+"history": {
+"link": null,
+"text": null
+},
+"view": {
+"link": null,
+"text": null
+},
+"download": ["text-book.pdf", "text-book.epub"],
+"toc": {
+"collapse": "subsection"
+}
+});
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    var src = "true";
+    if (src === "" || src === "true") src = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML";
+    if (location.protocol !== "file:")
+      if (/^https?:/.test(src))
+        src = src.replace(/^https?:/, '');
+    script.src = src;
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+</body>
+
+</html>

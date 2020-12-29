@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta property="og:title" content="2.4 Named Entity Recognition | Text Mining using R" />
+<meta property="og:type" content="book" />
+
+
+<meta property="og:description" content="Background and tutorial on text mining (topic modeling, sentiment analysis) using R." />
+
+
+<meta name="author" content="Michael Foley" />
+
+<meta name="date" content="2020-11-21" />
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  TeX: { equationNumbers: { autoNumber: "AMS" } }
+});
+</script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-AMS_CHTML-full" type="text/javascript"></script>
+
+<meta name="description" content="Background and tutorial on text mining (topic modeling, sentiment analysis) using R.">
+
+<title>2.4 Named Entity Recognition | Text Mining using R</title>
+
+<script src="assets/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="assets/bootstrap-3.3.5/css/bootstrap.min.css" rel="stylesheet" />
+<script src="assets/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="assets/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="assets/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="assets/navigation-1.1/tabsets.js"></script>
+<script src="assets/accessible-code-block-0.0.1/empty-anchor.js"></script>
+<link href="assets/anchor-sections-1.0/anchor-sections.css" rel="stylesheet" />
+<script src="assets/anchor-sections-1.0/anchor-sections.js"></script>
+
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+code.sourceCode > span { display: inline-block; line-height: 1.25; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode { white-space: pre; position: relative; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+code.sourceCode { white-space: pre-wrap; }
+code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+</style>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img {
+  max-width:100%;
+  height: auto;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container-fluid main-container">
+
+
+<div class="row">
+<div class="col-sm-12">
+<div id="TOC">
+<ul>
+<li><a href="index.html#intro">Intro</a></li>
+<li><a href="topicmodeling.html#topicmodeling"><span class="toc-section-number">1</span> Topic Modeling</a></li>
+<li class="has-sub"><a href="text-mining.html#text-mining"><span class="toc-section-number">2</span> Text Mining</a><ul>
+<li class="has-sub"><a href="topic-modeling-chapter.html#topic-modeling-chapter"><span class="toc-section-number">2.1</span> Topic Modeling Chapter</a><ul>
+<li><a href="topic-modeling-chapter.html#lda"><span class="toc-section-number">2.1.1</span> LDA</a></li>
+<li><a href="topic-modeling-chapter.html#stm"><span class="toc-section-number">2.1.2</span> STM</a></li>
+</ul></li>
+<li class="has-sub"><a href="sentiment-analysis.html#sentiment-analysis"><span class="toc-section-number">2.2</span> Sentiment Analysis</a><ul>
+<li><a href="sentiment-analysis.html#n-grams"><span class="toc-section-number">2.2.1</span> N-Grams</a></li>
+<li><a href="sentiment-analysis.html#converting-to-and-from-non-tidy-formats"><span class="toc-section-number">2.2.2</span> Converting to and from non-tidy formats</a></li>
+<li><a href="sentiment-analysis.html#example"><span class="toc-section-number">2.2.3</span> Example</a></li>
+</ul></li>
+<li><a href="text-classification-modeling.html#text-classification-modeling"><span class="toc-section-number">2.3</span> Text Classification Modeling</a></li>
+<li><a href="named-entity-recognition.html#named-entity-recognition"><span class="toc-section-number">2.4</span> Named Entity Recognition</a></li>
+<li><a href="tidy-text.html#tidy-text"><span class="toc-section-number">2.5</span> Tidy Text</a></li>
+<li class="has-sub"><a href="appendix-regular-expressions.html#appendix-regular-expressions"><span class="toc-section-number">2.6</span> Appendix: Regular Expressions</a><ul>
+<li><a href="appendix-regular-expressions.html#base-r"><span class="toc-section-number">2.6.1</span> Base R</a></li>
+<li><a href="appendix-regular-expressions.html#stringr"><span class="toc-section-number">2.6.2</span> stringr</a></li>
+<li><a href="appendix-regular-expressions.html#regular-expressions"><span class="toc-section-number">2.6.3</span> Regular Expressions</a></li>
+</ul></li>
+<li><a href="appendix-tidytext.html#appendix-tidytext"><span class="toc-section-number">2.7</span> Appendix: tidytext</a></li>
+<li><a href="appendix-tm.html#appendix-tm"><span class="toc-section-number">2.8</span> Appendix: tm</a></li>
+</ul></li>
+<li><a href="drop.html#drop"><span class="toc-section-number">3</span> DROP</a></li>
+<li><a href="methods.html#methods"><span class="toc-section-number">4</span> Methods</a></li>
+<li class="has-sub"><a href="applications.html#applications"><span class="toc-section-number">5</span> Applications</a><ul>
+<li><a href="example-one.html#example-one"><span class="toc-section-number">5.1</span> Example one</a></li>
+<li><a href="example-two.html#example-two"><span class="toc-section-number">5.2</span> Example two</a></li>
+</ul></li>
+<li><a href="final-words.html#final-words"><span class="toc-section-number">6</span> Final Words</a></li>
+<li><a href="references.html#references">References</a></li>
+</ul>
+</div>
+</div>
+</div>
+<div class="row">
+<div class="col-sm-12">
+<div id="named-entity-recognition" class="section level2">
+<h2><span class="header-section-number">2.4</span> Named Entity Recognition</h2>
+<p>The <strong>qdap</strong> package provides parsing tools for preparing transcript data.</p>
+<div class="sourceCode" id="cb105"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb105-1"><a href="named-entity-recognition.html#cb105-1"></a><span class="kw">library</span>(qdap)</span></code></pre></div>
+<p>For example, <code>freq_terms()</code> parses text and counts the terms.</p>
+<p>You can also plot the terms.</p>
+<p>There are two kinds of the corpus data types, the permanent corpus, <strong>PCorpus</strong>, and the volatile corpus, <strong>VCorpus</strong>. The volatile corpus is held in RAM rather than saved to disk. Create a volatile corpus with <code>tm::vCorpous()</code>. vCorpous() takes either a text source created with <code>tm::VectorSource()</code> or a dataframe source created with <code>Dataframe Source()</code> where the input dataframe has cols <code>doc_id</code>, <code>text_id</code> and zero or more metadata columns.</p>
+<p>In bag of words text mining, cleaning helps aggregate terms, especially words with common stems like “miner” and “mining”. There are several functions useful for preprocessing: <code>tolower()</code>, <code>tm::removePunctuation()</code>, <code>tm::removeNumbers()</code>, <code>tm::stripWhiteSpace()</code>, and <code>removeWords()</code>. Apply these functions to the documents in a <code>VCorpus</code> object with <code>tm_map()</code>. If the function is not one of the pre-defined functions, wrap it in <code>content_transformer()</code>. Another preprocessing function is <code>stemDocument()</code>.</p>
+<p>The <strong>qdap</strong> package offers other preprocessing functions.</p>
+<p><code>tm::stopwords("en")</code> returns a vector of stop words. You can add to the list with concatenation.</p>
+<p><code>tm::stemDocument()</code> and <code>tm::stemCompletion()</code> reduce the variation in terms.</p>
+<p>To perform the analysis of the tweets, convert the corpus into either a document term matrix (DTM, documents as rows, terms as cols), or a term document matrix (TDM, terms as rows, documents as cols).</p>
+</div>
+<p style="text-align: center;">
+<a href="text-classification-modeling.html"><button class="btn btn-default">Previous</button></a>
+<a href="tidy-text.html"><button class="btn btn-default">Next</button></a>
+</p>
+</div>
+</div>
+
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+$(document).ready(function () {
+  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+});
+
+</script>
+
+</body>
+</html>

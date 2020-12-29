@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+<head>
+
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <title>Chapter 1 Topic Modeling | Text Mining using R</title>
+  <meta name="description" content="Background and tutorial on text mining (topic modeling, sentiment analysis) using R." />
+  <meta name="generator" content="bookdown 0.21 and GitBook 2.6.7" />
+
+  <meta property="og:title" content="Chapter 1 Topic Modeling | Text Mining using R" />
+  <meta property="og:type" content="book" />
+  
+  
+  <meta property="og:description" content="Background and tutorial on text mining (topic modeling, sentiment analysis) using R." />
+  
+
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="Chapter 1 Topic Modeling | Text Mining using R" />
+  
+  <meta name="twitter:description" content="Background and tutorial on text mining (topic modeling, sentiment analysis) using R." />
+  
+
+<meta name="author" content="Michael Foley" />
+
+
+<meta name="date" content="2020-12-05" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+  
+  
+<link rel="prev" href="index.html"/>
+<link rel="next" href="sentimentanalysis.html"/>
+<script src="libs/jquery-2.2.3/jquery.min.js"></script>
+<link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-table.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-bookdown.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-highlight.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-search.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-fontsettings.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-clipboard.css" rel="stylesheet" />
+
+
+
+
+
+
+
+
+
+<script src="libs/accessible-code-block-0.0.1/empty-anchor.js"></script>
+<link href="libs/anchor-sections-1.0/anchor-sections.css" rel="stylesheet" />
+<script src="libs/anchor-sections-1.0/anchor-sections.js"></script>
+
+
+<style type="text/css">
+code.sourceCode > span { display: inline-block; line-height: 1.25; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode { white-space: pre; position: relative; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+code.sourceCode { white-space: pre-wrap; }
+code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+</style>
+
+<link rel="stylesheet" href="style.css" type="text/css" />
+</head>
+
+<body>
+
+
+
+  <div class="book without-animation with-summary font-size-2 font-family-1" data-basepath=".">
+
+    <div class="book-summary">
+      <nav role="navigation">
+
+<ul class="summary">
+<li><a href="./">A Minimal Book Example</a></li>
+
+<li class="divider"></li>
+<li class="chapter" data-level="" data-path="index.html"><a href="index.html"><i class="fa fa-check"></i>Intro</a></li>
+<li class="chapter" data-level="1" data-path="topicmodeling.html"><a href="topicmodeling.html"><i class="fa fa-check"></i><b>1</b> Topic Modeling</a><ul>
+<li class="chapter" data-level="1.1" data-path="topicmodeling.html"><a href="topicmodeling.html#lda"><i class="fa fa-check"></i><b>1.1</b> LDA</a></li>
+<li class="chapter" data-level="1.2" data-path="topicmodeling.html"><a href="topicmodeling.html#ctm"><i class="fa fa-check"></i><b>1.2</b> CTM</a></li>
+<li class="chapter" data-level="1.3" data-path="topicmodeling.html"><a href="topicmodeling.html#stm"><i class="fa fa-check"></i><b>1.3</b> STM</a></li>
+</ul></li>
+<li class="chapter" data-level="2" data-path="sentimentanalysis.html"><a href="sentimentanalysis.html"><i class="fa fa-check"></i><b>2</b> Sentiment Analysis</a><ul>
+<li class="chapter" data-level="2.1" data-path="sentimentanalysis.html"><a href="sentimentanalysis.html#data-formats"><i class="fa fa-check"></i><b>2.1</b> Data Formats</a></li>
+<li class="chapter" data-level="2.2" data-path="sentimentanalysis.html"><a href="sentimentanalysis.html#subjectivity-lexicons"><i class="fa fa-check"></i><b>2.2</b> Subjectivity Lexicons</a></li>
+<li class="chapter" data-level="2.3" data-path="sentimentanalysis.html"><a href="sentimentanalysis.html#polarity-scoring"><i class="fa fa-check"></i><b>2.3</b> Polarity Scoring</a></li>
+</ul></li>
+<li class="chapter" data-level="3" data-path="applications.html"><a href="applications.html"><i class="fa fa-check"></i><b>3</b> Applications</a><ul>
+<li class="chapter" data-level="3.1" data-path="applications.html"><a href="applications.html#example-one"><i class="fa fa-check"></i><b>3.1</b> Example one</a></li>
+<li class="chapter" data-level="3.2" data-path="applications.html"><a href="applications.html#example-two"><i class="fa fa-check"></i><b>3.2</b> Example two</a></li>
+</ul></li>
+<li class="chapter" data-level="4" data-path="final-words.html"><a href="final-words.html"><i class="fa fa-check"></i><b>4</b> Final Words</a></li>
+<li class="chapter" data-level="" data-path="references.html"><a href="references.html"><i class="fa fa-check"></i>References</a></li>
+<li class="divider"></li>
+<li><a href="https://github.com/rstudio/bookdown" target="blank">Published with bookdown</a></li>
+
+</ul>
+
+      </nav>
+    </div>
+
+    <div class="book-body">
+      <div class="body-inner">
+        <div class="book-header" role="navigation">
+          <h1>
+            <i class="fa fa-circle-o-notch fa-spin"></i><a href="./">Text Mining using R</a>
+          </h1>
+        </div>
+
+        <div class="page-wrapper" tabindex="-1" role="main">
+          <div class="page-inner">
+
+            <section class="normal" id="section-">
+<div id="topicmodeling" class="section level1">
+<h1><span class="header-section-number">Chapter 1</span> Topic Modeling</h1>
+<p>Topic models are unsupervised ML models that identify topics as clusters of words with an associated probability distribution, and a probability distribution of topics within each document.</p>
+<div id="lda" class="section level2">
+<h2><span class="header-section-number">1.1</span> LDA</h2>
+<p>Latent Dirichlet allocation (LDA) is an instance of a general family of mixed membership models that decompose data into latent components. <em>Latent</em> refers to unidentified topics. <em>Dirichlet</em> refers to the type of distribution followed by the words in the the topics and by the topics in the documents.</p>
+<div id="algorithm" class="section level4 unnumbered">
+<h4>Algorithm</h4>
+<p>LDA assumes each document is created by a generative process where topics are included according to probabilities and words are included in the topics according to probabilities. The LDA algorithm determines what those probabilities are. The <a href="https://www.mygreatlearning.com/blog/understanding-latent-dirichlet-allocation/">algorithm</a> is:</p>
+<ol style="list-style-type: decimal">
+<li><p>For each document <span class="math inline">\(d_i\)</span>, randomly assign each word to one of the <em>K</em> topics. Note that each <span class="math inline">\(w_j\)</span> may be assigned to a different topic in each documents.</p></li>
+<li><p>For each document, tabulate the number of words in each topic, a <span class="math inline">\(d \times K\)</span> matrix. For each word, tabulate the sum of occurrences across all documents, a <span class="math inline">\(w \times K\)</span> matrix.</p></li>
+<li><p>Resample a single instance of a word from the corpus and remove it from the analysis, decrementing the document’s topic count and the word’s topic count.</p></li>
+<li><p>Calculate the gamma matrix, <span class="math inline">\(\gamma\)</span>, and the beta matrix, <span class="math inline">\(\beta\)</span>.</p>
+<ul>
+<li>the gamma matrix is the probability distribution of topics for each document, <span class="math display">\[p(t_k|d_i) = \frac{n_{ik} + \alpha}{N_i + K \alpha}\]</span> were <span class="math inline">\(n_{ik}\)</span> is the number of words in document <span class="math inline">\(i\)</span> for topic <span class="math inline">\(k\)</span>, <span class="math inline">\(N_i\)</span> is the total number of words in <span class="math inline">\(i\)</span>, and <span class="math inline">\(\alpha\)</span> is a hyperparameter. For each <span class="math inline">\(d_i\)</span>, <span class="math inline">\(\sum_{k \in K} \gamma_{ik} = 1\)</span>.</li>
+<li>the beta matrix is the probability distribution of words for each topic, <span class="math display">\[p(w_j|t_k) = \frac{m_{j,k} + \beta}{\sum_{j \in V}m_{j,k} + V\beta}\]</span> where <span class="math inline">\(m_{j,k}\)</span> is the corpus-wide frequency count of word <span class="math inline">\(w_j\)</span> to topic <span class="math inline">\(k\)</span>, <span class="math inline">\(V\)</span> is the number of distinct words in the corpus, and <span class="math inline">\(\beta\)</span> is a hyperparameter. For each <span class="math inline">\(t_k\)</span>, <span class="math inline">\(\sum_{j \in V} \beta_{kj} = 1\)</span>.</li>
+</ul></li>
+<li><p>Perform Gibbs sampling. Calculate the joint probability distribution of words for each document and topic, <span class="math inline">\(p(w_j|t_k,d_i) = p(t_k|d_i)p(w_j|t_k)\)</span>. Assign each word, <span class="math inline">\(w_j\)</span>, to the topic with the maximum joint probability.</p></li>
+<li><p>Repeat steps 3-6 for all of the words in all of the documents.</p></li>
+<li><p>Repeat steps 3-7 for a pre-determined number of iterations.</p></li>
+</ol>
+<p>LDA thus has 3 hyperparameters: document-topic density factor, <span class="math inline">\(\alpha\)</span>, topic-word density factor, <span class="math inline">\(\beta\)</span>, and topic count, <span class="math inline">\(K\)</span>. <span class="math inline">\(\alpha\)</span> controls the number of topics expected per document (large <span class="math inline">\(\alpha\)</span> = more topics). <span class="math inline">\(\beta\)</span> controls the distribution of words per topic (large <span class="math inline">\(\beta\)</span> = more words). Ideally, you want a few topics per document and a few words per topics, so, <span class="math inline">\(\alpha\)</span> and <span class="math inline">\(\beta\)</span> are typically set below one. <span class="math inline">\(K\)</span> is set using a combination of domain knowledge, <em>coherence</em>, and exclusivity.</p>
+</div>
+<div id="evaluation" class="section level4 unnumbered">
+<h4>Evaluation</h4>
+<div id="held-out-likelihood" class="section level5 unnumbered">
+<h5>Held-out Likelihood</h5>
+<p>(discussion of hold-out probability) (Wallach et al., 2009).</p>
+</div>
+<div id="semantic-coherence" class="section level5 unnumbered">
+<h5>Semantic Coherence</h5>
+</div>
+<div id="exclusivity" class="section level5 unnumbered">
+<h5>Exclusivity</h5>
+<p>Generally, the greater the number of topics in a model, the lower the quality of the smallest topics. One way around this is simply hiding the low-quality topics. The coherence measure <span class="citation">(Mimno et al. <a href="#ref-10.5555/2145432.2145462" role="doc-biblioref">2011</a>)</span> evaluates topics.</p>
+</div>
+</div>
+</div>
+<div id="ctm" class="section level2">
+<h2><span class="header-section-number">1.2</span> CTM</h2>
+<p>The Correlated Topic Model (CTM) <span class="citation">(Blei and Lafferty <a href="#ref-blei2007" role="doc-biblioref">2007</a>)</span> builds on the LDA model (chapter <a href="topicmodeling.html#lda">1.1</a>).</p>
+</div>
+<div id="stm" class="section level2">
+<h2><span class="header-section-number">1.3</span> STM</h2>
+<p>Without the inclusion of covariates, STM reduces to a logistic-normal topic model, often
+called the Correlated Topic Model (CTM) (chapter <a href="topicmodeling.html#ctm">1.2</a>).</p>
+
+</div>
+</div>
+<h3>References</h3>
+<div id="refs" class="references">
+<div id="ref-blei2007">
+<p>Blei, David M., and John D. Lafferty. 2007. “A Correlated Topic Model of Science.” <em>Ann. Appl. Stat.</em> 1 (1): 17–35. <a href="https://doi.org/10.1214/07-AOAS114">https://doi.org/10.1214/07-AOAS114</a>.</p>
+</div>
+<div id="ref-10.5555/2145432.2145462">
+<p>Mimno, David, Hanna M. Wallach, Edmund Talley, Miriam Leenders, and Andrew McCallum. 2011. “Optimizing Semantic Coherence in Topic Models.” In <em>Proceedings of the Conference on Empirical Methods in Natural Language Processing</em>, 262–72. EMNLP ’11. USA: Association for Computational Linguistics. <a href="https://dl.acm.org/doi/10.5555/2145432.2145462">https://dl.acm.org/doi/10.5555/2145432.2145462</a>.</p>
+</div>
+</div>
+            </section>
+
+          </div>
+        </div>
+      </div>
+<a href="index.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+<a href="sentimentanalysis.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
+    </div>
+  </div>
+<script src="libs/gitbook-2.6.7/js/app.min.js"></script>
+<script src="libs/gitbook-2.6.7/js/lunr.js"></script>
+<script src="libs/gitbook-2.6.7/js/clipboard.min.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-search.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-sharing.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-fontsettings.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-bookdown.js"></script>
+<script src="libs/gitbook-2.6.7/js/jquery.highlight.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-clipboard.js"></script>
+<script>
+gitbook.require(["gitbook"], function(gitbook) {
+gitbook.start({
+"sharing": {
+"github": false,
+"facebook": true,
+"twitter": true,
+"linkedin": false,
+"weibo": false,
+"instapaper": false,
+"vk": false,
+"all": ["facebook", "twitter", "linkedin", "weibo", "instapaper"]
+},
+"fontsettings": {
+"theme": "white",
+"family": "sans",
+"size": 2
+},
+"edit": {
+"link": null,
+"text": null
+},
+"history": {
+"link": null,
+"text": null
+},
+"view": {
+"link": null,
+"text": null
+},
+"download": ["text-book.pdf", "text-book.epub"],
+"toc": {
+"collapse": "subsection"
+}
+});
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    var src = "true";
+    if (src === "" || src === "true") src = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML";
+    if (location.protocol !== "file:")
+      if (/^https?:/.test(src))
+        src = src.replace(/^https?:/, '');
+    script.src = src;
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+</body>
+
+</html>

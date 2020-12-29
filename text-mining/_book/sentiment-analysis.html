@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta property="og:title" content="2.2 Sentiment Analysis | Text Mining using R" />
+<meta property="og:type" content="book" />
+
+
+<meta property="og:description" content="Background and tutorial on text mining (topic modeling, sentiment analysis) using R." />
+
+
+<meta name="author" content="Michael Foley" />
+
+<meta name="date" content="2020-11-21" />
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  TeX: { equationNumbers: { autoNumber: "AMS" } }
+});
+</script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-AMS_CHTML-full" type="text/javascript"></script>
+
+<meta name="description" content="Background and tutorial on text mining (topic modeling, sentiment analysis) using R.">
+
+<title>2.2 Sentiment Analysis | Text Mining using R</title>
+
+<script src="assets/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="assets/bootstrap-3.3.5/css/bootstrap.min.css" rel="stylesheet" />
+<script src="assets/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="assets/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="assets/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="assets/navigation-1.1/tabsets.js"></script>
+<script src="assets/accessible-code-block-0.0.1/empty-anchor.js"></script>
+<link href="assets/anchor-sections-1.0/anchor-sections.css" rel="stylesheet" />
+<script src="assets/anchor-sections-1.0/anchor-sections.js"></script>
+
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+code.sourceCode > span { display: inline-block; line-height: 1.25; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode { white-space: pre; position: relative; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+code.sourceCode { white-space: pre-wrap; }
+code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+</style>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img {
+  max-width:100%;
+  height: auto;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container-fluid main-container">
+
+
+<div class="row">
+<div class="col-sm-12">
+<div id="TOC">
+<ul>
+<li><a href="index.html#intro">Intro</a></li>
+<li><a href="topicmodeling.html#topicmodeling"><span class="toc-section-number">1</span> Topic Modeling</a></li>
+<li class="has-sub"><a href="text-mining.html#text-mining"><span class="toc-section-number">2</span> Text Mining</a><ul>
+<li class="has-sub"><a href="topic-modeling-chapter.html#topic-modeling-chapter"><span class="toc-section-number">2.1</span> Topic Modeling Chapter</a><ul>
+<li><a href="topic-modeling-chapter.html#lda"><span class="toc-section-number">2.1.1</span> LDA</a></li>
+<li><a href="topic-modeling-chapter.html#stm"><span class="toc-section-number">2.1.2</span> STM</a></li>
+</ul></li>
+<li class="has-sub"><a href="sentiment-analysis.html#sentiment-analysis"><span class="toc-section-number">2.2</span> Sentiment Analysis</a><ul>
+<li><a href="sentiment-analysis.html#n-grams"><span class="toc-section-number">2.2.1</span> N-Grams</a></li>
+<li><a href="sentiment-analysis.html#converting-to-and-from-non-tidy-formats"><span class="toc-section-number">2.2.2</span> Converting to and from non-tidy formats</a></li>
+<li><a href="sentiment-analysis.html#example"><span class="toc-section-number">2.2.3</span> Example</a></li>
+</ul></li>
+<li><a href="text-classification-modeling.html#text-classification-modeling"><span class="toc-section-number">2.3</span> Text Classification Modeling</a></li>
+<li><a href="named-entity-recognition.html#named-entity-recognition"><span class="toc-section-number">2.4</span> Named Entity Recognition</a></li>
+<li><a href="tidy-text.html#tidy-text"><span class="toc-section-number">2.5</span> Tidy Text</a></li>
+<li class="has-sub"><a href="appendix-regular-expressions.html#appendix-regular-expressions"><span class="toc-section-number">2.6</span> Appendix: Regular Expressions</a><ul>
+<li><a href="appendix-regular-expressions.html#base-r"><span class="toc-section-number">2.6.1</span> Base R</a></li>
+<li><a href="appendix-regular-expressions.html#stringr"><span class="toc-section-number">2.6.2</span> stringr</a></li>
+<li><a href="appendix-regular-expressions.html#regular-expressions"><span class="toc-section-number">2.6.3</span> Regular Expressions</a></li>
+</ul></li>
+<li><a href="appendix-tidytext.html#appendix-tidytext"><span class="toc-section-number">2.7</span> Appendix: tidytext</a></li>
+<li><a href="appendix-tm.html#appendix-tm"><span class="toc-section-number">2.8</span> Appendix: tm</a></li>
+</ul></li>
+<li><a href="drop.html#drop"><span class="toc-section-number">3</span> DROP</a></li>
+<li><a href="methods.html#methods"><span class="toc-section-number">4</span> Methods</a></li>
+<li class="has-sub"><a href="applications.html#applications"><span class="toc-section-number">5</span> Applications</a><ul>
+<li><a href="example-one.html#example-one"><span class="toc-section-number">5.1</span> Example one</a></li>
+<li><a href="example-two.html#example-two"><span class="toc-section-number">5.2</span> Example two</a></li>
+</ul></li>
+<li><a href="final-words.html#final-words"><span class="toc-section-number">6</span> Final Words</a></li>
+<li><a href="references.html#references">References</a></li>
+</ul>
+</div>
+</div>
+</div>
+<div class="row">
+<div class="col-sm-12">
+<div id="sentiment-analysis" class="section level2">
+<h2><span class="header-section-number">2.2</span> Sentiment Analysis</h2>
+<p>A typical sentiment analysis involves unnesting tokens with <code>unnest_tokens()</code>, assigning sentiments with <code>inner_join(sentiments)</code>, counting tokens with <code>count()</code>, and summarizing and visualizing.</p>
+<p>The tidytext package contains four sentiment lexicons, all based on unigrams.</p>
+<ul>
+<li><strong>nrc</strong>. binary “yes”/“no” for categories positive, negative, anger, anticipation, disgust, fear, joy, sadness, surprise, and trust.</li>
+<li><strong>bing</strong>. “positive”/“negative” classification.</li>
+<li><strong>AFINN</strong>. score between -5 (most negative) and 5 (most positive).</li>
+<li><strong>loughran</strong>. “positive”/“negative”/“litigious”/“uncertainty”/“constraining”/“superflous” classification.</li>
+</ul>
+<p>You can view the sentiment assignments with <code>get_sentiments(lexicon = c("afinn", "bing", nrc", "laughlin"))</code></p>
+<div class="sourceCode" id="cb90"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb90-1"><a href="sentiment-analysis.html#cb90-1"></a>x1 &lt;-<span class="st"> </span><span class="kw">get_sentiments</span>(<span class="dt">lexicon =</span> <span class="st">&quot;nrc&quot;</span>) <span class="op">%&gt;%</span></span>
+<span id="cb90-2"><a href="sentiment-analysis.html#cb90-2"></a><span class="st">  </span><span class="kw">count</span>(sentiment) <span class="op">%&gt;%</span></span>
+<span id="cb90-3"><a href="sentiment-analysis.html#cb90-3"></a><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">lexicon =</span> <span class="st">&quot;nrc&quot;</span>)</span>
+<span id="cb90-4"><a href="sentiment-analysis.html#cb90-4"></a>x2 &lt;-<span class="st"> </span><span class="kw">get_sentiments</span>(<span class="dt">lexicon =</span> <span class="st">&quot;bing&quot;</span>) <span class="op">%&gt;%</span></span>
+<span id="cb90-5"><a href="sentiment-analysis.html#cb90-5"></a><span class="st">  </span><span class="kw">count</span>(sentiment) <span class="op">%&gt;%</span></span>
+<span id="cb90-6"><a href="sentiment-analysis.html#cb90-6"></a><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">lexicon =</span> <span class="st">&quot;bing&quot;</span>)</span>
+<span id="cb90-7"><a href="sentiment-analysis.html#cb90-7"></a>x3 &lt;-<span class="st"> </span><span class="kw">get_sentiments</span>(<span class="dt">lexicon =</span> <span class="st">&quot;afinn&quot;</span>) <span class="op">%&gt;%</span></span>
+<span id="cb90-8"><a href="sentiment-analysis.html#cb90-8"></a><span class="st">  </span><span class="kw">count</span>(value) <span class="op">%&gt;%</span></span>
+<span id="cb90-9"><a href="sentiment-analysis.html#cb90-9"></a><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">lexicon =</span> <span class="st">&quot;afinn&quot;</span>) <span class="op">%&gt;%</span></span>
+<span id="cb90-10"><a href="sentiment-analysis.html#cb90-10"></a><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">sentiment =</span> <span class="kw">as.character</span>(value)) <span class="op">%&gt;%</span></span>
+<span id="cb90-11"><a href="sentiment-analysis.html#cb90-11"></a><span class="st">  </span><span class="kw">select</span>(<span class="op">-</span>value)</span>
+<span id="cb90-12"><a href="sentiment-analysis.html#cb90-12"></a>x4 &lt;-<span class="st"> </span><span class="kw">get_sentiments</span>(<span class="dt">lexicon =</span> <span class="st">&quot;loughran&quot;</span>) <span class="op">%&gt;%</span></span>
+<span id="cb90-13"><a href="sentiment-analysis.html#cb90-13"></a><span class="st">  </span><span class="kw">count</span>(sentiment) <span class="op">%&gt;%</span></span>
+<span id="cb90-14"><a href="sentiment-analysis.html#cb90-14"></a><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">lexicon =</span> <span class="st">&quot;loughran&quot;</span>)</span>
+<span id="cb90-15"><a href="sentiment-analysis.html#cb90-15"></a>x &lt;-<span class="st"> </span><span class="kw">bind_rows</span>(x1, x2, x3, x4)</span>
+<span id="cb90-16"><a href="sentiment-analysis.html#cb90-16"></a></span>
+<span id="cb90-17"><a href="sentiment-analysis.html#cb90-17"></a><span class="kw">ggplot</span>(x, <span class="kw">aes</span>(<span class="dt">x =</span> <span class="kw">fct_reorder</span>(sentiment, n), <span class="dt">y =</span> n, <span class="dt">fill =</span> lexicon)) <span class="op">+</span></span>
+<span id="cb90-18"><a href="sentiment-analysis.html#cb90-18"></a><span class="st">  </span><span class="kw">geom_col</span>(<span class="dt">show.legend =</span> <span class="ot">FALSE</span>) <span class="op">+</span></span>
+<span id="cb90-19"><a href="sentiment-analysis.html#cb90-19"></a><span class="st">  </span><span class="kw">coord_flip</span>() <span class="op">+</span></span>
+<span id="cb90-20"><a href="sentiment-analysis.html#cb90-20"></a><span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;Sentiment Counts&quot;</span>, <span class="dt">x =</span> <span class="st">&quot;&quot;</span>, <span class="dt">y =</span> <span class="st">&quot;&quot;</span>) <span class="op">+</span></span>
+<span id="cb90-21"><a href="sentiment-analysis.html#cb90-21"></a><span class="st">  </span><span class="kw">facet_wrap</span>(<span class="op">~</span><span class="st"> </span>lexicon, <span class="dt">scales =</span> <span class="st">&quot;free&quot;</span>)</span></code></pre></div>
+<p><img src="text-book_files/figure-html/unnamed-chunk-23-1.png" width="672" /></p>
+<p>Here is a sentiment analysis of sections of 80 lines of Jane Austin’s books. <em>(Small sections may not have enough words to get a good estimate of sentiment, and large sections can wash out the narrative structure. 80 lines seems about right.)</em></p>
+<div class="sourceCode" id="cb91"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb91-1"><a href="sentiment-analysis.html#cb91-1"></a><span class="co"># austin_tidy %&gt;%</span></span>
+<span id="cb91-2"><a href="sentiment-analysis.html#cb91-2"></a><span class="co">#   inner_join(get_sentiments(&quot;bing&quot;)) %&gt;%</span></span>
+<span id="cb91-3"><a href="sentiment-analysis.html#cb91-3"></a><span class="co">#   count(book, index = linenumber %/% 80, sentiment) %&gt;%</span></span>
+<span id="cb91-4"><a href="sentiment-analysis.html#cb91-4"></a><span class="co">#   pivot_wider(names_from = sentiment, values_from = n, values_fill = list(n = 0)) %&gt;%</span></span>
+<span id="cb91-5"><a href="sentiment-analysis.html#cb91-5"></a><span class="co">#   mutate(sentiment = positive - negative) %&gt;%</span></span>
+<span id="cb91-6"><a href="sentiment-analysis.html#cb91-6"></a><span class="co">#   ggplot(aes(x = index, y = sentiment, fill = book)) +</span></span>
+<span id="cb91-7"><a href="sentiment-analysis.html#cb91-7"></a><span class="co">#   geom_col(show.legend = FALSE) +</span></span>
+<span id="cb91-8"><a href="sentiment-analysis.html#cb91-8"></a><span class="co">#   facet_wrap(~book, ncol = 2, scales = &quot;free_x&quot;)</span></span></code></pre></div>
+<p>Fair to say Jane Austin novels tend to have a happy ending? The three sentiment lexicons provide different views of THE data. Here is a comparison of the lexicons using one of Jane Austin’s novels, “Pride and Prejudice”.</p>
+<div class="sourceCode" id="cb92"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb92-1"><a href="sentiment-analysis.html#cb92-1"></a><span class="co"># # AFINN lexicon measures sentiment with a numeric score between -5 and 5.</span></span>
+<span id="cb92-2"><a href="sentiment-analysis.html#cb92-2"></a><span class="co"># afinn &lt;- austin_tidy %&gt;% </span></span>
+<span id="cb92-3"><a href="sentiment-analysis.html#cb92-3"></a><span class="co">#   filter(book == &quot;Pride &amp; Prejudice&quot;) %&gt;%</span></span>
+<span id="cb92-4"><a href="sentiment-analysis.html#cb92-4"></a><span class="co">#   inner_join(get_sentiments(&quot;afinn&quot;), by = &quot;word&quot;) %&gt;% </span></span>
+<span id="cb92-5"><a href="sentiment-analysis.html#cb92-5"></a><span class="co">#   group_by(index = linenumber %/% 80) %&gt;% </span></span>
+<span id="cb92-6"><a href="sentiment-analysis.html#cb92-6"></a><span class="co">#   summarise(sentiment = sum(value)) %&gt;% </span></span>
+<span id="cb92-7"><a href="sentiment-analysis.html#cb92-7"></a><span class="co">#   mutate(method = &quot;AFINN&quot;)</span></span>
+<span id="cb92-8"><a href="sentiment-analysis.html#cb92-8"></a><span class="co"># </span></span>
+<span id="cb92-9"><a href="sentiment-analysis.html#cb92-9"></a><span class="co"># # Bing and nrc categorize words in a binary fashion, either positive or negative.</span></span>
+<span id="cb92-10"><a href="sentiment-analysis.html#cb92-10"></a><span class="co"># bing &lt;- austin_tidy %&gt;%</span></span>
+<span id="cb92-11"><a href="sentiment-analysis.html#cb92-11"></a><span class="co">#   filter(book == &quot;Pride &amp; Prejudice&quot;) %&gt;%</span></span>
+<span id="cb92-12"><a href="sentiment-analysis.html#cb92-12"></a><span class="co">#   inner_join(get_sentiments(&quot;bing&quot;), by = &quot;word&quot;) %&gt;% </span></span>
+<span id="cb92-13"><a href="sentiment-analysis.html#cb92-13"></a><span class="co">#   count(index = linenumber %/% 80, sentiment) %&gt;%</span></span>
+<span id="cb92-14"><a href="sentiment-analysis.html#cb92-14"></a><span class="co">#   pivot_wider(names_from = sentiment, values_from =  n, values_fill = list(n = 0)) %&gt;%</span></span>
+<span id="cb92-15"><a href="sentiment-analysis.html#cb92-15"></a><span class="co">#   mutate(sentiment = positive - negative) %&gt;% </span></span>
+<span id="cb92-16"><a href="sentiment-analysis.html#cb92-16"></a><span class="co">#   mutate(method = &quot;Bing&quot;) %&gt;%</span></span>
+<span id="cb92-17"><a href="sentiment-analysis.html#cb92-17"></a><span class="co">#   select(index, sentiment, method)</span></span>
+<span id="cb92-18"><a href="sentiment-analysis.html#cb92-18"></a><span class="co"># </span></span>
+<span id="cb92-19"><a href="sentiment-analysis.html#cb92-19"></a><span class="co"># nrc &lt;- austin_tidy %&gt;%</span></span>
+<span id="cb92-20"><a href="sentiment-analysis.html#cb92-20"></a><span class="co">#   filter(book == &quot;Pride &amp; Prejudice&quot;) %&gt;%</span></span>
+<span id="cb92-21"><a href="sentiment-analysis.html#cb92-21"></a><span class="co">#   inner_join(get_sentiments(&quot;nrc&quot;) %&gt;% filter(sentiment %in% c(&quot;positive&quot;, &quot;negative&quot;)), by = &quot;word&quot;) %&gt;% </span></span>
+<span id="cb92-22"><a href="sentiment-analysis.html#cb92-22"></a><span class="co">#   count(index = linenumber %/% 80, sentiment) %&gt;%</span></span>
+<span id="cb92-23"><a href="sentiment-analysis.html#cb92-23"></a><span class="co">#   pivot_wider(names_from = sentiment, values_from = n, values_fill = list(n = 0)) %&gt;%</span></span>
+<span id="cb92-24"><a href="sentiment-analysis.html#cb92-24"></a><span class="co">#   mutate(sentiment = positive - negative) %&gt;% </span></span>
+<span id="cb92-25"><a href="sentiment-analysis.html#cb92-25"></a><span class="co">#   mutate(method = &quot;NRC&quot;) %&gt;%</span></span>
+<span id="cb92-26"><a href="sentiment-analysis.html#cb92-26"></a><span class="co">#   select(index, sentiment, method)</span></span>
+<span id="cb92-27"><a href="sentiment-analysis.html#cb92-27"></a><span class="co"># </span></span>
+<span id="cb92-28"><a href="sentiment-analysis.html#cb92-28"></a><span class="co"># bind_rows(afinn, bing, nrc) %&gt;%</span></span>
+<span id="cb92-29"><a href="sentiment-analysis.html#cb92-29"></a><span class="co">#   ggplot(aes(index, sentiment, fill = method)) +</span></span>
+<span id="cb92-30"><a href="sentiment-analysis.html#cb92-30"></a><span class="co">#   geom_col(show.legend = FALSE) +</span></span>
+<span id="cb92-31"><a href="sentiment-analysis.html#cb92-31"></a><span class="co">#   facet_wrap(~method, ncol = 1, scales = &quot;free_y&quot;)</span></span></code></pre></div>
+<p>In this example, and in general, <strong>NRC</strong> sentiment tends to be high, <strong>AFINN</strong> sentiment has more variance, and <strong>Bing</strong> sentiment finds longer stretches of similar text. However, all three agree roughly on the overall trends in the sentiment through a narrative arc.</p>
+<p>What are the top-10 positive and negative words? Using the Bing lexicon, get the counts, then <code>group_by(sentiment)</code> and <code>top_n()</code> to the top 10 in each category.</p>
+<div class="sourceCode" id="cb93"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb93-1"><a href="sentiment-analysis.html#cb93-1"></a><span class="co"># austin_tidy %&gt;%</span></span>
+<span id="cb93-2"><a href="sentiment-analysis.html#cb93-2"></a><span class="co">#   filter(book == &quot;Pride &amp; Prejudice&quot;) %&gt;%</span></span>
+<span id="cb93-3"><a href="sentiment-analysis.html#cb93-3"></a><span class="co">#   inner_join(get_sentiments(&quot;bing&quot;), by = &quot;word&quot;) %&gt;% </span></span>
+<span id="cb93-4"><a href="sentiment-analysis.html#cb93-4"></a><span class="co">#   count(word, sentiment, sort = TRUE) %&gt;%</span></span>
+<span id="cb93-5"><a href="sentiment-analysis.html#cb93-5"></a><span class="co">#   group_by(sentiment) %&gt;%</span></span>
+<span id="cb93-6"><a href="sentiment-analysis.html#cb93-6"></a><span class="co">#   top_n(n = 10, wt = n) %&gt;%</span></span>
+<span id="cb93-7"><a href="sentiment-analysis.html#cb93-7"></a><span class="co">#   ggplot(aes(x = fct_reorder(word, n), y = n, fill = sentiment)) +</span></span>
+<span id="cb93-8"><a href="sentiment-analysis.html#cb93-8"></a><span class="co">#   geom_col(show.legend = FALSE) +</span></span>
+<span id="cb93-9"><a href="sentiment-analysis.html#cb93-9"></a><span class="co">#   facet_wrap(~sentiment, scales = &quot;free_y&quot;) +</span></span>
+<span id="cb93-10"><a href="sentiment-analysis.html#cb93-10"></a><span class="co">#   coord_flip() +</span></span>
+<span id="cb93-11"><a href="sentiment-analysis.html#cb93-11"></a><span class="co">#   labs(y = &quot;Contribution to Sentiment&quot;,</span></span>
+<span id="cb93-12"><a href="sentiment-analysis.html#cb93-12"></a><span class="co">#        x = &quot;&quot;)</span></span></code></pre></div>
+<p>Uh oh, “miss” is a red-herring - in Jane Austin novels it often refers to an unmarried woman. Drop it from the analysis by appending it to the stop-words list.</p>
+<div class="sourceCode" id="cb94"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb94-1"><a href="sentiment-analysis.html#cb94-1"></a><span class="co"># austin_tidy %&gt;%</span></span>
+<span id="cb94-2"><a href="sentiment-analysis.html#cb94-2"></a><span class="co">#   anti_join(bind_rows(stop_words,</span></span>
+<span id="cb94-3"><a href="sentiment-analysis.html#cb94-3"></a><span class="co">#                       tibble(word = c(&quot;miss&quot;), lexicon = c(&quot;custom&quot;)))) %&gt;%</span></span>
+<span id="cb94-4"><a href="sentiment-analysis.html#cb94-4"></a><span class="co">#   filter(book == &quot;Pride &amp; Prejudice&quot;) %&gt;%</span></span>
+<span id="cb94-5"><a href="sentiment-analysis.html#cb94-5"></a><span class="co">#   inner_join(get_sentiments(&quot;bing&quot;)) %&gt;% </span></span>
+<span id="cb94-6"><a href="sentiment-analysis.html#cb94-6"></a><span class="co">#   count(word, sentiment, sort = TRUE) %&gt;%</span></span>
+<span id="cb94-7"><a href="sentiment-analysis.html#cb94-7"></a><span class="co">#   group_by(sentiment) %&gt;%</span></span>
+<span id="cb94-8"><a href="sentiment-analysis.html#cb94-8"></a><span class="co">#   top_n(n = 10, wt = n) %&gt;%</span></span>
+<span id="cb94-9"><a href="sentiment-analysis.html#cb94-9"></a><span class="co">#   ggplot(aes(x = fct_reorder(word, n), y = n, fill = sentiment)) +</span></span>
+<span id="cb94-10"><a href="sentiment-analysis.html#cb94-10"></a><span class="co">#   geom_col(show.legend = FALSE) +</span></span>
+<span id="cb94-11"><a href="sentiment-analysis.html#cb94-11"></a><span class="co">#   facet_wrap(~sentiment, scales = &quot;free_y&quot;) +</span></span>
+<span id="cb94-12"><a href="sentiment-analysis.html#cb94-12"></a><span class="co">#   coord_flip() +</span></span>
+<span id="cb94-13"><a href="sentiment-analysis.html#cb94-13"></a><span class="co">#   labs(y = &quot;Contribution to Sentiment&quot;,</span></span>
+<span id="cb94-14"><a href="sentiment-analysis.html#cb94-14"></a><span class="co">#        x = &quot;&quot;)</span></span></code></pre></div>
+<p>Better!</p>
+<p>A common way to visualize sentiments is with a word cloud.</p>
+<div class="sourceCode" id="cb95"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb95-1"><a href="sentiment-analysis.html#cb95-1"></a><span class="co"># austin_tidy %&gt;%</span></span>
+<span id="cb95-2"><a href="sentiment-analysis.html#cb95-2"></a><span class="co">#   anti_join(bind_rows(stop_words,</span></span>
+<span id="cb95-3"><a href="sentiment-analysis.html#cb95-3"></a><span class="co">#                       tibble(word = c(&quot;miss&quot;), lexicon = c(&quot;custom&quot;)))) %&gt;%</span></span>
+<span id="cb95-4"><a href="sentiment-analysis.html#cb95-4"></a><span class="co">#   filter(book == &quot;Pride &amp; Prejudice&quot;) %&gt;%</span></span>
+<span id="cb95-5"><a href="sentiment-analysis.html#cb95-5"></a><span class="co">#   count(word) %&gt;%</span></span>
+<span id="cb95-6"><a href="sentiment-analysis.html#cb95-6"></a><span class="co">#   with(wordcloud(word, n, max.words = 100))</span></span></code></pre></div>
+<p><code>comparison.cloud</code> is another implementation of a word cloud. It takes a matrix input.</p>
+<div class="sourceCode" id="cb96"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb96-1"><a href="sentiment-analysis.html#cb96-1"></a><span class="co"># x &lt;- austin_tidy %&gt;%</span></span>
+<span id="cb96-2"><a href="sentiment-analysis.html#cb96-2"></a><span class="co">#   anti_join(bind_rows(stop_words,</span></span>
+<span id="cb96-3"><a href="sentiment-analysis.html#cb96-3"></a><span class="co">#                       tibble(word = c(&quot;miss&quot;), lexicon = c(&quot;custom&quot;)))) %&gt;%</span></span>
+<span id="cb96-4"><a href="sentiment-analysis.html#cb96-4"></a><span class="co">#   inner_join(get_sentiments(&quot;bing&quot;)) %&gt;% </span></span>
+<span id="cb96-5"><a href="sentiment-analysis.html#cb96-5"></a><span class="co">#   filter(book == &quot;Pride &amp; Prejudice&quot;) %&gt;%</span></span>
+<span id="cb96-6"><a href="sentiment-analysis.html#cb96-6"></a><span class="co">#   count(word, sentiment, sort = TRUE) %&gt;%</span></span>
+<span id="cb96-7"><a href="sentiment-analysis.html#cb96-7"></a><span class="co">#   pivot_wider(names_from = sentiment, values_from = n, values_fill = list(n = 0)) %&gt;%</span></span>
+<span id="cb96-8"><a href="sentiment-analysis.html#cb96-8"></a><span class="co">#   as.data.frame()</span></span>
+<span id="cb96-9"><a href="sentiment-analysis.html#cb96-9"></a><span class="co"># rownames(x) &lt;- x[,1]</span></span>
+<span id="cb96-10"><a href="sentiment-analysis.html#cb96-10"></a><span class="co"># comparison.cloud(x[, 2:3])</span></span>
+<span id="cb96-11"><a href="sentiment-analysis.html#cb96-11"></a><span class="co"># rm(x)</span></span></code></pre></div>
+<p>Sometimes it makes more sense to analyze entire sentences. Specify <code>unnest_tokens(..., token = "sentences")</code> to override the default <code>token = "word"</code>.</p>
+<div class="sourceCode" id="cb97"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb97-1"><a href="sentiment-analysis.html#cb97-1"></a><span class="co"># austen_books() %&gt;%</span></span>
+<span id="cb97-2"><a href="sentiment-analysis.html#cb97-2"></a><span class="co">#   group_by(book) %&gt;%</span></span>
+<span id="cb97-3"><a href="sentiment-analysis.html#cb97-3"></a><span class="co">#   mutate(linenumber = row_number(),</span></span>
+<span id="cb97-4"><a href="sentiment-analysis.html#cb97-4"></a><span class="co">#          chapter = cumsum(str_detect(text, regex(&quot;^chapter [\\divxlc]&quot;,</span></span>
+<span id="cb97-5"><a href="sentiment-analysis.html#cb97-5"></a><span class="co">#                                                  ignore_case = TRUE)))) %&gt;%</span></span>
+<span id="cb97-6"><a href="sentiment-analysis.html#cb97-6"></a><span class="co">#   ungroup() %&gt;%</span></span>
+<span id="cb97-7"><a href="sentiment-analysis.html#cb97-7"></a><span class="co">#   unnest_tokens(output = word, input = text, token = &quot;sentences&quot;)</span></span></code></pre></div>
+<div id="n-grams" class="section level3">
+<h3><span class="header-section-number">2.2.1</span> N-Grams</h3>
+<p>Create n-grams by specifying <code>unnest_tokens(..., token = "ngrams", n)</code> where <code>n = 2</code> is a bigram, etc. To remove the stop words, <code>separate</code> the n-grams, then filter on the <code>stop_words</code> data set.</p>
+<div class="sourceCode" id="cb98"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb98-1"><a href="sentiment-analysis.html#cb98-1"></a><span class="co"># austin.2gram &lt;- austen_books() %&gt;%</span></span>
+<span id="cb98-2"><a href="sentiment-analysis.html#cb98-2"></a><span class="co">#   group_by(book) %&gt;%</span></span>
+<span id="cb98-3"><a href="sentiment-analysis.html#cb98-3"></a><span class="co">#   mutate(linenumber = row_number(),</span></span>
+<span id="cb98-4"><a href="sentiment-analysis.html#cb98-4"></a><span class="co">#          chapter = cumsum(str_detect(text, regex(&quot;^chapter [\\divxlc]&quot;,</span></span>
+<span id="cb98-5"><a href="sentiment-analysis.html#cb98-5"></a><span class="co">#                                                  ignore_case = TRUE)))) %&gt;%</span></span>
+<span id="cb98-6"><a href="sentiment-analysis.html#cb98-6"></a><span class="co">#   ungroup() %&gt;%</span></span>
+<span id="cb98-7"><a href="sentiment-analysis.html#cb98-7"></a><span class="co">#   unnest_tokens(output = bigram, input = text, token = &quot;ngrams&quot;, n = 2)</span></span>
+<span id="cb98-8"><a href="sentiment-analysis.html#cb98-8"></a><span class="co"># </span></span>
+<span id="cb98-9"><a href="sentiment-analysis.html#cb98-9"></a><span class="co"># austin.2gram &lt;- austin.2gram %&gt;%</span></span>
+<span id="cb98-10"><a href="sentiment-analysis.html#cb98-10"></a><span class="co">#   separate(bigram, c(&quot;word1&quot;, &quot;word2&quot;), sep = &quot; &quot;) %&gt;%</span></span>
+<span id="cb98-11"><a href="sentiment-analysis.html#cb98-11"></a><span class="co">#   filter(!word1 %in% stop_words$word &amp;</span></span>
+<span id="cb98-12"><a href="sentiment-analysis.html#cb98-12"></a><span class="co">#            !word2 %in% stop_words$word &amp;</span></span>
+<span id="cb98-13"><a href="sentiment-analysis.html#cb98-13"></a><span class="co">#            !is.na(word1) &amp; !is.na(word2)) %&gt;%</span></span>
+<span id="cb98-14"><a href="sentiment-analysis.html#cb98-14"></a><span class="co">#   unite(bigram, word1, word2, sep = &quot; &quot;)</span></span>
+<span id="cb98-15"><a href="sentiment-analysis.html#cb98-15"></a><span class="co"># </span></span>
+<span id="cb98-16"><a href="sentiment-analysis.html#cb98-16"></a><span class="co"># austin.2gram %&gt;%</span></span>
+<span id="cb98-17"><a href="sentiment-analysis.html#cb98-17"></a><span class="co">#   count(book, bigram, sort = TRUE)</span></span></code></pre></div>
+<p>Here are the most commonly mentioned streets in Austin’s novels.</p>
+<div class="sourceCode" id="cb99"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb99-1"><a href="sentiment-analysis.html#cb99-1"></a><span class="co"># austin.2gram %&gt;%</span></span>
+<span id="cb99-2"><a href="sentiment-analysis.html#cb99-2"></a><span class="co">#   separate(bigram, c(&quot;word1&quot;, &quot;word2&quot;), sep = &quot; &quot;) %&gt;%</span></span>
+<span id="cb99-3"><a href="sentiment-analysis.html#cb99-3"></a><span class="co">#   filter(word2 == &quot;street&quot;) %&gt;%</span></span>
+<span id="cb99-4"><a href="sentiment-analysis.html#cb99-4"></a><span class="co">#   count(book, word1, sort = TRUE)</span></span></code></pre></div>
+<p>Use the TF-IDF statistic to compare words among documents. Calculate the cosine similarity, the angle in multidimensional space between two vectors (<span class="math inline">\(cos(\theta) = (A \cdot B) / ||A||||B||)\)</span>), to determine how similar two items are. Use <code>widyr::pairwise_similarity()</code> to calculate the cosine similarity of all pairs of items in a tidy table.</p>
+<div class="sourceCode" id="cb100"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb100-1"><a href="sentiment-analysis.html#cb100-1"></a><span class="co"># austen %&gt;%</span></span>
+<span id="cb100-2"><a href="sentiment-analysis.html#cb100-2"></a><span class="co">#   unnest_tokens(output = &quot;word&quot;, input = &quot;text&quot;, token = &quot;words&quot;) %&gt;%</span></span>
+<span id="cb100-3"><a href="sentiment-analysis.html#cb100-3"></a><span class="co">#   anti_join(stop_words, by = &quot;word&quot;) %&gt;%</span></span>
+<span id="cb100-4"><a href="sentiment-analysis.html#cb100-4"></a><span class="co">#   count(book, word) %&gt;%</span></span>
+<span id="cb100-5"><a href="sentiment-analysis.html#cb100-5"></a><span class="co">#   bind_tf_idf(term = word, document = book, n = n) %&gt;%</span></span>
+<span id="cb100-6"><a href="sentiment-analysis.html#cb100-6"></a><span class="co">#   pairwise_similarity(item = book, feature = word, value = tf_idf) %&gt;%</span></span>
+<span id="cb100-7"><a href="sentiment-analysis.html#cb100-7"></a><span class="co">#   arrange(desc(similarity))</span></span></code></pre></div>
+<div class="sourceCode" id="cb101"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb101-1"><a href="sentiment-analysis.html#cb101-1"></a><span class="co"># austen_books() %&gt;%</span></span>
+<span id="cb101-2"><a href="sentiment-analysis.html#cb101-2"></a><span class="co">#   group_by(book) %&gt;%</span></span>
+<span id="cb101-3"><a href="sentiment-analysis.html#cb101-3"></a><span class="co">#   mutate(linenumber = row_number(),</span></span>
+<span id="cb101-4"><a href="sentiment-analysis.html#cb101-4"></a><span class="co">#          chapter = cumsum(str_detect(text, regex(&quot;^chapter [\\divxlc]&quot;,</span></span>
+<span id="cb101-5"><a href="sentiment-analysis.html#cb101-5"></a><span class="co">#                                                  ignore_case = TRUE)))) %&gt;%</span></span>
+<span id="cb101-6"><a href="sentiment-analysis.html#cb101-6"></a><span class="co">#   ungroup() %&gt;%</span></span>
+<span id="cb101-7"><a href="sentiment-analysis.html#cb101-7"></a><span class="co">#   unnest_tokens(output = bigram, input = text, token = &quot;ngrams&quot;, n = 2) %&gt;%</span></span>
+<span id="cb101-8"><a href="sentiment-analysis.html#cb101-8"></a><span class="co">#   separate(bigram, c(&quot;word1&quot;, &quot;word2&quot;), sep = &quot; &quot;) %&gt;%</span></span>
+<span id="cb101-9"><a href="sentiment-analysis.html#cb101-9"></a><span class="co">#   filter(!word1 %in% stop_words$word &amp;</span></span>
+<span id="cb101-10"><a href="sentiment-analysis.html#cb101-10"></a><span class="co">#            !word2 %in% stop_words$word &amp;</span></span>
+<span id="cb101-11"><a href="sentiment-analysis.html#cb101-11"></a><span class="co">#            !is.na(word1) &amp; !is.na(word2)) %&gt;%</span></span>
+<span id="cb101-12"><a href="sentiment-analysis.html#cb101-12"></a><span class="co">#   unite(bigram, word1, word2, sep = &quot; &quot;)</span></span>
+<span id="cb101-13"><a href="sentiment-analysis.html#cb101-13"></a><span class="co"># austin.2gram %&gt;%</span></span>
+<span id="cb101-14"><a href="sentiment-analysis.html#cb101-14"></a><span class="co">#   count(book, bigram) %&gt;%</span></span>
+<span id="cb101-15"><a href="sentiment-analysis.html#cb101-15"></a><span class="co">#   bind_tf_idf(bigram, book, n) %&gt;%</span></span>
+<span id="cb101-16"><a href="sentiment-analysis.html#cb101-16"></a><span class="co">#   group_by(book) %&gt;%</span></span>
+<span id="cb101-17"><a href="sentiment-analysis.html#cb101-17"></a><span class="co">#   top_n(n = 10, wt = tf_idf) %&gt;%</span></span>
+<span id="cb101-18"><a href="sentiment-analysis.html#cb101-18"></a><span class="co">#   ggplot(aes(x = fct_reorder(bigram, n), y = tf_idf, fill = book)) +</span></span>
+<span id="cb101-19"><a href="sentiment-analysis.html#cb101-19"></a><span class="co">#   geom_col(show.legend = FALSE) +</span></span>
+<span id="cb101-20"><a href="sentiment-analysis.html#cb101-20"></a><span class="co">#   facet_wrap(~book, scales = &quot;free_y&quot;, ncol = 2) +</span></span>
+<span id="cb101-21"><a href="sentiment-analysis.html#cb101-21"></a><span class="co">#   labs(y = &quot;tf-idf of bigram to novel&quot;) +</span></span>
+<span id="cb101-22"><a href="sentiment-analysis.html#cb101-22"></a><span class="co">#   coord_flip() </span></span></code></pre></div>
+<p>A good way to visualize bigrams is with a network graph. Packages <code>igraph</code> and <code>ggraph</code> provides tools for this purpose.</p>
+<div class="sourceCode" id="cb102"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb102-1"><a href="sentiment-analysis.html#cb102-1"></a><span class="co"># set.seed(2016)</span></span>
+<span id="cb102-2"><a href="sentiment-analysis.html#cb102-2"></a><span class="co"># </span></span>
+<span id="cb102-3"><a href="sentiment-analysis.html#cb102-3"></a><span class="co"># austen_books() %&gt;%</span></span>
+<span id="cb102-4"><a href="sentiment-analysis.html#cb102-4"></a><span class="co">#   group_by(book) %&gt;%</span></span>
+<span id="cb102-5"><a href="sentiment-analysis.html#cb102-5"></a><span class="co">#   mutate(linenumber = row_number(),</span></span>
+<span id="cb102-6"><a href="sentiment-analysis.html#cb102-6"></a><span class="co">#          chapter = cumsum(str_detect(text, regex(&quot;^chapter [\\divxlc]&quot;,</span></span>
+<span id="cb102-7"><a href="sentiment-analysis.html#cb102-7"></a><span class="co">#                                                  ignore_case = TRUE)))) %&gt;%</span></span>
+<span id="cb102-8"><a href="sentiment-analysis.html#cb102-8"></a><span class="co">#   ungroup() %&gt;%</span></span>
+<span id="cb102-9"><a href="sentiment-analysis.html#cb102-9"></a><span class="co">#   unnest_tokens(output = bigram, input = text, token = &quot;ngrams&quot;, n = 2) %&gt;%</span></span>
+<span id="cb102-10"><a href="sentiment-analysis.html#cb102-10"></a><span class="co">#   separate(bigram, c(&quot;word1&quot;, &quot;word2&quot;), sep = &quot; &quot;) %&gt;%</span></span>
+<span id="cb102-11"><a href="sentiment-analysis.html#cb102-11"></a><span class="co">#   filter(!word1 %in% stop_words$word &amp;</span></span>
+<span id="cb102-12"><a href="sentiment-analysis.html#cb102-12"></a><span class="co">#            !word2 %in% stop_words$word &amp;</span></span>
+<span id="cb102-13"><a href="sentiment-analysis.html#cb102-13"></a><span class="co">#            !is.na(word1) &amp; !is.na(word2)) %&gt;%</span></span>
+<span id="cb102-14"><a href="sentiment-analysis.html#cb102-14"></a><span class="co">#   count(word1, word2) %&gt;%</span></span>
+<span id="cb102-15"><a href="sentiment-analysis.html#cb102-15"></a><span class="co">#   filter(n &gt; 20) %&gt;%</span></span>
+<span id="cb102-16"><a href="sentiment-analysis.html#cb102-16"></a><span class="co">#   graph_from_data_frame() %&gt;%  # creates unformatted &quot;graph&quot;</span></span>
+<span id="cb102-17"><a href="sentiment-analysis.html#cb102-17"></a><span class="co">#   ggraph(layout = &quot;fr&quot;) +</span></span>
+<span id="cb102-18"><a href="sentiment-analysis.html#cb102-18"></a><span class="co">#   geom_edge_link(aes(edge_alpha = n), </span></span>
+<span id="cb102-19"><a href="sentiment-analysis.html#cb102-19"></a><span class="co">#                  show.legend = FALSE,</span></span>
+<span id="cb102-20"><a href="sentiment-analysis.html#cb102-20"></a><span class="co">#                  arrow = grid::arrow(type = &quot;closed&quot;, </span></span>
+<span id="cb102-21"><a href="sentiment-analysis.html#cb102-21"></a><span class="co">#                                      length = unit(.15, &quot;inches&quot;)), </span></span>
+<span id="cb102-22"><a href="sentiment-analysis.html#cb102-22"></a><span class="co">#                  end_cap = circle(.07, &#39;inches&#39;)) +</span></span>
+<span id="cb102-23"><a href="sentiment-analysis.html#cb102-23"></a><span class="co">#   geom_node_point(color = &quot;lightblue&quot;, </span></span>
+<span id="cb102-24"><a href="sentiment-analysis.html#cb102-24"></a><span class="co">#                   size = 5) +</span></span>
+<span id="cb102-25"><a href="sentiment-analysis.html#cb102-25"></a><span class="co">#   geom_node_text(aes(label = name), vjust = 1, hjust = 1) +</span></span>
+<span id="cb102-26"><a href="sentiment-analysis.html#cb102-26"></a><span class="co">#   theme_void()</span></span></code></pre></div>
+<p>If you want to count the number of times that two words appear within the same document, or to see how correlated they are, widen the data with the <code>widyr</code> package.</p>
+<div class="sourceCode" id="cb103"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb103-1"><a href="sentiment-analysis.html#cb103-1"></a><span class="co"># austen_books() %&gt;%</span></span>
+<span id="cb103-2"><a href="sentiment-analysis.html#cb103-2"></a><span class="co">#   filter(book == &quot;Pride &amp; Prejudice&quot;) %&gt;%</span></span>
+<span id="cb103-3"><a href="sentiment-analysis.html#cb103-3"></a><span class="co">#   mutate(section = row_number() %/% 10) %&gt;%</span></span>
+<span id="cb103-4"><a href="sentiment-analysis.html#cb103-4"></a><span class="co">#   filter(section &gt; 0) %&gt;%</span></span>
+<span id="cb103-5"><a href="sentiment-analysis.html#cb103-5"></a><span class="co">#   unnest_tokens(word, text) %&gt;%</span></span>
+<span id="cb103-6"><a href="sentiment-analysis.html#cb103-6"></a><span class="co">#   filter(!word %in% stop_words$word) %&gt;%</span></span>
+<span id="cb103-7"><a href="sentiment-analysis.html#cb103-7"></a><span class="co">#   pairwise_count(word, section, sort = TRUE)</span></span></code></pre></div>
+<p>The correlation among words is how often they appear together relative to how often they appear separately. The phi coefficient is defined</p>
+<p><span class="math display">\[\phi = \frac{n_{11}n_{00} - n_{10}n_{01}}{\sqrt{n_{1.}n_{0.}n_{.1}n_{.0}}}\]</span></p>
+<p>where <span class="math inline">\(n_{10}\)</span> means number of times section has word x, but not word y, and <span class="math inline">\(n_{1.}\)</span> means total times section has word x. This lets us pick particular interesting words and find the other words most associated with them.</p>
+<div class="sourceCode" id="cb104"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb104-1"><a href="sentiment-analysis.html#cb104-1"></a><span class="co"># austen_books() %&gt;%</span></span>
+<span id="cb104-2"><a href="sentiment-analysis.html#cb104-2"></a><span class="co">#   filter(book == &quot;Pride &amp; Prejudice&quot;) %&gt;%</span></span>
+<span id="cb104-3"><a href="sentiment-analysis.html#cb104-3"></a><span class="co">#   mutate(section = row_number() %/% 10) %&gt;%</span></span>
+<span id="cb104-4"><a href="sentiment-analysis.html#cb104-4"></a><span class="co">#   filter(section &gt; 0) %&gt;%</span></span>
+<span id="cb104-5"><a href="sentiment-analysis.html#cb104-5"></a><span class="co">#   unnest_tokens(word, text) %&gt;%</span></span>
+<span id="cb104-6"><a href="sentiment-analysis.html#cb104-6"></a><span class="co">#   filter(!word %in% stop_words$word) %&gt;%</span></span>
+<span id="cb104-7"><a href="sentiment-analysis.html#cb104-7"></a><span class="co">#   pairwise_cor(word, section, sort = TRUE) %&gt;%</span></span>
+<span id="cb104-8"><a href="sentiment-analysis.html#cb104-8"></a><span class="co">#   filter(item1 %in% c(&quot;elizabeth&quot;, &quot;pounds&quot;, &quot;married&quot;, &quot;pride&quot;)) %&gt;%</span></span>
+<span id="cb104-9"><a href="sentiment-analysis.html#cb104-9"></a><span class="co">#   group_by(item1) %&gt;%</span></span>
+<span id="cb104-10"><a href="sentiment-analysis.html#cb104-10"></a><span class="co">#   top_n(n = 4) %&gt;%</span></span>
+<span id="cb104-11"><a href="sentiment-analysis.html#cb104-11"></a><span class="co">#   ungroup() %&gt;%</span></span>
+<span id="cb104-12"><a href="sentiment-analysis.html#cb104-12"></a><span class="co">#   mutate(item2 = reorder(item2, correlation)) %&gt;%</span></span>
+<span id="cb104-13"><a href="sentiment-analysis.html#cb104-13"></a><span class="co">#   ggplot(aes(x = item2, y = correlation)) +</span></span>
+<span id="cb104-14"><a href="sentiment-analysis.html#cb104-14"></a><span class="co">#   geom_bar(stat = &quot;identity&quot;) +</span></span>
+<span id="cb104-15"><a href="sentiment-analysis.html#cb104-15"></a><span class="co">#   facet_wrap(~ item1, scales = &quot;free&quot;) +</span></span>
+<span id="cb104-16"><a href="sentiment-analysis.html#cb104-16"></a><span class="co">#   coord_flip()</span></span></code></pre></div>
+<p>You can use the correlation to set a threshold for a graph.</p>
+</div>
+<div id="converting-to-and-from-non-tidy-formats" class="section level3">
+<h3><span class="header-section-number">2.2.2</span> Converting to and from non-tidy formats</h3>
+<p>One of the most common objects in text mining packages is the document term matrix (DTM) where each row is a document, each column a term, and each value an appearance count. The <code>broom</code> package contains functions to convert between DTM and tidy formats.</p>
+<p>Convert a DTM object into a tidy data frame with <code>tidy()</code>. Convert a tidy object into a sparse matrix with <code>cast_sparse()</code>, into a DTM with <code>cast_dtm()</code>, and into a “dfm” for quanteda with <code>cast_dfm()</code>.</p>
+<p>Create a tidy version of <code>AssociatedPress</code> with <code>tidy()</code>.</p>
+<p>The document-feature matrix <code>dfm</code> class from the <code>quanteda</code> text-mining package is another implementation of a document-term matrix. Here are the terms most specific (highest tf-idf) from each of four selected inaugural addresses.</p>
+<p>And here is word frequency trend ocer time for six selected terms. (problem with <code>extract()</code> below).</p>
+<p>Cast tidy data into document-term matrix with <code>cast_dtm()</code>, quanteda’s dfm with <code>cast_dfm()</code>, and sparese matrix with <code>cast_sparse()</code>.</p>
+<p>An untokenized document collection is called a <em>corpus</em>. The corpuse may include metadata, such as ID, date/time, title, language, etc. Corpus metadata is usually stored as lists. Use <code>tidy()</code> to construct a table, one row per document.</p>
+</div>
+<div id="example" class="section level3">
+<h3><span class="header-section-number">2.2.3</span> Example</h3>
+<p>Library <code>tm.plugin.webmining</code> connects to online feeds to retrieve news articles based on a keyword.</p>
+</div>
+</div>
+<p style="text-align: center;">
+<a href="topic-modeling-chapter.html"><button class="btn btn-default">Previous</button></a>
+<a href="text-classification-modeling.html"><button class="btn btn-default">Next</button></a>
+</p>
+</div>
+</div>
+
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+$(document).ready(function () {
+  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+});
+
+</script>
+
+</body>
+</html>

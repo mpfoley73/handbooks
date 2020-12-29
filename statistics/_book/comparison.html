@@ -1,0 +1,767 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+<head>
+
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <title>Chapter 8 Comparison | A Minimal Book Example</title>
+  <meta name="description" content="This is a minimal example of using the bookdown package to write a book. The output format for this example is bookdown::gitbook." />
+  <meta name="generator" content="bookdown 0.21 and GitBook 2.6.7" />
+
+  <meta property="og:title" content="Chapter 8 Comparison | A Minimal Book Example" />
+  <meta property="og:type" content="book" />
+  
+  
+  <meta property="og:description" content="This is a minimal example of using the bookdown package to write a book. The output format for this example is bookdown::gitbook." />
+  
+
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="Chapter 8 Comparison | A Minimal Book Example" />
+  
+  <meta name="twitter:description" content="This is a minimal example of using the bookdown package to write a book. The output format for this example is bookdown::gitbook." />
+  
+
+<meta name="author" content="Yihui Xie" />
+
+
+<meta name="date" content="2020-12-29" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+  
+  
+<link rel="prev" href="final-words-1.html"/>
+<link rel="next" href="references.html"/>
+<script src="libs/jquery-2.2.3/jquery.min.js"></script>
+<link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-table.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-bookdown.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-highlight.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-search.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-fontsettings.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-clipboard.css" rel="stylesheet" />
+
+
+
+
+
+
+
+
+
+<script src="libs/accessible-code-block-0.0.1/empty-anchor.js"></script>
+<link href="libs/anchor-sections-1.0/anchor-sections.css" rel="stylesheet" />
+<script src="libs/anchor-sections-1.0/anchor-sections.js"></script>
+<link href="libs/table1-1.0/table1_defaults.css" rel="stylesheet" />
+<script src="libs/kePrint-0.0.1/kePrint.js"></script>
+<link href="libs/lightable-0.0.1/lightable.css" rel="stylesheet" />
+<link href="libs/tabwid-1.0.0/tabwid.css" rel="stylesheet" />
+<script src="libs/tabwid-1.0.0/tabwid.js"></script>
+
+
+<style type="text/css">
+code.sourceCode > span { display: inline-block; line-height: 1.25; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode { white-space: pre; position: relative; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+code.sourceCode { white-space: pre-wrap; }
+code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+</style>
+
+<link rel="stylesheet" href="style.css" type="text/css" />
+</head>
+
+<body>
+
+
+
+  <div class="book without-animation with-summary font-size-2 font-family-1" data-basepath=".">
+
+    <div class="book-summary">
+      <nav role="navigation">
+
+<ul class="summary">
+<li><a href="./">A Minimal Book Example</a></li>
+
+<li class="divider"></li>
+<li class="chapter" data-level="1" data-path="index.html"><a href="index.html"><i class="fa fa-check"></i><b>1</b> Prerequisites</a></li>
+<li class="chapter" data-level="2" data-path="intro.html"><a href="intro.html"><i class="fa fa-check"></i><b>2</b> Introduction</a><ul>
+<li class="chapter" data-level="2.1" data-path="intro.html"><a href="intro.html#stochastic-processes"><i class="fa fa-check"></i><b>2.1</b> Stochastic Processes</a></li>
+</ul></li>
+<li class="chapter" data-level="3" data-path="literature.html"><a href="literature.html"><i class="fa fa-check"></i><b>3</b> Literature</a></li>
+<li class="chapter" data-level="4" data-path="methods.html"><a href="methods.html"><i class="fa fa-check"></i><b>4</b> Methods</a></li>
+<li class="chapter" data-level="5" data-path="applications.html"><a href="applications.html"><i class="fa fa-check"></i><b>5</b> Applications</a><ul>
+<li class="chapter" data-level="5.1" data-path="applications.html"><a href="applications.html#example-one"><i class="fa fa-check"></i><b>5.1</b> Example one</a></li>
+<li class="chapter" data-level="5.2" data-path="applications.html"><a href="applications.html#example-two"><i class="fa fa-check"></i><b>5.2</b> Example two</a></li>
+</ul></li>
+<li class="chapter" data-level="6" data-path="final-words.html"><a href="final-words.html"><i class="fa fa-check"></i><b>6</b> Final Words</a><ul>
+<li class="chapter" data-level="6.1" data-path="final-words.html"><a href="final-words.html#pearson"><i class="fa fa-check"></i><b>6.1</b> Pearson</a></li>
+<li class="chapter" data-level="6.2" data-path="final-words.html"><a href="final-words.html#chi-square"><i class="fa fa-check"></i><b>6.2</b> Chi-Square</a></li>
+<li class="chapter" data-level="6.3" data-path="final-words.html"><a href="final-words.html#spearman"><i class="fa fa-check"></i><b>6.3</b> Spearman</a></li>
+</ul></li>
+<li class="chapter" data-level="7" data-path="final-words-1.html"><a href="final-words-1.html"><i class="fa fa-check"></i><b>7</b> Final Words</a><ul>
+<li class="chapter" data-level="7.1" data-path="final-words-1.html"><a href="final-words-1.html#linear"><i class="fa fa-check"></i><b>7.1</b> Linear</a></li>
+<li class="chapter" data-level="7.2" data-path="final-words-1.html"><a href="final-words-1.html#generalized-linear"><i class="fa fa-check"></i><b>7.2</b> Generalized Linear</a></li>
+</ul></li>
+<li class="chapter" data-level="8" data-path="comparison.html"><a href="comparison.html"><i class="fa fa-check"></i><b>8</b> Comparison</a><ul>
+<li class="chapter" data-level="8.1" data-path="comparison.html"><a href="comparison.html#independent-t-test"><i class="fa fa-check"></i><b>8.1</b> Independent t-Test</a></li>
+<li class="chapter" data-level="8.2" data-path="comparison.html"><a href="comparison.html#paired-t-test"><i class="fa fa-check"></i><b>8.2</b> Paired t-Test</a></li>
+<li class="chapter" data-level="8.3" data-path="comparison.html"><a href="comparison.html#sign-est"><i class="fa fa-check"></i><b>8.3</b> Sign est</a></li>
+<li class="chapter" data-level="8.4" data-path="comparison.html"><a href="comparison.html#wilcoxon-rank-sum-test"><i class="fa fa-check"></i><b>8.4</b> Wilcoxon Rank-Sum Test</a></li>
+<li class="chapter" data-level="8.5" data-path="comparison.html"><a href="comparison.html#wilcoxon-signed-rank-test"><i class="fa fa-check"></i><b>8.5</b> Wilcoxon Signed-Rank Test</a></li>
+<li class="chapter" data-level="8.6" data-path="comparison.html"><a href="comparison.html#anova"><i class="fa fa-check"></i><b>8.6</b> ANOVA</a><ul>
+<li class="chapter" data-level="8.6.1" data-path="comparison.html"><a href="comparison.html#one-way-anova"><i class="fa fa-check"></i><b>8.6.1</b> One-Way ANOVA</a></li>
+<li class="chapter" data-level="8.6.2" data-path="comparison.html"><a href="comparison.html#custom-contrasts"><i class="fa fa-check"></i><b>8.6.2</b> Custom Contrasts</a></li>
+<li class="chapter" data-level="8.6.3" data-path="comparison.html"><a href="comparison.html#tukey-post-hoc-test"><i class="fa fa-check"></i><b>8.6.3</b> Tukey Post Hoc Test</a></li>
+<li class="chapter" data-level="8.6.4" data-path="comparison.html"><a href="comparison.html#reporting"><i class="fa fa-check"></i><b>8.6.4</b> Reporting</a></li>
+<li class="chapter" data-level="8.6.5" data-path="comparison.html"><a href="comparison.html#example"><i class="fa fa-check"></i><b>8.6.5</b> Example</a></li>
+<li class="chapter" data-level="8.6.6" data-path="comparison.html"><a href="comparison.html#multiple-variance-comparison-f-test"><i class="fa fa-check"></i><b>8.6.6</b> Multiple Variance Comparison F Test</a></li>
+<li class="chapter" data-level="8.6.7" data-path="comparison.html"><a href="comparison.html#example-1"><i class="fa fa-check"></i><b>8.6.7</b> Example</a></li>
+<li class="chapter" data-level="8.6.8" data-path="comparison.html"><a href="comparison.html#repeated-measures"><i class="fa fa-check"></i><b>8.6.8</b> Repeated Measures</a></li>
+<li class="chapter" data-level="8.6.9" data-path="comparison.html"><a href="comparison.html#two-way"><i class="fa fa-check"></i><b>8.6.9</b> Two-Way</a></li>
+<li class="chapter" data-level="8.6.10" data-path="comparison.html"><a href="comparison.html#randomized-blocks"><i class="fa fa-check"></i><b>8.6.10</b> Randomized Blocks</a></li>
+<li class="chapter" data-level="8.6.11" data-path="comparison.html"><a href="comparison.html#ancova"><i class="fa fa-check"></i><b>8.6.11</b> ANCOVA</a></li>
+</ul></li>
+<li class="chapter" data-level="8.7" data-path="comparison.html"><a href="comparison.html#kruskalwallis-test"><i class="fa fa-check"></i><b>8.7</b> Kruskal–Wallis Test</a></li>
+</ul></li>
+<li class="chapter" data-level="" data-path="references.html"><a href="references.html"><i class="fa fa-check"></i>References</a></li>
+<li class="divider"></li>
+<li><a href="https://github.com/rstudio/bookdown" target="blank">Published with bookdown</a></li>
+
+</ul>
+
+      </nav>
+    </div>
+
+    <div class="book-body">
+      <div class="body-inner">
+        <div class="book-header" role="navigation">
+          <h1>
+            <i class="fa fa-circle-o-notch fa-spin"></i><a href="./">A Minimal Book Example</a>
+          </h1>
+        </div>
+
+        <div class="page-wrapper" tabindex="-1" role="main">
+          <div class="page-inner">
+
+            <section class="normal" id="section-">
+<div id="comparison" class="section level1">
+<h1><span class="header-section-number">Chapter 8</span> Comparison</h1>
+<p>Comparison tests look for differences among group means. They can be used to test the effect of a categorical variable on the mean value of some other characteristic.</p>
+<p>T-tests are used when comparing the means of precisely two groups (e.g. the average heights of men and women). ANOVA and MANOVA tests are used when comparing the means of more than two groups (e.g. the average heights of children, teenagers, and adults).</p>
+<p>Quantitative ~ Categorical</p>
+<div id="independent-t-test" class="section level2">
+<h2><span class="header-section-number">8.1</span> Independent t-Test</h2>
+</div>
+<div id="paired-t-test" class="section level2">
+<h2><span class="header-section-number">8.2</span> Paired t-Test</h2>
+</div>
+<div id="sign-est" class="section level2">
+<h2><span class="header-section-number">8.3</span> Sign est</h2>
+</div>
+<div id="wilcoxon-rank-sum-test" class="section level2">
+<h2><span class="header-section-number">8.4</span> Wilcoxon Rank-Sum Test</h2>
+</div>
+<div id="wilcoxon-signed-rank-test" class="section level2">
+<h2><span class="header-section-number">8.5</span> Wilcoxon Signed-Rank Test</h2>
+</div>
+<div id="anova" class="section level2">
+<h2><span class="header-section-number">8.6</span> ANOVA</h2>
+<p>Most of these notes are gleaned from <a href="https://online.stat.psu.edu/stat502">PSU STAT-502</a> “Analysis of Variance and Design of Experiments” covers ANOVA. <a href="https://statistics.laerd.com/premium/spss/owa/one-way-anova-in-spss.php">Laerd Statistics</a> is useful for writing up your results for reports.</p>
+<p>Classic analysis of variance (ANOVA) compares the mean responses from <em>experimental</em> studies. However, ANOVA also compares the mean responses from <em>observational</em> studies, but conclusions are just less rigorous.</p>
+<div id="one-way-anova" class="section level3">
+<h3><span class="header-section-number">8.6.1</span> One-Way ANOVA</h3>
+<p>Use the one-way ANOVA test to compare the mean response of a continuous dependent variable among the levels of a factor variable.</p>
+<p>Here is a case study. Researchers compare the plant growth among three fertilizers and a control group. Data set <code>greenhouse</code> contains 6 observations per each of the <em>k</em> = 4 treatment levels (<em>N</em> = 24) - a balanced design.</p>
+<p>All three fertilizers produced more growth than the control group. Fertilizers <em>F1</em> and <em>F3</em> appear to be about tied for most growth, but it is unclear if the fertilizers are significantly different from each other.</p>
+<p><img src="statistics_files/figure-html/unnamed-chunk-3-1.png" width="672" /></p>
+<div class="Rtable1"><table class="Rtable1">
+<thead>
+<tr>
+<th class="grouplabel"></th>
+<th colspan="1" class="grouplabel"></th>
+<th colspan="4" class="grouplabel"><div>Treated</div></th>
+<th colspan="1" class="grouplabel"></th>
+</tr>
+<tr>
+<th class='rowlabel firstrow lastrow'></th>
+<th class='firstrow lastrow'><span class='stratlabel'>Control<br><span class='stratn'>(N=6)</span></span></th>
+<th class='firstrow lastrow'><span class='stratlabel'>F1<br><span class='stratn'>(N=6)</span></span></th>
+<th class='firstrow lastrow'><span class='stratlabel'>F2<br><span class='stratn'>(N=6)</span></span></th>
+<th class='firstrow lastrow'><span class='stratlabel'>F3<br><span class='stratn'>(N=6)</span></span></th>
+<th class='firstrow lastrow'><span class='stratlabel'>All treated<br><span class='stratn'>(N=18)</span></span></th>
+<th class='firstrow lastrow'><span class='stratlabel'>Overall<br><span class='stratn'>(N=24)</span></span></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class='rowlabel firstrow'><span class='varlabel'>Growth<span class='varunits'> (cm)</span></span></td>
+<td class='firstrow'></td>
+<td class='firstrow'></td>
+<td class='firstrow'></td>
+<td class='firstrow'></td>
+<td class='firstrow'></td>
+<td class='firstrow'></td>
+</tr>
+<tr>
+<td class='rowlabel'>Mean (SD)</td>
+<td>21.0 (1.00)</td>
+<td>28.6 (2.44)</td>
+<td>25.9 (1.90)</td>
+<td>29.2 (1.29)</td>
+<td>27.9 (2.35)</td>
+<td>26.2 (3.69)</td>
+</tr>
+<tr>
+<td class='rowlabel lastrow'>Median [Min, Max]</td>
+<td class='lastrow'>21.0 [19.5, 22.5]</td>
+<td class='lastrow'>28.3 [25.0, 32.0]</td>
+<td class='lastrow'>26.3 [22.5, 28.0]</td>
+<td class='lastrow'>29.4 [27.5, 31.0]</td>
+<td class='lastrow'>28.0 [22.5, 32.0]</td>
+<td class='lastrow'>27.3 [19.5, 32.0]</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="comparison.html#cb3-1"></a>greenhouse_desc &lt;-<span class="st"> </span>greenhouse <span class="op">%&gt;%</span><span class="st"> </span></span>
+<span id="cb3-2"><a href="comparison.html#cb3-2"></a><span class="st">  </span><span class="kw">group_by</span>(group) <span class="op">%&gt;%</span><span class="st"> </span></span>
+<span id="cb3-3"><a href="comparison.html#cb3-3"></a><span class="st">  </span><span class="kw">summarize</span>(<span class="dt">.groups =</span> <span class="st">&quot;drop&quot;</span>, <span class="dt">n =</span> <span class="kw">n</span>(), <span class="dt">mean =</span> <span class="kw">mean</span>(growth), <span class="dt">sd =</span> <span class="kw">sd</span>(growth))</span></code></pre></div>
+<p>Data is presented as mean <span class="math inline">\(\pm\)</span> standard deviation. Plant growth (growth) increased from the control (<em>n</em> = 6, 21 <span class="math inline">\(\pm\)</span> 1.0), to fertilizer 1 (<em>n</em> = 6, 28.6 <span class="math inline">\(\pm\)</span> 2.4), fertilizer 2 (<em>n</em> = 6, 25.8666667 <span class="math inline">\(\pm\)</span> 1.9), and fertilizer 3 (<em>n</em> = 6, 29.2 <span class="math inline">\(\pm\)</span> 1.3) fertilizer groups.</p>
+<p>ANOVA decomposes the deviation of observation <span class="math inline">\(Y_{ij}\)</span> around the overall mean <span class="math inline">\(\bar{Y}_{..}\)</span> into two parts: the deviation of the observations around their treatment means, <span class="math inline">\(SSE\)</span>, and the deviation of the treatment means around the overall mean, <span class="math inline">\(SSR\)</span>. Their ratio, <span class="math inline">\(F = SSR/SSE\)</span> follows an <em>F</em>-distribution with <span class="math inline">\(k-1\)</span> numerator dof and <span class="math inline">\(N-k\)</span> denominator dof. The more observation variance captured by the treatments, the large is <span class="math inline">\(F\)</span>, and the less likely that the null hypothesis, <span class="math inline">\(H_0 = \mu_1 = \mu_2 = \cdots = \mu_k\)</span> is true.</p>
+<table class="table" style="margin-left: auto; margin-right: auto;">
+<caption>
+<span id="tab:unnamed-chunk-6">Table 8.1: </span>ANOVA Table
+</caption>
+<thead>
+<tr>
+<th style="text-align:left;text-align: center;">
+Source
+</th>
+<th style="text-align:left;text-align: center;">
+SS
+</th>
+<th style="text-align:left;text-align: center;">
+df
+</th>
+<th style="text-align:left;text-align: center;">
+MS
+</th>
+<th style="text-align:left;text-align: center;">
+F
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+SSR
+</td>
+<td style="text-align:left;">
+<span class="math inline">\(\sum{n_i(\bar{Y}_{i.} - \bar{Y}_{..})^2}\)</span>
+</td>
+<td style="text-align:left;">
+<span class="math inline">\(k - 1\)</span>
+</td>
+<td style="text-align:left;">
+<span class="math inline">\({SSR}/{(k - 1)}\)</span>
+</td>
+<td style="text-align:left;">
+<span class="math inline">\({MSR}/{MSE}\)</span>
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+SSE
+</td>
+<td style="text-align:left;">
+<span class="math inline">\(\sum(Y_{ij} - \bar{Y}_{i.})^2\)</span>
+</td>
+<td style="text-align:left;">
+<span class="math inline">\(N - k\)</span>
+</td>
+<td style="text-align:left;">
+<span class="math inline">\({SSE}/{(N - k)}\)</span>
+</td>
+<td style="text-align:left;">
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+SST
+</td>
+<td style="text-align:left;">
+<span class="math inline">\(\sum(Y_{ij} - \bar{Y}_{..})^2\)</span>
+</td>
+<td style="text-align:left;">
+<span class="math inline">\(N - 1\)</span>
+</td>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+</td>
+</tr>
+</tbody>
+</table>
+<p>Run an ANOVA test in R like this:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="comparison.html#cb4-1"></a>greenhouse_aov &lt;-<span class="st"> </span><span class="kw">aov</span>(growth <span class="op">~</span><span class="st"> </span>group, <span class="dt">data =</span> greenhouse)</span>
+<span id="cb4-2"><a href="comparison.html#cb4-2"></a>greenhouse_anova &lt;-<span class="st"> </span><span class="kw">anova</span>(greenhouse_aov)</span>
+<span id="cb4-3"><a href="comparison.html#cb4-3"></a></span>
+<span id="cb4-4"><a href="comparison.html#cb4-4"></a>greenhouse_anova <span class="op">%&gt;%</span><span class="st"> </span></span>
+<span id="cb4-5"><a href="comparison.html#cb4-5"></a><span class="st">  </span><span class="kw">tidy</span>() <span class="op">%&gt;%</span></span>
+<span id="cb4-6"><a href="comparison.html#cb4-6"></a><span class="st">  </span><span class="kw">flextable</span>() <span class="op">%&gt;%</span></span>
+<span id="cb4-7"><a href="comparison.html#cb4-7"></a><span class="st">  </span><span class="kw">set_table_properties</span>(<span class="dt">width =</span> <span class="fl">0.8</span>, <span class="dt">layout =</span> <span class="st">&quot;autofit&quot;</span>) <span class="op">%&gt;%</span></span>
+<span id="cb4-8"><a href="comparison.html#cb4-8"></a><span class="st">  </span><span class="kw">colformat_num</span>(<span class="dt">j =</span> <span class="kw">c</span>(<span class="dv">3</span>, <span class="dv">4</span>, <span class="dv">5</span>), <span class="dt">digits =</span> <span class="dv">1</span>) <span class="op">%&gt;%</span></span>
+<span id="cb4-9"><a href="comparison.html#cb4-9"></a><span class="st">  </span><span class="kw">colformat_num</span>(<span class="dt">j =</span> <span class="dv">6</span>, <span class="dt">digits =</span> <span class="dv">4</span>) <span class="op">%&gt;%</span></span>
+<span id="cb4-10"><a href="comparison.html#cb4-10"></a><span class="st">  </span><span class="kw">set_caption</span>(<span class="st">&quot;Results of ANOVA for Growth vs Fertilizer Group&quot;</span>)</span></code></pre></div>
+<div class="tabwid"><style>.cl-d94f840a{font-family:'Arial';font-size:11px;font-weight:normal;font-style:normal;text-decoration:none;color:rgba(17, 17, 17, 1.00);background-color:transparent;}.cl-d94f840b{margin:0;text-align:left;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:2px;padding-top:2px;padding-left:5px;padding-right:5px;line-height: 1.00;background-color:transparent;}.cl-d94f840c{margin:0;text-align:right;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:2px;padding-top:2px;padding-left:5px;padding-right:5px;line-height: 1.00;background-color:transparent;}.cl-d94fab9c{width:54px;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-d94fab9d{width:54px;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-d94fab9e{width:54px;background-color:transparent;vertical-align: middle;border-bottom: 2.00px solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-d94fab9f{width:54px;background-color:transparent;vertical-align: middle;border-bottom: 2.00px solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-d94faba0{width:54px;background-color:transparent;vertical-align: middle;border-bottom: 2.00px solid rgba(0, 0, 0, 1.00);border-top: 2.00px solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-d94fcf50{width:54px;background-color:transparent;vertical-align: middle;border-bottom: 2.00px solid rgba(0, 0, 0, 1.00);border-top: 2.00px solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}</style><table style='table-layout:auto;border-collapse:collapse;width:80%;'>
+<caption>
+<span id="tab:unnamed-chunk-7">Table 8.2: </span>Results of ANOVA for Growth vs Fertilizer Group
+</caption>
+<thead><tr style="overflow-wrap:break-word;"><td class="cl-d94fcf50"><p class="cl-d94f840b"><span class="cl-d94f840a">term</span></p></td><td class="cl-d94faba0"><p class="cl-d94f840c"><span class="cl-d94f840a">df</span></p></td><td class="cl-d94faba0"><p class="cl-d94f840c"><span class="cl-d94f840a">sumsq</span></p></td><td class="cl-d94faba0"><p class="cl-d94f840c"><span class="cl-d94f840a">meansq</span></p></td><td class="cl-d94faba0"><p class="cl-d94f840c"><span class="cl-d94f840a">statistic</span></p></td><td class="cl-d94faba0"><p class="cl-d94f840c"><span class="cl-d94f840a">p.value</span></p></td></tr></thead><tbody><tr style="overflow-wrap:break-word;"><td class="cl-d94fab9d"><p class="cl-d94f840b"><span class="cl-d94f840a">group</span></p></td><td class="cl-d94fab9c"><p class="cl-d94f840c"><span class="cl-d94f840a">3</span></p></td><td class="cl-d94fab9c"><p class="cl-d94f840c"><span class="cl-d94f840a">251.4</span></p></td><td class="cl-d94fab9c"><p class="cl-d94f840c"><span class="cl-d94f840a">83.8</span></p></td><td class="cl-d94fab9c"><p class="cl-d94f840c"><span class="cl-d94f840a">27.5</span></p></td><td class="cl-d94fab9c"><p class="cl-d94f840c"><span class="cl-d94f840a">0.0000</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-d94fab9f"><p class="cl-d94f840b"><span class="cl-d94f840a">Residuals</span></p></td><td class="cl-d94fab9e"><p class="cl-d94f840c"><span class="cl-d94f840a">20</span></p></td><td class="cl-d94fab9e"><p class="cl-d94f840c"><span class="cl-d94f840a">61.0</span></p></td><td class="cl-d94fab9e"><p class="cl-d94f840c"><span class="cl-d94f840a">3.1</span></p></td><td class="cl-d94fab9e"><p class="cl-d94f840c"><span class="cl-d94f840a"></span></p></td><td class="cl-d94fab9e"><p class="cl-d94f840c"><span class="cl-d94f840a"></span></p></td></tr></tbody></table></div>
+<p>The one-way ANOVA indicates amount of growth was statistically significantly different for different levels of fertilizer group, <em>F</em>(3, 20) = 27.5, <em>p</em> &lt; .0001.</p>
+<p>BTW, it is worth noting the relationship with linear regression. The regression model intercept is the overall mean and the coefficient estimators indirectly indicate the group means. The analysis of variance table in a regression model shows how much of the overall variance is explained by those coefficient estimators. It’s the same thing.</p>
+<p>You may also want to report the <span class="math inline">\(\omega^2\)</span> effect size,</p>
+<p><span class="math display">\[\omega^2 = \frac{SSR - df_R \cdot MSE}{MSE + SST}\]</span></p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="comparison.html#cb5-1"></a>greenhouse_omega &lt;-<span class="st"> </span>sjstats<span class="op">::</span><span class="kw">anova_stats</span>(greenhouse_anova) <span class="op">%&gt;%</span><span class="st"> </span></span>
+<span id="cb5-2"><a href="comparison.html#cb5-2"></a><span class="st">  </span><span class="kw">filter</span>(term <span class="op">==</span><span class="st"> &quot;group&quot;</span>) <span class="op">%&gt;%</span></span>
+<span id="cb5-3"><a href="comparison.html#cb5-3"></a><span class="st">  </span><span class="kw">pull</span>(omegasq)</span></code></pre></div>
+<p><span class="math inline">\(\omega^2\)</span> ranges from -1 to +1. In this example, <span class="math inline">\(\omega^2\)</span> is 0.768.</p>
+<div id="anova-conditions" class="section level4">
+<h4><span class="header-section-number">8.6.1.1</span> ANOVA Conditions</h4>
+<p>The ANOVA test applies when the dependent variable is continuous, the independent variable is categorical, and the observations are independent <em>within</em> groups. Independent means the observations should be from a random sample, or from an experiment using random assignment. Each group’s size should be less than 10% of its population size. The groups must also be independent of each other (non-paired, and non-repeated measures). Additionally, there are three conditions related to the data distribution. If any condition does not hold, and the suggested work-arounds do not work switch to the non-parametric [Kruskal-Wallis Test].</p>
+<ol style="list-style-type: decimal">
+<li><strong>No outliers</strong>. There should be no significant outliers in the groups. Outliers exert a large influence on the mean and standard deviation. Test with a box plot. If there are outliers, you might be able to drop them or transform the data.</li>
+<li><strong>Normality</strong>. Each group’s values should be <em>nearly</em> normally distributed (“nearly” because ANOVA is considered robust to the normality assumption). This condition is especially important with small sample sizes. Test with the Q-Q plots or the Shapiro-Wilk test for normality. If the data is very non-normal, you might be able to transform your response variable.</li>
+<li><strong>Equal Variances</strong>. The group variances should be roughly equal. This condition is especially important when sample sizes differ. Test with a box plot, rule of thumb, or one of the formal <a href="http://www.cookbook-r.com/Statistical_analysis/Homogeneity_of_variance/">homogeneity of variance</a> (external) tests such as Bartlett, and Levene. If the variances are very different, use a Games-Howell post hoc test instead of the Tukey post hoc test.</li>
+</ol>
+<div id="outliers" class="section level5 unnumbered">
+<h5>Outliers</h5>
+<p>Assess outliers with a box plot. Box plot whiskers extend up to 1.5*IQR from the upper and lower hinges and outliers (beyond the whiskers) are are plotted individually. Our example includes an outlier in fertilizer group <em>F2</em>.</p>
+<p><img src="statistics_files/figure-html/unnamed-chunk-9-1.png" width="672" /></p>
+<p>Outliers might occur from data entry errors or measurement errors, so investigate and fix or throw them out. However, if the outlier is a genuine extreme value, you still have a couple options before reverting to Kruskal-Wallis.</p>
+<ul>
+<li>Transform the dependent variable. Don’t do this unless the data is also non-normal. It also has the downside of making interpretation more difficult.</li>
+<li>Leave it in if it doesn’t affect the conclusion (compared to taking it out).</li>
+</ul>
+<p>Lets try removing the outlier (<em>id#</em> 13).</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="comparison.html#cb6-1"></a>greenhouse_aov2 &lt;-<span class="st"> </span><span class="kw">aov</span>(growth <span class="op">~</span><span class="st"> </span>group, <span class="dt">data =</span> greenhouse <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">filter</span>(<span class="op">!</span>id <span class="op">==</span><span class="st"> </span><span class="dv">13</span>))</span>
+<span id="cb6-2"><a href="comparison.html#cb6-2"></a>greenhouse_anova2 &lt;-<span class="st"> </span><span class="kw">anova</span>(greenhouse_aov2)</span></code></pre></div>
+<div class="tabwid"><style>.cl-dacc4db8{font-family:'Arial';font-size:11px;font-weight:normal;font-style:normal;text-decoration:none;color:rgba(17, 17, 17, 1.00);background-color:transparent;}.cl-dacc4db9{font-family:'Arial';font-size:7px;font-weight:normal;font-style:normal;text-decoration:none;color:rgba(17, 17, 17, 1.00);background-color:transparent;position: relative;bottom:3px;}.cl-dacc4dba{font-family:'Arial';font-size:6px;font-weight:normal;font-style:normal;text-decoration:none;color:rgba(0, 0, 0, 1.00);background-color:transparent;position: relative;bottom:3px;}.cl-dacc4dbb{font-family:'Arial';font-size:10px;font-weight:normal;font-style:normal;text-decoration:none;color:rgba(0, 0, 0, 1.00);background-color:transparent;}.cl-dacc4dbc{margin:0;text-align:left;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:2px;padding-top:2px;padding-left:5px;padding-right:5px;line-height: 1.00;background-color:transparent;}.cl-dacc4dbd{margin:0;text-align:right;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:2px;padding-top:2px;padding-left:5px;padding-right:5px;line-height: 1.00;background-color:transparent;}.cl-dacc4dbe{margin:0;text-align:left;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:0;padding-top:0;padding-left:0;padding-right:0;line-height: 1.00;background-color:transparent;}.cl-dacc989a{width:54px;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-dacc989b{width:54px;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-dacc989c{width:54px;background-color:transparent;vertical-align: middle;border-bottom: 2.00px solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-dacc989d{width:54px;background-color:transparent;vertical-align: middle;border-bottom: 2.00px solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-dacc989e{width:54px;background-color:transparent;vertical-align: middle;border-bottom: 1.00px solid rgba(255, 255, 255, 0.00);border-top: 1.00px solid rgba(255, 255, 255, 0.00);border-left: 1.00px solid rgba(255, 255, 255, 0.00);border-right: 1.00px solid rgba(255, 255, 255, 0.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-dacc989f{width:54px;background-color:transparent;vertical-align: middle;border-bottom: 2.00px solid rgba(0, 0, 0, 1.00);border-top: 2.00px solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-dacc98a0{width:54px;background-color:transparent;vertical-align: middle;border-bottom: 2.00px solid rgba(0, 0, 0, 1.00);border-top: 2.00px solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}</style><table style='table-layout:auto;border-collapse:collapse;width:80%;'>
+<caption>
+<span id="tab:unnamed-chunk-11">Table 8.3: </span>Results of ANOVA for Growth vs Fertilizer Group
+</caption>
+<thead><tr style="overflow-wrap:break-word;"><td class="cl-dacc98a0"><p class="cl-dacc4dbc"><span class="cl-dacc4db8">term</span><span class="cl-dacc4db9"></span></p></td><td class="cl-dacc989f"><p class="cl-dacc4dbd"><span class="cl-dacc4db8">df</span></p></td><td class="cl-dacc989f"><p class="cl-dacc4dbd"><span class="cl-dacc4db8">sumsq</span></p></td><td class="cl-dacc989f"><p class="cl-dacc4dbd"><span class="cl-dacc4db8">meansq</span></p></td><td class="cl-dacc989f"><p class="cl-dacc4dbd"><span class="cl-dacc4db8">statistic</span></p></td><td class="cl-dacc989f"><p class="cl-dacc4dbd"><span class="cl-dacc4db8">p.value</span></p></td></tr></thead><tbody><tr style="overflow-wrap:break-word;"><td class="cl-dacc989b"><p class="cl-dacc4dbc"><span class="cl-dacc4db8">group</span></p></td><td class="cl-dacc989a"><p class="cl-dacc4dbd"><span class="cl-dacc4db8">3</span></p></td><td class="cl-dacc989a"><p class="cl-dacc4dbd"><span class="cl-dacc4db8">251.0</span></p></td><td class="cl-dacc989a"><p class="cl-dacc4dbd"><span class="cl-dacc4db8">83.7</span></p></td><td class="cl-dacc989a"><p class="cl-dacc4dbd"><span class="cl-dacc4db8">33.5</span></p></td><td class="cl-dacc989a"><p class="cl-dacc4dbd"><span class="cl-dacc4db8">0.0000</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-dacc989d"><p class="cl-dacc4dbc"><span class="cl-dacc4db8">Residuals</span></p></td><td class="cl-dacc989c"><p class="cl-dacc4dbd"><span class="cl-dacc4db8">19</span></p></td><td class="cl-dacc989c"><p class="cl-dacc4dbd"><span class="cl-dacc4db8">47.4</span></p></td><td class="cl-dacc989c"><p class="cl-dacc4dbd"><span class="cl-dacc4db8">2.5</span></p></td><td class="cl-dacc989c"><p class="cl-dacc4dbd"><span class="cl-dacc4db8"></span></p></td><td class="cl-dacc989c"><p class="cl-dacc4dbd"><span class="cl-dacc4db8"></span></p></td></tr><tr style="overflow-wrap:break-word;"><td  colspan="6"class="cl-dacc989e"><p class="cl-dacc4dbe"><span class="cl-dacc4dba"></span><span class="cl-dacc4dbb">Note: One outlier in group F2 removed.</span></p></td></tr></tbody></table></div>
+<p>The conclusion is the same, so leaving it in is fine!</p>
+</div>
+<div id="normality" class="section level5 unnumbered">
+<h5>Normality</h5>
+<p>You can assume the populations are normally distributed if <span class="math inline">\(n_j &gt;= 30\)</span>. Otherwise, try the Q-Q plot, or skewness and kurtosis values, or histograms. If you still don’t feel confident about normality, run a [Shapiro-Wilk Test] or Kolmogorov-Smirnov Test. If <span class="math inline">\(n_j &gt;= 50\)</span>, stick with graphical methods because at larger sample sizes Shapiro-Wilk flags even minor deviations from normality.</p>
+<p>The QQ plots below appear to be approximately normal.</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="comparison.html#cb7-1"></a>greenhouse <span class="op">%&gt;%</span></span>
+<span id="cb7-2"><a href="comparison.html#cb7-2"></a><span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(<span class="dt">sample =</span> growth)) <span class="op">+</span></span>
+<span id="cb7-3"><a href="comparison.html#cb7-3"></a><span class="st">  </span><span class="kw">stat_qq</span>() <span class="op">+</span></span>
+<span id="cb7-4"><a href="comparison.html#cb7-4"></a><span class="st">  </span><span class="kw">stat_qq_line</span>(<span class="dt">col =</span> <span class="st">&quot;goldenrod&quot;</span>) <span class="op">+</span></span>
+<span id="cb7-5"><a href="comparison.html#cb7-5"></a><span class="st">  </span><span class="kw">facet_wrap</span>(<span class="op">~</span>group) <span class="op">+</span></span>
+<span id="cb7-6"><a href="comparison.html#cb7-6"></a><span class="st">  </span><span class="kw">theme_minimal</span>() <span class="op">+</span></span>
+<span id="cb7-7"><a href="comparison.html#cb7-7"></a><span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;Normal Q-Q Plot&quot;</span>)</span></code></pre></div>
+<p><img src="statistics_files/figure-html/unnamed-chunk-12-1.png" width="672" /></p>
+<p>The Shapiro-Wilk test corroborates this conclusion - it fails to reject the null hypothesis of normally distributed populations.</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="comparison.html#cb8-1"></a>x &lt;-<span class="st"> </span><span class="kw">by</span>(greenhouse, greenhouse<span class="op">$</span>group, <span class="cf">function</span>(x) <span class="kw">shapiro.test</span>(x<span class="op">$</span>growth) <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">tidy</span>())</span>
+<span id="cb8-2"><a href="comparison.html#cb8-2"></a></span>
+<span id="cb8-3"><a href="comparison.html#cb8-3"></a>x[<span class="dv">1</span><span class="op">:</span><span class="dv">4</span>] <span class="op">%&gt;%</span></span>
+<span id="cb8-4"><a href="comparison.html#cb8-4"></a><span class="st">  </span><span class="kw">bind_rows</span>() <span class="op">%&gt;%</span></span>
+<span id="cb8-5"><a href="comparison.html#cb8-5"></a><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">group =</span> <span class="kw">names</span>(x)) <span class="op">%&gt;%</span></span>
+<span id="cb8-6"><a href="comparison.html#cb8-6"></a><span class="st">  </span>dplyr<span class="op">::</span><span class="kw">select</span>(group, <span class="kw">everything</span>(), <span class="op">-</span><span class="st"> </span>method) <span class="op">%&gt;%</span></span>
+<span id="cb8-7"><a href="comparison.html#cb8-7"></a><span class="st">  </span><span class="kw">flextable</span>() <span class="op">%&gt;%</span><span class="st"> </span></span>
+<span id="cb8-8"><a href="comparison.html#cb8-8"></a><span class="st">  </span><span class="kw">set_table_properties</span>(<span class="dt">width =</span> <span class="fl">0.6</span>, <span class="dt">layout =</span> <span class="st">&quot;autofit&quot;</span>) <span class="op">%&gt;%</span></span>
+<span id="cb8-9"><a href="comparison.html#cb8-9"></a><span class="st">  </span><span class="kw">set_caption</span>(<span class="st">&quot;Shapiro-Wilk Normality Test&quot;</span>)</span></code></pre></div>
+<div class="tabwid"><style>.cl-db231148{font-family:'Arial';font-size:11px;font-weight:normal;font-style:normal;text-decoration:none;color:rgba(17, 17, 17, 1.00);background-color:transparent;}.cl-db233844{margin:0;text-align:left;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:2px;padding-top:2px;padding-left:5px;padding-right:5px;line-height: 1.00;background-color:transparent;}.cl-db233845{margin:0;text-align:right;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:2px;padding-top:2px;padding-left:5px;padding-right:5px;line-height: 1.00;background-color:transparent;}.cl-db235f36{width:54px;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-db235f37{width:54px;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-db235f38{width:54px;background-color:transparent;vertical-align: middle;border-bottom: 2.00px solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-db235f39{width:54px;background-color:transparent;vertical-align: middle;border-bottom: 2.00px solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-db235f3a{width:54px;background-color:transparent;vertical-align: middle;border-bottom: 2.00px solid rgba(0, 0, 0, 1.00);border-top: 2.00px solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-db235f3b{width:54px;background-color:transparent;vertical-align: middle;border-bottom: 2.00px solid rgba(0, 0, 0, 1.00);border-top: 2.00px solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}</style><table style='table-layout:auto;border-collapse:collapse;width:60%;'>
+<caption>
+<span id="tab:unnamed-chunk-13">Table 8.4: </span>Shapiro-Wilk Normality Test
+</caption>
+<thead><tr style="overflow-wrap:break-word;"><td class="cl-db235f3a"><p class="cl-db233844"><span class="cl-db231148">group</span></p></td><td class="cl-db235f3b"><p class="cl-db233845"><span class="cl-db231148">statistic</span></p></td><td class="cl-db235f3b"><p class="cl-db233845"><span class="cl-db231148">p.value</span></p></td></tr></thead><tbody><tr style="overflow-wrap:break-word;"><td class="cl-db235f37"><p class="cl-db233844"><span class="cl-db231148">Control</span></p></td><td class="cl-db235f36"><p class="cl-db233845"><span class="cl-db231148">0.9764896</span></p></td><td class="cl-db235f36"><p class="cl-db233845"><span class="cl-db231148">0.9328373</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-db235f37"><p class="cl-db233844"><span class="cl-db231148">F1</span></p></td><td class="cl-db235f36"><p class="cl-db233845"><span class="cl-db231148">0.9803233</span></p></td><td class="cl-db235f36"><p class="cl-db233845"><span class="cl-db231148">0.9531535</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-db235f37"><p class="cl-db233844"><span class="cl-db231148">F2</span></p></td><td class="cl-db235f36"><p class="cl-db233845"><span class="cl-db231148">0.9256945</span></p></td><td class="cl-db235f36"><p class="cl-db233845"><span class="cl-db231148">0.5472862</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-db235f38"><p class="cl-db233844"><span class="cl-db231148">F3</span></p></td><td class="cl-db235f39"><p class="cl-db233845"><span class="cl-db231148">0.9705960</span></p></td><td class="cl-db235f39"><p class="cl-db233845"><span class="cl-db231148">0.8964141</span></p></td></tr></tbody></table></div>
+<p>If the data is not normally distributed, you still have a couple options before reverting to Kruskal-Wallis.</p>
+<ul>
+<li>Transform the dependent variable. Transformations will generally only work when the distribution of scores in all groups are the same shape. They also have the drawback of making the data less interpretable.</li>
+<li>carry on regardless. One-way ANOVA is fairly robust to deviations from normality, particularly if the sample sizes are nearly equal.</li>
+</ul>
+</div>
+<div id="equal-variances" class="section level5 unnumbered">
+<h5>Equal Variances</h5>
+<p>The equality of sample variances condition is less critical when sample sizes are similar among the groups. One rule of thumb is that no group’s standard deviation should be more than double that of any other. In this case <code>F1</code> is more than double <code>Control</code>.</p>
+<div class="tabwid"><style>.cl-db40030c{font-family:'Arial';font-size:11px;font-weight:normal;font-style:normal;text-decoration:none;color:rgba(17, 17, 17, 1.00);background-color:transparent;}.cl-db402882{margin:0;text-align:left;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:2px;padding-top:2px;padding-left:5px;padding-right:5px;line-height: 1.00;background-color:transparent;}.cl-db402883{margin:0;text-align:right;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:2px;padding-top:2px;padding-left:5px;padding-right:5px;line-height: 1.00;background-color:transparent;}.cl-db40eba0{width:54px;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-db40eba1{width:54px;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-db40eba2{width:54px;background-color:transparent;vertical-align: middle;border-bottom: 2.00px solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-db40eba3{width:54px;background-color:transparent;vertical-align: middle;border-bottom: 2.00px solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-db40eba4{width:54px;background-color:transparent;vertical-align: middle;border-bottom: 2.00px solid rgba(0, 0, 0, 1.00);border-top: 2.00px solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-db40eba5{width:54px;background-color:transparent;vertical-align: middle;border-bottom: 2.00px solid rgba(0, 0, 0, 1.00);border-top: 2.00px solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}</style><table style='table-layout:auto;border-collapse:collapse;width:50%;'><thead><tr style="overflow-wrap:break-word;"><td class="cl-db40eba4"><p class="cl-db402882"><span class="cl-db40030c">group</span></p></td><td class="cl-db40eba5"><p class="cl-db402883"><span class="cl-db40030c">sd</span></p></td></tr></thead><tbody><tr style="overflow-wrap:break-word;"><td class="cl-db40eba1"><p class="cl-db402882"><span class="cl-db40030c">Control</span></p></td><td class="cl-db40eba0"><p class="cl-db402883"><span class="cl-db40030c">1.000000</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-db40eba1"><p class="cl-db402882"><span class="cl-db40030c">F1</span></p></td><td class="cl-db40eba0"><p class="cl-db402883"><span class="cl-db40030c">2.437212</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-db40eba1"><p class="cl-db402882"><span class="cl-db40030c">F2</span></p></td><td class="cl-db40eba0"><p class="cl-db402883"><span class="cl-db40030c">1.899123</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-db40eba2"><p class="cl-db402882"><span class="cl-db40030c">F3</span></p></td><td class="cl-db40eba3"><p class="cl-db402883"><span class="cl-db40030c">1.288410</span></p></td></tr></tbody></table></div>
+<p>There are two other common tests, Bartlett and Levene. NIST has a good write-up for <a href="https://www.itl.nist.gov/div898/handbook/eda/section3/eda35a.htm">Levene</a> and for <a href="https://www.itl.nist.gov/div898/handbook/eda/section3/eda357.htm">Bartlett</a>. Levene is less sensitive than Bartlett to departures from normality, so if you know your data is normally distributed, then use Bartlett.</p>
+<p>Levene’s test fails to reject the null hypothesis of equality of variance.</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="comparison.html#cb9-1"></a>greenhouse_levene &lt;-<span class="st"> </span>car<span class="op">::</span><span class="kw">leveneTest</span>(growth <span class="op">~</span><span class="st"> </span>group, <span class="dt">data =</span> greenhouse) </span></code></pre></div>
+<pre><code>## Registered S3 methods overwritten by &#39;car&#39;:
+##   method                          from
+##   influence.merMod                lme4
+##   cooks.distance.influence.merMod lme4
+##   dfbeta.influence.merMod         lme4
+##   dfbetas.influence.merMod        lme4</code></pre>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="comparison.html#cb11-1"></a>greenhouse_levene <span class="op">%&gt;%</span><span class="st"> </span></span>
+<span id="cb11-2"><a href="comparison.html#cb11-2"></a><span class="st">  </span><span class="kw">tidy</span>() <span class="op">%&gt;%</span></span>
+<span id="cb11-3"><a href="comparison.html#cb11-3"></a><span class="st">  </span><span class="kw">flextable</span>() <span class="op">%&gt;%</span></span>
+<span id="cb11-4"><a href="comparison.html#cb11-4"></a><span class="st">  </span><span class="kw">set_table_properties</span>(<span class="dt">width =</span> <span class="fl">0.6</span>, <span class="dt">layout =</span> <span class="st">&quot;autofit&quot;</span>) <span class="op">%&gt;%</span><span class="st"> </span></span>
+<span id="cb11-5"><a href="comparison.html#cb11-5"></a><span class="st">  </span><span class="kw">set_caption</span>(<span class="st">&quot;Levene&#39;s Test for Homogeneity of Variance&quot;</span>)</span></code></pre></div>
+<div class="tabwid"><style>.cl-db8c8bbe{font-family:'Arial';font-size:11px;font-weight:normal;font-style:normal;text-decoration:none;color:rgba(17, 17, 17, 1.00);background-color:transparent;}.cl-db8c8bbf{margin:0;text-align:left;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:2px;padding-top:2px;padding-left:5px;padding-right:5px;line-height: 1.00;background-color:transparent;}.cl-db8c8bc0{margin:0;text-align:right;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:2px;padding-top:2px;padding-left:5px;padding-right:5px;line-height: 1.00;background-color:transparent;}.cl-db8cb2c4{width:54px;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-db8cb2c5{width:54px;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-db8cb2c6{width:54px;background-color:transparent;vertical-align: middle;border-bottom: 2.00px solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-db8cb2c7{width:54px;background-color:transparent;vertical-align: middle;border-bottom: 2.00px solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-db8cb2c8{width:54px;background-color:transparent;vertical-align: middle;border-bottom: 2.00px solid rgba(0, 0, 0, 1.00);border-top: 2.00px solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-db8cb2c9{width:54px;background-color:transparent;vertical-align: middle;border-bottom: 2.00px solid rgba(0, 0, 0, 1.00);border-top: 2.00px solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}</style><table style='table-layout:auto;border-collapse:collapse;width:60%;'>
+<caption>
+<span id="tab:unnamed-chunk-15">Table 8.5: </span>Levene’s Test for Homogeneity of Variance
+</caption>
+<thead><tr style="overflow-wrap:break-word;"><td class="cl-db8cb2c9"><p class="cl-db8c8bbf"><span class="cl-db8c8bbe">term</span></p></td><td class="cl-db8cb2c8"><p class="cl-db8c8bc0"><span class="cl-db8c8bbe">df</span></p></td><td class="cl-db8cb2c8"><p class="cl-db8c8bc0"><span class="cl-db8c8bbe">statistic</span></p></td><td class="cl-db8cb2c8"><p class="cl-db8c8bc0"><span class="cl-db8c8bbe">p.value</span></p></td></tr></thead><tbody><tr style="overflow-wrap:break-word;"><td class="cl-db8cb2c5"><p class="cl-db8c8bbf"><span class="cl-db8c8bbe">group</span></p></td><td class="cl-db8cb2c4"><p class="cl-db8c8bc0"><span class="cl-db8c8bbe">3</span></p></td><td class="cl-db8cb2c4"><p class="cl-db8c8bc0"><span class="cl-db8c8bbe">1.049116</span></p></td><td class="cl-db8cb2c4"><p class="cl-db8c8bc0"><span class="cl-db8c8bbe">0.3926038</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-db8cb2c7"><p class="cl-db8c8bbf"><span class="cl-db8c8bbe"></span></p></td><td class="cl-db8cb2c6"><p class="cl-db8c8bc0"><span class="cl-db8c8bbe">20</span></p></td><td class="cl-db8cb2c6"><p class="cl-db8c8bc0"><span class="cl-db8c8bbe">NA</span></p></td><td class="cl-db8cb2c6"><p class="cl-db8c8bc0"><span class="cl-db8c8bbe">NA</span></p></td></tr></tbody></table></div>
+<p>So does Bartlett.</p>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="comparison.html#cb12-1"></a><span class="kw">bartlett.test</span>(growth <span class="op">~</span><span class="st"> </span>group, <span class="dt">data =</span> greenhouse) <span class="op">%&gt;%</span><span class="st"> </span></span>
+<span id="cb12-2"><a href="comparison.html#cb12-2"></a><span class="st">  </span><span class="kw">tidy</span>() <span class="op">%&gt;%</span></span>
+<span id="cb12-3"><a href="comparison.html#cb12-3"></a><span class="st">  </span>dplyr<span class="op">::</span><span class="kw">select</span>(<span class="op">-</span>method) <span class="op">%&gt;%</span></span>
+<span id="cb12-4"><a href="comparison.html#cb12-4"></a><span class="st">  </span><span class="kw">flextable</span>() <span class="op">%&gt;%</span></span>
+<span id="cb12-5"><a href="comparison.html#cb12-5"></a><span class="st">  </span><span class="kw">set_table_properties</span>(<span class="dt">width =</span> <span class="fl">0.6</span>, <span class="dt">layout =</span> <span class="st">&quot;autofit&quot;</span>) <span class="op">%&gt;%</span><span class="st"> </span></span>
+<span id="cb12-6"><a href="comparison.html#cb12-6"></a><span class="st">  </span><span class="kw">set_caption</span>(<span class="st">&quot;Bartlett&#39;s Test for Homogeneity of Variance&quot;</span>)</span></code></pre></div>
+<div class="tabwid"><style>.cl-dba3c748{font-family:'Arial';font-size:11px;font-weight:normal;font-style:normal;text-decoration:none;color:rgba(17, 17, 17, 1.00);background-color:transparent;}.cl-dba3c749{margin:0;text-align:right;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:2px;padding-top:2px;padding-left:5px;padding-right:5px;line-height: 1.00;background-color:transparent;}.cl-dba3ee3a{width:54px;background-color:transparent;vertical-align: middle;border-bottom: 2.00px solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-dba3ee3b{width:54px;background-color:transparent;vertical-align: middle;border-bottom: 2.00px solid rgba(0, 0, 0, 1.00);border-top: 2.00px solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}</style><table style='table-layout:auto;border-collapse:collapse;width:60%;'>
+<caption>
+<span id="tab:unnamed-chunk-16">Table 8.6: </span>Bartlett’s Test for Homogeneity of Variance
+</caption>
+<thead><tr style="overflow-wrap:break-word;"><td class="cl-dba3ee3b"><p class="cl-dba3c749"><span class="cl-dba3c748">statistic</span></p></td><td class="cl-dba3ee3b"><p class="cl-dba3c749"><span class="cl-dba3c748">p.value</span></p></td><td class="cl-dba3ee3b"><p class="cl-dba3c749"><span class="cl-dba3c748">parameter</span></p></td></tr></thead><tbody><tr style="overflow-wrap:break-word;"><td class="cl-dba3ee3a"><p class="cl-dba3c749"><span class="cl-dba3c748">4.114342</span></p></td><td class="cl-dba3ee3a"><p class="cl-dba3c749"><span class="cl-dba3c748">0.249379</span></p></td><td class="cl-dba3ee3a"><p class="cl-dba3c749"><span class="cl-dba3c748">3</span></p></td></tr></tbody></table></div>
+<p>Heterogeneity is a common problem in ANOVA. Transforming the response variable can often remove the heterogeneity. The Box-Cox procedure can help find a good transformation. The MASS::boxcox() function calculates a profile of log-likelihoods for a power transformation of the response variable <span class="math inline">\(Y^\lambda\)</span>.</p>
+<table>
+<thead>
+<tr class="header">
+<th><span class="math inline">\(\lambda\)</span></th>
+<th><span class="math inline">\(Y^\lambda\)</span></th>
+<th>Transformation</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>2</td>
+<td><span class="math inline">\(Y^2\)</span></td>
+<td>Square</td>
+</tr>
+<tr class="even">
+<td>1</td>
+<td><span class="math inline">\(Y^1\)</span></td>
+<td>(no transformation)</td>
+</tr>
+<tr class="odd">
+<td>.5</td>
+<td><span class="math inline">\(Y^{.5}\)</span></td>
+<td>Square Root</td>
+</tr>
+<tr class="even">
+<td>0</td>
+<td><span class="math inline">\(\ln(Y)\)</span></td>
+<td>Log</td>
+</tr>
+<tr class="odd">
+<td>-.5</td>
+<td><span class="math inline">\(Y^{-.5}\)</span></td>
+<td>Inverse Square Root</td>
+</tr>
+<tr class="even">
+<td>-1</td>
+<td><span class="math inline">\(Y^{-1}\)</span></td>
+<td>Inverse</td>
+</tr>
+</tbody>
+</table>
+<p>The Box-Cox procedure does not recommend any particular transformation of the data in this case.</p>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="comparison.html#cb13-1"></a>MASS<span class="op">::</span><span class="kw">boxcox</span>(greenhouse_aov, <span class="dt">plotit =</span> <span class="ot">TRUE</span>)</span></code></pre></div>
+<p><img src="statistics_files/figure-html/unnamed-chunk-17-1.png" width="672" /></p>
+</div>
+</div>
+</div>
+<div id="custom-contrasts" class="section level3">
+<h3><span class="header-section-number">8.6.2</span> Custom Contrasts</h3>
+<p>Taking this route is appropriate if you have specific hypotheses about the differences between the groups of your independent variable (e.g., a hypothesis that there is a difference between Group D and Group B, or a hypothesis that there is a difference between Groups D and C combined when compared to Groups D and A combined).</p>
+<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="comparison.html#cb14-1"></a>greenhouse_aov &lt;-<span class="st"> </span><span class="kw">aov</span>(growth <span class="op">~</span><span class="st"> </span>group, <span class="dt">data =</span> greenhouse)</span>
+<span id="cb14-2"><a href="comparison.html#cb14-2"></a><span class="kw">anova</span>(greenhouse_aov)</span></code></pre></div>
+<pre><code>## Analysis of Variance Table
+## 
+## Response: growth
+##           Df  Sum Sq Mean Sq F value    Pr(&gt;F)    
+## group      3 251.440  83.813  27.465 2.712e-07 ***
+## Residuals 20  61.033   3.052                      
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1</code></pre>
+<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="comparison.html#cb16-1"></a>greenhouse_glm &lt;-<span class="st"> </span><span class="kw">glm</span>(growth <span class="op">~</span><span class="st"> </span>group, <span class="dt">data =</span> greenhouse, <span class="dt">family =</span> <span class="st">&quot;gaussian&quot;</span>)</span>
+<span id="cb16-2"><a href="comparison.html#cb16-2"></a><span class="kw">anova</span>(greenhouse_glm)</span></code></pre></div>
+<pre><code>## Analysis of Deviance Table
+## 
+## Model: gaussian, link: identity
+## 
+## Response: growth
+## 
+## Terms added sequentially (first to last)
+## 
+## 
+##       Df Deviance Resid. Df Resid. Dev
+## NULL                     23    312.473
+## group  3   251.44        20     61.033</code></pre>
+<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb18-1"><a href="comparison.html#cb18-1"></a>greenhouse_lm &lt;-<span class="st"> </span><span class="kw">lm</span>(growth <span class="op">~</span><span class="st"> </span>group, <span class="dt">data =</span> greenhouse)</span>
+<span id="cb18-2"><a href="comparison.html#cb18-2"></a><span class="kw">anova</span>(greenhouse_lm)</span></code></pre></div>
+<pre><code>## Analysis of Variance Table
+## 
+## Response: growth
+##           Df  Sum Sq Mean Sq F value    Pr(&gt;F)    
+## group      3 251.440  83.813  27.465 2.712e-07 ***
+## Residuals 20  61.033   3.052                      
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1</code></pre>
+</div>
+<div id="tukey-post-hoc-test" class="section level3">
+<h3><span class="header-section-number">8.6.3</span> Tukey Post Hoc Test</h3>
+<p>The <em>F</em> test does not indicate which populations cause the rejection of <span class="math inline">\(H_0\)</span>. For this, use one of the post-hoc tests: Tukey, Fisher’s Least Significant Difference (LSD), Bonferroni, Scheffe, or Dunnett. Post hoc tests are appropriate if you are investigating all possible pairwise comparisons with no specific hypotheses about specific groups differing from others.</p>
+<p>Here is the Tukey test. As expected, all three fertilizer factor levels differ from the control. <code>F3</code> differed from <code>F2</code>, but <code>F1</code> was not significantly different from either <code>F2</code> or <code>F3</code>.</p>
+<div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb20-1"><a href="comparison.html#cb20-1"></a>greenhouse_tukey &lt;-<span class="st"> </span><span class="kw">TukeyHSD</span>(greenhouse_aov)</span>
+<span id="cb20-2"><a href="comparison.html#cb20-2"></a>greenhouse_tukey <span class="op">%&gt;%</span><span class="st"> </span></span>
+<span id="cb20-3"><a href="comparison.html#cb20-3"></a><span class="st">  </span><span class="kw">tidy</span>() <span class="op">%&gt;%</span></span>
+<span id="cb20-4"><a href="comparison.html#cb20-4"></a><span class="st">  </span><span class="kw">flextable</span>() <span class="op">%&gt;%</span></span>
+<span id="cb20-5"><a href="comparison.html#cb20-5"></a><span class="st">  </span><span class="kw">set_table_properties</span>(<span class="dt">width =</span> <span class="fl">0.8</span>, <span class="dt">layout =</span> <span class="st">&quot;autofit&quot;</span>) <span class="op">%&gt;%</span><span class="st"> </span></span>
+<span id="cb20-6"><a href="comparison.html#cb20-6"></a><span class="st">  </span><span class="kw">colformat_num</span>(<span class="dt">j =</span> <span class="kw">c</span>(<span class="dv">4</span><span class="op">:</span><span class="dv">6</span>), <span class="dt">digits =</span> <span class="dv">1</span>) <span class="op">%&gt;%</span></span>
+<span id="cb20-7"><a href="comparison.html#cb20-7"></a><span class="st">  </span><span class="kw">colformat_num</span>(<span class="dt">j =</span> <span class="dv">7</span>, <span class="dt">digits =</span> <span class="dv">3</span>) <span class="op">%&gt;%</span></span>
+<span id="cb20-8"><a href="comparison.html#cb20-8"></a><span class="st">  </span><span class="kw">set_caption</span>(<span class="st">&quot;Tukey multiple comparisons of means&quot;</span>) <span class="op">%&gt;%</span></span>
+<span id="cb20-9"><a href="comparison.html#cb20-9"></a><span class="st">  </span><span class="kw">footnote</span>(<span class="dt">i =</span> <span class="dv">1</span>, <span class="dt">j =</span> <span class="kw">c</span>(<span class="dv">1</span>),</span>
+<span id="cb20-10"><a href="comparison.html#cb20-10"></a>            <span class="dt">value =</span> <span class="kw">as_paragraph</span>(</span>
+<span id="cb20-11"><a href="comparison.html#cb20-11"></a>              <span class="kw">paste0</span>(<span class="st">&quot;95% family-wise confidence level</span><span class="ch">\n</span><span class="st">&quot;</span>,</span>
+<span id="cb20-12"><a href="comparison.html#cb20-12"></a>                <span class="st">&quot;Fit: aov(formula = growth ~ group, data = greenhouse)&quot;</span>)),</span>
+<span id="cb20-13"><a href="comparison.html#cb20-13"></a>            <span class="dt">ref_symbols =</span> <span class="kw">c</span>(<span class="st">&quot;&quot;</span>),</span>
+<span id="cb20-14"><a href="comparison.html#cb20-14"></a>            <span class="dt">part =</span> <span class="st">&quot;header&quot;</span>)</span></code></pre></div>
+<div class="tabwid"><style>.cl-dc06087c{font-family:'Arial';font-size:11px;font-weight:normal;font-style:normal;text-decoration:none;color:rgba(17, 17, 17, 1.00);background-color:transparent;}.cl-dc06087d{font-family:'Arial';font-size:7px;font-weight:normal;font-style:normal;text-decoration:none;color:rgba(17, 17, 17, 1.00);background-color:transparent;position: relative;bottom:3px;}.cl-dc06087e{font-family:'Arial';font-size:6px;font-weight:normal;font-style:normal;text-decoration:none;color:rgba(0, 0, 0, 1.00);background-color:transparent;position: relative;bottom:3px;}.cl-dc06087f{font-family:'Arial';font-size:10px;font-weight:normal;font-style:normal;text-decoration:none;color:rgba(0, 0, 0, 1.00);background-color:transparent;}.cl-dc067d3e{margin:0;text-align:left;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:2px;padding-top:2px;padding-left:5px;padding-right:5px;line-height: 1.00;background-color:transparent;}.cl-dc067d3f{margin:0;text-align:right;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:2px;padding-top:2px;padding-left:5px;padding-right:5px;line-height: 1.00;background-color:transparent;}.cl-dc067d40{margin:0;text-align:left;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:0;padding-top:0;padding-left:0;padding-right:0;line-height: 1.00;background-color:transparent;}.cl-dc07dba2{width:54px;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-dc07dba3{width:54px;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-dc07dba4{width:54px;background-color:transparent;vertical-align: middle;border-bottom: 2.00px solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-dc07dba5{width:54px;background-color:transparent;vertical-align: middle;border-bottom: 2.00px solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-dc07dba6{width:54px;background-color:transparent;vertical-align: middle;border-bottom: 1.00px solid rgba(255, 255, 255, 0.00);border-top: 1.00px solid rgba(255, 255, 255, 0.00);border-left: 1.00px solid rgba(255, 255, 255, 0.00);border-right: 1.00px solid rgba(255, 255, 255, 0.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-dc07dba7{width:54px;background-color:transparent;vertical-align: middle;border-bottom: 2.00px solid rgba(0, 0, 0, 1.00);border-top: 2.00px solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-dc07dba8{width:54px;background-color:transparent;vertical-align: middle;border-bottom: 2.00px solid rgba(0, 0, 0, 1.00);border-top: 2.00px solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}</style><table style='table-layout:auto;border-collapse:collapse;width:80%;'>
+<caption>
+<span id="tab:unnamed-chunk-19">Table 8.7: </span>Tukey multiple comparisons of means
+</caption>
+<thead><tr style="overflow-wrap:break-word;"><td class="cl-dc07dba8"><p class="cl-dc067d3e"><span class="cl-dc06087c">term</span><span class="cl-dc06087d"></span></p></td><td class="cl-dc07dba8"><p class="cl-dc067d3e"><span class="cl-dc06087c">contrast</span></p></td><td class="cl-dc07dba7"><p class="cl-dc067d3f"><span class="cl-dc06087c">null.value</span></p></td><td class="cl-dc07dba7"><p class="cl-dc067d3f"><span class="cl-dc06087c">estimate</span></p></td><td class="cl-dc07dba7"><p class="cl-dc067d3f"><span class="cl-dc06087c">conf.low</span></p></td><td class="cl-dc07dba7"><p class="cl-dc067d3f"><span class="cl-dc06087c">conf.high</span></p></td><td class="cl-dc07dba7"><p class="cl-dc067d3f"><span class="cl-dc06087c">adj.p.value</span></p></td></tr></thead><tbody><tr style="overflow-wrap:break-word;"><td class="cl-dc07dba3"><p class="cl-dc067d3e"><span class="cl-dc06087c">group</span></p></td><td class="cl-dc07dba3"><p class="cl-dc067d3e"><span class="cl-dc06087c">F1-Control</span></p></td><td class="cl-dc07dba2"><p class="cl-dc067d3f"><span class="cl-dc06087c">0</span></p></td><td class="cl-dc07dba2"><p class="cl-dc067d3f"><span class="cl-dc06087c">7.6</span></p></td><td class="cl-dc07dba2"><p class="cl-dc067d3f"><span class="cl-dc06087c">4.8</span></p></td><td class="cl-dc07dba2"><p class="cl-dc067d3f"><span class="cl-dc06087c">10.4</span></p></td><td class="cl-dc07dba2"><p class="cl-dc067d3f"><span class="cl-dc06087c">0.000</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-dc07dba3"><p class="cl-dc067d3e"><span class="cl-dc06087c">group</span></p></td><td class="cl-dc07dba3"><p class="cl-dc067d3e"><span class="cl-dc06087c">F2-Control</span></p></td><td class="cl-dc07dba2"><p class="cl-dc067d3f"><span class="cl-dc06087c">0</span></p></td><td class="cl-dc07dba2"><p class="cl-dc067d3f"><span class="cl-dc06087c">4.9</span></p></td><td class="cl-dc07dba2"><p class="cl-dc067d3f"><span class="cl-dc06087c">2.0</span></p></td><td class="cl-dc07dba2"><p class="cl-dc067d3f"><span class="cl-dc06087c">7.7</span></p></td><td class="cl-dc07dba2"><p class="cl-dc067d3f"><span class="cl-dc06087c">0.001</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-dc07dba3"><p class="cl-dc067d3e"><span class="cl-dc06087c">group</span></p></td><td class="cl-dc07dba3"><p class="cl-dc067d3e"><span class="cl-dc06087c">F3-Control</span></p></td><td class="cl-dc07dba2"><p class="cl-dc067d3f"><span class="cl-dc06087c">0</span></p></td><td class="cl-dc07dba2"><p class="cl-dc067d3f"><span class="cl-dc06087c">8.2</span></p></td><td class="cl-dc07dba2"><p class="cl-dc067d3f"><span class="cl-dc06087c">5.4</span></p></td><td class="cl-dc07dba2"><p class="cl-dc067d3f"><span class="cl-dc06087c">11.0</span></p></td><td class="cl-dc07dba2"><p class="cl-dc067d3f"><span class="cl-dc06087c">0.000</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-dc07dba3"><p class="cl-dc067d3e"><span class="cl-dc06087c">group</span></p></td><td class="cl-dc07dba3"><p class="cl-dc067d3e"><span class="cl-dc06087c">F2-F1</span></p></td><td class="cl-dc07dba2"><p class="cl-dc067d3f"><span class="cl-dc06087c">0</span></p></td><td class="cl-dc07dba2"><p class="cl-dc067d3f"><span class="cl-dc06087c">-2.7</span></p></td><td class="cl-dc07dba2"><p class="cl-dc067d3f"><span class="cl-dc06087c">-5.6</span></p></td><td class="cl-dc07dba2"><p class="cl-dc067d3f"><span class="cl-dc06087c">0.1</span></p></td><td class="cl-dc07dba2"><p class="cl-dc067d3f"><span class="cl-dc06087c">0.060</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-dc07dba3"><p class="cl-dc067d3e"><span class="cl-dc06087c">group</span></p></td><td class="cl-dc07dba3"><p class="cl-dc067d3e"><span class="cl-dc06087c">F3-F1</span></p></td><td class="cl-dc07dba2"><p class="cl-dc067d3f"><span class="cl-dc06087c">0</span></p></td><td class="cl-dc07dba2"><p class="cl-dc067d3f"><span class="cl-dc06087c">0.6</span></p></td><td class="cl-dc07dba2"><p class="cl-dc067d3f"><span class="cl-dc06087c">-2.2</span></p></td><td class="cl-dc07dba2"><p class="cl-dc067d3f"><span class="cl-dc06087c">3.4</span></p></td><td class="cl-dc07dba2"><p class="cl-dc067d3f"><span class="cl-dc06087c">0.932</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-dc07dba5"><p class="cl-dc067d3e"><span class="cl-dc06087c">group</span></p></td><td class="cl-dc07dba5"><p class="cl-dc067d3e"><span class="cl-dc06087c">F3-F2</span></p></td><td class="cl-dc07dba4"><p class="cl-dc067d3f"><span class="cl-dc06087c">0</span></p></td><td class="cl-dc07dba4"><p class="cl-dc067d3f"><span class="cl-dc06087c">3.3</span></p></td><td class="cl-dc07dba4"><p class="cl-dc067d3f"><span class="cl-dc06087c">0.5</span></p></td><td class="cl-dc07dba4"><p class="cl-dc067d3f"><span class="cl-dc06087c">6.2</span></p></td><td class="cl-dc07dba4"><p class="cl-dc067d3f"><span class="cl-dc06087c">0.017</span></p></td></tr><tr style="overflow-wrap:break-word;"><td  colspan="7"class="cl-dc07dba6"><p class="cl-dc067d40"><span class="cl-dc06087e"></span><span class="cl-dc06087f">95% family-wise confidence level<br>Fit: aov(formula = growth ~ group, data = greenhouse)</span></p></td></tr></tbody></table></div>
+<p>Data are mean <span class="math inline">\(\pm\)</span> standard deviation. There was an increase in growth from 21 <span class="math inline">\(\pm\)</span> 1 in the control group to 28.6 <span class="math inline">\(\pm\)</span> 2.4 in the group with fertilizer F1, an increase of 7.6 (95% CI, 4.8 to 10.4), which was statistically significant (<em>p</em> &lt; .0001)… etc.</p>
+</div>
+<div id="reporting" class="section level3">
+<h3><span class="header-section-number">8.6.4</span> Reporting</h3>
+<p>Report like this.</p>
+<blockquote>
+<p>A one-way ANOVA was conducted to determine if plant growth was different for groups with different fertilizer types. Plants were classified into four groups: control (<em>n</em> = 6), fertilizer 1 (<em>n</em> = 6), fertilizer 2 (<em>n</em> = 6), and fertilizer 3 (n = 6). There were no outliers, as assessed by boxplot; data was normally distributed for each group, as assessed by Shapiro-Wilk test (<em>p</em> &gt; .05); and there was homogeneity of variances, as assessed by Levene’s test of homogeneity of variances (<em>p</em> = 0.393). Data is presented as mean <span class="math inline">\(\pm\)</span> standard deviation. Plant growth was statistically significantly different between different fertilizer groups, <em>F</em>(3, 20) = 27.465, p &lt; .0005, <span class="math inline">\(\omega^2\)</span> = 0.768. Plant growth increased from the control (21 <span class="math inline">\(\pm\)</span> 1.0), to fertilizer F1 (28.6 <span class="math inline">\(\pm\)</span> 2.4), fertilizer F2 (25.9 <span class="math inline">\(\pm\)</span> 1.9), and fertilizer F3 (29.2 <span class="math inline">\(\pm\)</span> 1.3) fertilizer groups. Tukey post hoc analysis revealed statistically significant increases from control to F1 (7.6, 95% CI (4.8 to 10.4), <em>p</em> = 1.6e-06), control to F2 (4.9, 95% CI (2.0 to 7.7), <em>p</em> = 0.00055), and control to F3 (8.2, 95% CI (5.4 to 11.0), <em>p</em> = 5.1e-07), as well as the increase from F2 to F3 (3.3, 95% CI (0.51 to 6.2), <em>p</em> = 0.017), but there were no statistically significant group differences between F1 and F2 or F1 and F3.</p>
+</blockquote>
+</div>
+<div id="example" class="section level3">
+<h3><span class="header-section-number">8.6.5</span> Example</h3>
+<p><em>In a completely randomized design experiment, 20 young pigs are assigned at random among 4 experimental groups, and each group is fed a different diet. The response variable is the pig’s weight in kg after consuming the diet for 10 months. Are the mean pig weights the same for all 4 diets?</em></p>
+<div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb21-1"><a href="comparison.html#cb21-1"></a><span class="co"># pig &lt;- read.delim(file = &quot;input/pig_weight.txt&quot;, header = TRUE, sep = &quot;,&quot;)</span></span>
+<span id="cb21-2"><a href="comparison.html#cb21-2"></a><span class="co"># pig &lt;- pig %&gt;%</span></span>
+<span id="cb21-3"><a href="comparison.html#cb21-3"></a><span class="co">#   gather(key = diet, value = weight) %&gt;%</span></span>
+<span id="cb21-4"><a href="comparison.html#cb21-4"></a><span class="co">#   mutate(diet = factor(diet))</span></span>
+<span id="cb21-5"><a href="comparison.html#cb21-5"></a><span class="co"># </span></span>
+<span id="cb21-6"><a href="comparison.html#cb21-6"></a><span class="co"># glimpse(pig)</span></span>
+<span id="cb21-7"><a href="comparison.html#cb21-7"></a><span class="co"># </span></span>
+<span id="cb21-8"><a href="comparison.html#cb21-8"></a><span class="co"># ggplot(data = pig, aes(x = diet, y = weight)) +</span></span>
+<span id="cb21-9"><a href="comparison.html#cb21-9"></a><span class="co">#   geom_boxplot()</span></span></code></pre></div>
+<p>The measurements are independent because this is a completely randomized experiment. The individual populations could be assumed normally distributed if <span class="math inline">\(n &gt;= 30\)</span>, but <span class="math inline">\(n = 20\)</span>, so we need to check for normality. The sample sizes are similar (5 per each of the 4 factor levels), so the equality of sample variances is less critical, but we can check anyway.</p>
+<p>First a check of the normality condition. Test for normality by starting with the assumption that the distribution are normal, <span class="math inline">\(H_0: normal\)</span>, then falsifying the assumption if sufficient evidence exists. In these normal Q-Q plots, look for substantial deviations from a straight line. These plots looks good.</p>
+<div class="sourceCode" id="cb22"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb22-1"><a href="comparison.html#cb22-1"></a><span class="co"># layout(rbind(c(1, 2), c(3, 4)))</span></span>
+<span id="cb22-2"><a href="comparison.html#cb22-2"></a><span class="co"># qqnorm(pig[pig$diet == &quot;Feed.1&quot;,]$weight)</span></span>
+<span id="cb22-3"><a href="comparison.html#cb22-3"></a><span class="co"># qqline(pig[pig$diet == &quot;Feed.1&quot;,]$weight)</span></span>
+<span id="cb22-4"><a href="comparison.html#cb22-4"></a><span class="co"># qqnorm(pig[pig$diet == &quot;Feed.2&quot;,]$weight)</span></span>
+<span id="cb22-5"><a href="comparison.html#cb22-5"></a><span class="co"># qqline(pig[pig$diet == &quot;Feed.2&quot;,]$weight)</span></span>
+<span id="cb22-6"><a href="comparison.html#cb22-6"></a><span class="co"># qqnorm(pig[pig$diet == &quot;Feed.3&quot;,]$weight)</span></span>
+<span id="cb22-7"><a href="comparison.html#cb22-7"></a><span class="co"># qqline(pig[pig$diet == &quot;Feed.3&quot;,]$weight)</span></span>
+<span id="cb22-8"><a href="comparison.html#cb22-8"></a><span class="co"># qqnorm(pig[pig$diet == &quot;Feed.4&quot;,]$weight)</span></span>
+<span id="cb22-9"><a href="comparison.html#cb22-9"></a><span class="co"># qqline(pig[pig$diet == &quot;Feed.4&quot;,]$weight)</span></span></code></pre></div>
+<p>There are statistical tests for that provide a quantitative evaluation, but the sample sizes are two small for them to be useful.</p>
+<p>Now check for equal variances with Bartlett’s test of homogeneity of variances. The p-value is &gt;&gt;.05, so do not reject <span class="math inline">\(H_0\)</span> of equal variances.</p>
+<div class="sourceCode" id="cb23"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb23-1"><a href="comparison.html#cb23-1"></a><span class="co"># bartlett.test(weight ~ diet, data = pig)</span></span></code></pre></div>
+<p>Now we are ready for the one-way ANOVA test. The null hypothesis is that all means are equal. The p-value is &lt;.0001, so we reject <span class="math inline">\(H_0\)</span>.</p>
+<div class="sourceCode" id="cb24"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb24-1"><a href="comparison.html#cb24-1"></a><span class="co"># summary(pig.aov &lt;- aov(weight ~ diet, data = pig))</span></span></code></pre></div>
+<p>In a multi-factor experiment each level of m
+Multi-factor ANOVA (MANOVA) is a method to compare mean responses by treatment factor level of two or more treatments applied in combination. The null hypotheses are <span class="math inline">\(H_0: \mu_{1.} = \mu_{2.} = \dots = \mu_{a.}\)</span> for the <span class="math inline">\(a\)</span> levels of factor 1, <span class="math inline">\(H_0: \mu_{.1} = \mu_{.2} = \dots = \mu_{.b}\)</span> for the <span class="math inline">\(b\)</span> levels of factor 2, etc. for all the factors in the experiment, and $H_0: $ no interaction for all the factor interactions.</p>
+<p>There are two equivalent ways to state the MANOVA model:</p>
+<p><span class="math display">\[Y_{ijk} = \mu_{ij} + \epsilon_{ijk}\]</span></p>
+<p>In this notation <span class="math inline">\(Y_{ijk}\)</span> refers to the <span class="math inline">\(k^{th}\)</span> observation in the <span class="math inline">\(j^{th}\)</span> level of factor two and the <span class="math inline">\(i^{th}\)</span> level of factor 1. Potentially there could be additional factors. This model formulation decomposes the response into a cell mean and an error term. The second makes the factor effect more explicit and is thus more common:</p>
+<p><span class="math display">\[Y_{ijk} = \mu + \alpha_i + \beta_j + (\alpha\beta)_{ij} +  \epsilon_{ijk}\]</span></p>
+<p>$_i</p>
+</div>
+<div id="multiple-variance-comparison-f-test" class="section level3">
+<h3><span class="header-section-number">8.6.6</span> Multiple Variance Comparison F Test</h3>
+</div>
+<div id="example-1" class="section level3">
+<h3><span class="header-section-number">8.6.7</span> Example</h3>
+<p><em>A study investigates the relationship between oxygen update and two explanatory variables: smoking, and type of stress test. A sample of</em> <span class="math inline">\(n = 27\)</span> <em>persons, 9 non-smoking, 9 moderately-smoking, and 9 heavy-smoking are divided into three stress tests, bicycle, treadmill, and steps and their oxygen uptake was measured. Is oxygen uptake related to smoking status and type of stress test? Is there an interaction effect between smoking status and type of stress test?</em></p>
+<div class="sourceCode" id="cb25"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb25-1"><a href="comparison.html#cb25-1"></a><span class="kw">library</span>(dplyr)</span>
+<span id="cb25-2"><a href="comparison.html#cb25-2"></a><span class="kw">library</span>(ggplot2)</span>
+<span id="cb25-3"><a href="comparison.html#cb25-3"></a><span class="kw">library</span>(nortest)  <span class="co"># for Anderson-Darling test</span></span>
+<span id="cb25-4"><a href="comparison.html#cb25-4"></a><span class="kw">library</span>(stats)  <span class="co"># for anova</span></span>
+<span id="cb25-5"><a href="comparison.html#cb25-5"></a></span>
+<span id="cb25-6"><a href="comparison.html#cb25-6"></a>smoker &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">1</span>, </span>
+<span id="cb25-7"><a href="comparison.html#cb25-7"></a>            <span class="dv">2</span>, <span class="dv">2</span>, <span class="dv">2</span>, <span class="dv">2</span>, <span class="dv">2</span>, <span class="dv">2</span>, <span class="dv">2</span>, <span class="dv">2</span>, <span class="dv">2</span>, </span>
+<span id="cb25-8"><a href="comparison.html#cb25-8"></a>            <span class="dv">3</span>, <span class="dv">3</span>, <span class="dv">3</span>, <span class="dv">3</span>, <span class="dv">3</span>, <span class="dv">3</span>, <span class="dv">3</span>, <span class="dv">3</span>, <span class="dv">3</span>)</span>
+<span id="cb25-9"><a href="comparison.html#cb25-9"></a>stress &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">2</span>, <span class="dv">2</span>, <span class="dv">3</span>, <span class="dv">3</span>, <span class="dv">3</span>,</span>
+<span id="cb25-10"><a href="comparison.html#cb25-10"></a>            <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">2</span>, <span class="dv">2</span>, <span class="dv">3</span>, <span class="dv">3</span>, <span class="dv">3</span>,</span>
+<span id="cb25-11"><a href="comparison.html#cb25-11"></a>            <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">2</span>, <span class="dv">2</span>, <span class="dv">3</span>, <span class="dv">3</span>, <span class="dv">3</span>)</span>
+<span id="cb25-12"><a href="comparison.html#cb25-12"></a>oxytime &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="fl">12.8</span>, <span class="fl">13.5</span>, <span class="fl">11.2</span>, <span class="fl">16.2</span>, <span class="fl">18.1</span>, <span class="fl">17.8</span>, <span class="fl">22.6</span>, <span class="fl">19.3</span>, <span class="fl">18.9</span>,</span>
+<span id="cb25-13"><a href="comparison.html#cb25-13"></a>             <span class="fl">10.9</span>, <span class="fl">11.1</span>, <span class="fl">9.8</span>, <span class="fl">15.5</span>, <span class="fl">13.8</span>, <span class="fl">16.2</span>, <span class="fl">20.1</span>, <span class="fl">21.0</span>, <span class="fl">15.9</span>,</span>
+<span id="cb25-14"><a href="comparison.html#cb25-14"></a>             <span class="fl">8.7</span>, <span class="fl">9.2</span>, <span class="fl">7.5</span>, <span class="fl">14.7</span>, <span class="fl">13.2</span>, <span class="fl">8.1</span>, <span class="fl">16.2</span>, <span class="fl">16.1</span>, <span class="fl">17.8</span>)</span>
+<span id="cb25-15"><a href="comparison.html#cb25-15"></a>oxy &lt;-<span class="st"> </span><span class="kw">data.frame</span>(oxytime, smoker, stress)</span>
+<span id="cb25-16"><a href="comparison.html#cb25-16"></a>oxy<span class="op">$</span>smoker &lt;-<span class="st"> </span><span class="kw">ordered</span>(oxy<span class="op">$</span>smoker,</span>
+<span id="cb25-17"><a href="comparison.html#cb25-17"></a>                      <span class="dt">levels =</span> <span class="kw">c</span>(<span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">3</span>),</span>
+<span id="cb25-18"><a href="comparison.html#cb25-18"></a>                      <span class="dt">labels =</span> <span class="kw">c</span>(<span class="st">&quot;non-smoker&quot;</span>, <span class="st">&quot;moderate&quot;</span>, <span class="st">&quot;heavy&quot;</span>))</span>
+<span id="cb25-19"><a href="comparison.html#cb25-19"></a>oxy<span class="op">$</span>stress &lt;-<span class="st"> </span><span class="kw">factor</span>(oxy<span class="op">$</span>stress,</span>
+<span id="cb25-20"><a href="comparison.html#cb25-20"></a>                     <span class="dt">labels =</span> <span class="kw">c</span>(<span class="st">&quot;bicycle&quot;</span>, <span class="st">&quot;treadmill&quot;</span>, <span class="st">&quot;steps&quot;</span>))</span>
+<span id="cb25-21"><a href="comparison.html#cb25-21"></a></span>
+<span id="cb25-22"><a href="comparison.html#cb25-22"></a>lm_oxy &lt;-<span class="st"> </span><span class="kw">lm</span>(oxytime<span class="op">~</span>smoker<span class="op">+</span>stress<span class="op">+</span>smoker<span class="op">*</span>stress, <span class="dt">data =</span> oxy)</span>
+<span id="cb25-23"><a href="comparison.html#cb25-23"></a><span class="kw">anova</span>(lm_oxy)</span></code></pre></div>
+<pre><code>## Analysis of Variance Table
+## 
+## Response: oxytime
+##               Df  Sum Sq Mean Sq F value    Pr(&gt;F)    
+## smoker         2  84.899  42.449 12.8967 0.0003348 ***
+## stress         2 298.072 149.036 45.2793 9.473e-08 ***
+## smoker:stress  4   2.815   0.704  0.2138 0.9273412    
+## Residuals     18  59.247   3.291                      
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1</code></pre>
+<p><a href="http://online.sfsu.edu/efc/classes/biol710/manova/MANOVAnewest.pdf">SFU BIO710</a></p>
+</div>
+<div id="repeated-measures" class="section level3">
+<h3><span class="header-section-number">8.6.8</span> Repeated Measures</h3>
+</div>
+<div id="two-way" class="section level3">
+<h3><span class="header-section-number">8.6.9</span> Two-Way</h3>
+</div>
+<div id="randomized-blocks" class="section level3">
+<h3><span class="header-section-number">8.6.10</span> Randomized Blocks</h3>
+</div>
+<div id="ancova" class="section level3">
+<h3><span class="header-section-number">8.6.11</span> ANCOVA</h3>
+</div>
+</div>
+<div id="kruskalwallis-test" class="section level2">
+<h2><span class="header-section-number">8.7</span> Kruskal–Wallis Test</h2>
+
+</div>
+</div>
+            </section>
+
+          </div>
+        </div>
+      </div>
+<a href="final-words-1.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+<a href="references.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
+    </div>
+  </div>
+<script src="libs/gitbook-2.6.7/js/app.min.js"></script>
+<script src="libs/gitbook-2.6.7/js/lunr.js"></script>
+<script src="libs/gitbook-2.6.7/js/clipboard.min.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-search.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-sharing.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-fontsettings.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-bookdown.js"></script>
+<script src="libs/gitbook-2.6.7/js/jquery.highlight.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-clipboard.js"></script>
+<script>
+gitbook.require(["gitbook"], function(gitbook) {
+gitbook.start({
+"sharing": {
+"github": false,
+"facebook": true,
+"twitter": true,
+"linkedin": false,
+"weibo": false,
+"instapaper": false,
+"vk": false,
+"all": ["facebook", "twitter", "linkedin", "weibo", "instapaper"]
+},
+"fontsettings": {
+"theme": "white",
+"family": "sans",
+"size": 2
+},
+"edit": {
+"link": null,
+"text": null
+},
+"history": {
+"link": null,
+"text": null
+},
+"view": {
+"link": null,
+"text": null
+},
+"download": ["statistics.pdf", "statistics.epub"],
+"toc": {
+"collapse": "subsection"
+}
+});
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    var src = "true";
+    if (src === "" || src === "true") src = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML";
+    if (location.protocol !== "file:")
+      if (/^https?:/.test(src))
+        src = src.replace(/^https?:/, '');
+    script.src = src;
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+</body>
+
+</html>

@@ -1,0 +1,111 @@
+# Topic Modeling {#topicmodeling}
+
+Topic models are unsupervised ML models that identify topics as clusters of words with an associated probability distribution, and a probability distribution of topics within each document. 
+
+## LDA {#lda}
+
+Latent Dirichlet allocation (LDA) is an instance of a general family of mixed membership models that decompose data into latent components. *Latent* refers to unidentified topics. *Dirichlet* refers to the type of distribution followed by the words in the the topics and by the topics in the documents.
+
+#### Algorithm {-}
+
+LDA assumes each document is created by a generative process where topics are included according to probabilities and words are included in the topics according to probabilities. The LDA algorithm determines what those probabilities are. The [algorithm](https://www.mygreatlearning.com/blog/understanding-latent-dirichlet-allocation/) is:
+
+1) For each document $d_i$, randomly assign each word to one of the *K* topics. Note that each $w_j$ may be assigned to a different topic in each documents.
+
+2) For each document, tabulate the number of words in each topic, a $d \times K$ matrix. For each word, tabulate the sum of occurrences across all documents, a $w \times K$ matrix.
+
+3) Resample a single instance of a word from the corpus and remove it from the analysis, decrementing the document's topic count and the word's topic count.
+
+4) Calculate the gamma matrix, $\gamma$, and the beta matrix, $\beta$.
+    * the gamma matrix is the probability distribution of topics for each document, $$p(t_k|d_i) = \frac{n_{ik} + \alpha}{N_i + K \alpha}$$ were $n_{ik}$ is the number of words in document $i$ for topic $k$, $N_i$ is the total number of words in $i$, and $\alpha$ is a hyperparameter. For each $d_i$, $\sum_{k \in K} \gamma_{ik} = 1$.
+    * the beta matrix is the probability distribution of words for each topic, $$p(w_j|t_k) = \frac{m_{j,k} + \beta}{\sum_{j \in V}m_{j,k} + V\beta}$$ where $m_{j,k}$ is the corpus-wide frequency count of word $w_j$ to topic $k$, $V$ is the number of distinct words in the corpus, and $\beta$ is a hyperparameter. For each $t_k$, $\sum_{j \in V} \beta_{kj} = 1$.
+  
+6) Perform Gibbs sampling. Calculate the joint probability distribution of words for each document and topic, $p(w_j|t_k,d_i) = p(t_k|d_i)p(w_j|t_k)$. Assign each word, $w_j$, to the topic with the maximum joint probability.
+
+7) Repeat steps 3-6 for all of the words in all of the documents.
+
+8) Repeat steps 3-7 for a pre-determined number of iterations.
+
+LDA thus has 3 hyperparameters: document-topic density factor, $\alpha$, topic-word density factor, $\beta$, and topic count, $K$. $\alpha$ controls the number of topics expected per document (large $\alpha$ = more topics). $\beta$ controls the distribution of words per topic (large $\beta$ = more words). Ideally, you want a few topics per document and a few words per topics, so, $\alpha$ and $\beta$ are typically set below one. $K$ is set using a combination of domain knowledge, *coherence*, and exclusivity.
+
+#### Evaluation {-}
+
+##### Held-out Likelihood {-}
+
+(discussion of hold-out probability) (Wallach et al., 2009).
+
+##### Semantic Coherence {-}
+
+##### Exclusivity {-}
+
+Generally, the greater the number of topics in a model, the lower the quality of the smallest topics. One way around this is simply hiding the low-quality topics. The coherence measure [@10.5555/2145432.2145462] evaluates topics.
+
+
+## CTM {#ctm}
+
+The Correlated Topic Model (CTM) [@blei2007] builds on the LDA model (chapter \@ref(lda)). 
+
+## STM
+
+Without the inclusion of covariates, STM reduces to a logistic-normal topic model, often
+called the Correlated Topic Model (CTM) (chapter \@ref(ctm)).
+
+
+## Data Formats
+
+There are five common text mining packages, each with their own format requirements. Whichever package you work in, there is a decent chance you will want to use a function from one of the others, so you need some fluency in them all.
+
+* **tm** works with Corpus objects (raw text with document and corpus metadata). Many **tm** algorithms work with a document-term matrix (DTM), a sparse matrix with one row per document, one column per term, and values equaling the word count or tf-idf. 
+
+* **quanteda** also works with Corpus objects, but has its own implementation. Many **quanteda** algorithms work with a document-feature matrix (DFM), again similar to **tm**'s DTM.
+
+* **tidytext** works with tibbles. Many **tidytext** algorithms work with tibbles with one row per token (usually a word, but possibly a large item of text), a frequency count column, and possibly other metadata columns.
+
+* **qdap** works with text fields in a data frame, so it does not require any particular data structure.
+
+* **sentimentr** is similar to **qdap**.
+
+Let's take the `sawyer_raw` data frame and pre-process it for all three packages.
+
+#### tm {-}
+
+Turn the character vector `sawyer_raw$text` into a text source with `VectorSource()`, then turn the text source into a corpus with `vCorpus()`. Clean the corpus with a series of utility functions. One particularly important function, `removeWords()`, removes stop words, plus any custom stop words. I would normally add "tom" because it is so ubiquitous throughout the text. However, in this case I won't because `stopwords` includes valence shifting words like "very" which are used in polarity scoring. I can remove them later for other exercises.
+
+```{r}
+# (sawyer_tm <- VCorpus(VectorSource(sawyer$text)) %>%
+#   tm_map(content_transformer(replace_abbreviation)) %>%
+#   tm_map(removePunctuation) %>%
+#   tm_map(removeNumbers) %>%
+#   tm_map(content_transformer(tolower)) %>%
+#   tm_map(removeWords, c(stopwords("en"), "tom")) %>%
+#   tm_map(stripWhitespace))
+```
+
+Each document in the `sawyer_tm` VCorpus is a line of text. Use `DocumentTermMaterix()` to convert the vCorpus into **tm**'s bag-of-words format, DTM.
+
+```{r}
+# (sawyer_tm_dtm <- DocumentTermMatrix(sawyer_tm))
+```
+
+This is a very sparse (nearly 100% sparse) matrix documents as rows and distinct words as columns.
+
+```{r}
+#   group_by(chapter) %>%
+#   mutate(text = paste(text, collapse = " ")) %>%
+#   slice_head(n = 1) %>%
+#   select(chapter, text)
+# 
+# sawyer_sent <- sawyer %>%
+#   sentSplit("text")
+# 
+# skimr::skim(sawyer)
+```
+
+#### quanteda {-}
+dafdafd
+
+#### tidytext {-}
+dafdafd
+
+
+

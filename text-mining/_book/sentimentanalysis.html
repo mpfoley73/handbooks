@@ -1,0 +1,1335 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+<head>
+
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <title>Chapter 2 Sentiment Analysis | Text Mining using R</title>
+  <meta name="description" content="Background and tutorial on text mining (topic modeling, sentiment analysis) using R." />
+  <meta name="generator" content="bookdown 0.21 and GitBook 2.6.7" />
+
+  <meta property="og:title" content="Chapter 2 Sentiment Analysis | Text Mining using R" />
+  <meta property="og:type" content="book" />
+  
+  
+  <meta property="og:description" content="Background and tutorial on text mining (topic modeling, sentiment analysis) using R." />
+  
+
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="Chapter 2 Sentiment Analysis | Text Mining using R" />
+  
+  <meta name="twitter:description" content="Background and tutorial on text mining (topic modeling, sentiment analysis) using R." />
+  
+
+<meta name="author" content="Michael Foley" />
+
+
+<meta name="date" content="2020-12-24" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+  
+  
+<link rel="prev" href="topicmodeling.html"/>
+<link rel="next" href="applications.html"/>
+<script src="libs/jquery-2.2.3/jquery.min.js"></script>
+<link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-table.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-bookdown.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-highlight.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-search.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-fontsettings.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-clipboard.css" rel="stylesheet" />
+
+
+
+
+
+
+
+
+
+<script src="libs/accessible-code-block-0.0.1/empty-anchor.js"></script>
+<link href="libs/anchor-sections-1.0/anchor-sections.css" rel="stylesheet" />
+<script src="libs/anchor-sections-1.0/anchor-sections.js"></script>
+<link href="libs/tabwid-1.0.0/tabwid.css" rel="stylesheet" />
+<script src="libs/tabwid-1.0.0/tabwid.js"></script>
+
+
+<style type="text/css">
+code.sourceCode > span { display: inline-block; line-height: 1.25; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode { white-space: pre; position: relative; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+code.sourceCode { white-space: pre-wrap; }
+code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+</style>
+
+<link rel="stylesheet" href="style.css" type="text/css" />
+</head>
+
+<body>
+
+
+
+  <div class="book without-animation with-summary font-size-2 font-family-1" data-basepath=".">
+
+    <div class="book-summary">
+      <nav role="navigation">
+
+<ul class="summary">
+<li><a href="./">A Minimal Book Example</a></li>
+
+<li class="divider"></li>
+<li class="chapter" data-level="" data-path="index.html"><a href="index.html"><i class="fa fa-check"></i>Intro</a></li>
+<li class="chapter" data-level="1" data-path="topicmodeling.html"><a href="topicmodeling.html"><i class="fa fa-check"></i><b>1</b> Topic Modeling</a><ul>
+<li class="chapter" data-level="1.1" data-path="topicmodeling.html"><a href="topicmodeling.html#lda"><i class="fa fa-check"></i><b>1.1</b> LDA</a></li>
+<li class="chapter" data-level="1.2" data-path="topicmodeling.html"><a href="topicmodeling.html#ctm"><i class="fa fa-check"></i><b>1.2</b> CTM</a></li>
+<li class="chapter" data-level="1.3" data-path="topicmodeling.html"><a href="topicmodeling.html#stm"><i class="fa fa-check"></i><b>1.3</b> STM</a></li>
+<li class="chapter" data-level="1.4" data-path="topicmodeling.html"><a href="topicmodeling.html#data-formats"><i class="fa fa-check"></i><b>1.4</b> Data Formats</a></li>
+</ul></li>
+<li class="chapter" data-level="2" data-path="sentimentanalysis.html"><a href="sentimentanalysis.html"><i class="fa fa-check"></i><b>2</b> Sentiment Analysis</a><ul>
+<li class="chapter" data-level="2.1" data-path="sentimentanalysis.html"><a href="sentimentanalysis.html#subjectivity-lexicons"><i class="fa fa-check"></i><b>2.1</b> Subjectivity Lexicons</a></li>
+<li class="chapter" data-level="2.2" data-path="sentimentanalysis.html"><a href="sentimentanalysis.html#polarity-scoring"><i class="fa fa-check"></i><b>2.2</b> Polarity Scoring</a><ul>
+<li class="chapter" data-level="2.2.1" data-path="sentimentanalysis.html"><a href="sentimentanalysis.html#tidytext-1"><i class="fa fa-check"></i><b>2.2.1</b> tidytext</a></li>
+<li class="chapter" data-level="2.2.2" data-path="sentimentanalysis.html"><a href="sentimentanalysis.html#sentimentr"><i class="fa fa-check"></i><b>2.2.2</b> sentimentr</a></li>
+<li class="chapter" data-level="2.2.3" data-path="sentimentanalysis.html"><a href="sentimentanalysis.html#qdap"><i class="fa fa-check"></i><b>2.2.3</b> qdap</a></li>
+</ul></li>
+<li class="chapter" data-level="2.3" data-path="sentimentanalysis.html"><a href="sentimentanalysis.html#emotion-classification"><i class="fa fa-check"></i><b>2.3</b> Emotion Classification</a></li>
+<li class="chapter" data-level="2.4" data-path="sentimentanalysis.html"><a href="sentimentanalysis.html#comparison-cloud"><i class="fa fa-check"></i><b>2.4</b> Comparison Cloud</a></li>
+<li class="chapter" data-level="2.5" data-path="sentimentanalysis.html"><a href="sentimentanalysis.html#statistical-test"><i class="fa fa-check"></i><b>2.5</b> Statistical Test</a></li>
+</ul></li>
+<li class="chapter" data-level="3" data-path="applications.html"><a href="applications.html"><i class="fa fa-check"></i><b>3</b> Applications</a><ul>
+<li class="chapter" data-level="3.1" data-path="applications.html"><a href="applications.html#example-one"><i class="fa fa-check"></i><b>3.1</b> Example one</a></li>
+<li class="chapter" data-level="3.2" data-path="applications.html"><a href="applications.html#example-two"><i class="fa fa-check"></i><b>3.2</b> Example two</a></li>
+</ul></li>
+<li class="chapter" data-level="4" data-path="final-words.html"><a href="final-words.html"><i class="fa fa-check"></i><b>4</b> Final Words</a></li>
+<li class="chapter" data-level="" data-path="references.html"><a href="references.html"><i class="fa fa-check"></i>References</a></li>
+<li class="divider"></li>
+<li><a href="https://github.com/rstudio/bookdown" target="blank">Published with bookdown</a></li>
+
+</ul>
+
+      </nav>
+    </div>
+
+    <div class="book-body">
+      <div class="body-inner">
+        <div class="book-header" role="navigation">
+          <h1>
+            <i class="fa fa-circle-o-notch fa-spin"></i><a href="./">Text Mining using R</a>
+          </h1>
+        </div>
+
+        <div class="page-wrapper" tabindex="-1" role="main">
+          <div class="page-inner">
+
+            <section class="normal" id="section-">
+<div id="sentimentanalysis" class="section level1">
+<h1><span class="header-section-number">Chapter 2</span> Sentiment Analysis</h1>
+<p>Sentiment analysis is the extraction of the emotional intent of text. You can classify the <em>polarity</em> (positive | negative) or sentiment (angry | sad | happy | …) at the document, sentence, or feature level.</p>
+<p>To practice with real-world data, I will use the <a href="https://data.world/promptcloud/customer-of-reviews-of-london-based-hotels">Customer reviews of London-based hotels</a> data set hosted on data.world. <code>hotel_raw</code> contains reviews of the top 10 most- and least-expensive hotels in London.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="sentimentanalysis.html#cb1-1"></a>hotel_raw_<span class="dv">1</span> &lt;-<span class="st"> </span><span class="kw">read_csv</span>(<span class="st">&quot;https://query.data.world/s/2zsbemxf66vevuuc47jqe24n4zwl54&quot;</span>) <span class="op">%&gt;%</span></span>
+<span id="cb1-2"><a href="sentimentanalysis.html#cb1-2"></a><span class="st">  </span><span class="kw">mutate</span>(<span class="st">`</span><span class="dt">Date Of Review</span><span class="st">`</span> =<span class="st"> </span>lubridate<span class="op">::</span><span class="kw">mdy</span>(<span class="st">`</span><span class="dt">Date Of Review</span><span class="st">`</span>),</span>
+<span id="cb1-3"><a href="sentimentanalysis.html#cb1-3"></a>         <span class="st">`</span><span class="dt">Property Name</span><span class="st">`</span> =<span class="st"> </span><span class="kw">trimws</span>(<span class="kw">str_remove</span>(<span class="st">`</span><span class="dt">Property Name</span><span class="st">`</span>, <span class="st">&quot;Hotel&quot;</span>)),</span>
+<span id="cb1-4"><a href="sentimentanalysis.html#cb1-4"></a>         <span class="st">`</span><span class="dt">Property Name</span><span class="st">`</span> =<span class="st"> </span><span class="kw">trimws</span>(<span class="kw">str_remove</span>(<span class="st">`</span><span class="dt">Property Name</span><span class="st">`</span>, <span class="st">&quot;The&quot;</span>)),</span>
+<span id="cb1-5"><a href="sentimentanalysis.html#cb1-5"></a>         <span class="st">`</span><span class="dt">Property Name</span><span class="st">`</span> =<span class="st"> </span><span class="kw">case_when</span>(</span>
+<span id="cb1-6"><a href="sentimentanalysis.html#cb1-6"></a>           <span class="kw">str_detect</span>(<span class="st">`</span><span class="dt">Property Name</span><span class="st">`</span>, <span class="st">&quot;^45 Park Lane&quot;</span>) <span class="op">~</span><span class="st"> &quot;45 Park Lane&quot;</span>,</span>
+<span id="cb1-7"><a href="sentimentanalysis.html#cb1-7"></a>           <span class="kw">str_detect</span>(<span class="st">`</span><span class="dt">Property Name</span><span class="st">`</span>, <span class="st">&quot;^Apex&quot;</span>) <span class="op">~</span><span class="st"> &quot;Apex&quot;</span>,</span>
+<span id="cb1-8"><a href="sentimentanalysis.html#cb1-8"></a>           <span class="kw">str_detect</span>(<span class="st">`</span><span class="dt">Property Name</span><span class="st">`</span>, <span class="st">&quot;^Bulgari&quot;</span>) <span class="op">~</span><span class="st"> &quot;Bulgari&quot;</span>,</span>
+<span id="cb1-9"><a href="sentimentanalysis.html#cb1-9"></a>           <span class="kw">str_detect</span>(<span class="st">`</span><span class="dt">Property Name</span><span class="st">`</span>, <span class="st">&quot;^Corinthia&quot;</span>) <span class="op">~</span><span class="st"> &quot;Corinthia&quot;</span>,</span>
+<span id="cb1-10"><a href="sentimentanalysis.html#cb1-10"></a>           <span class="kw">str_detect</span>(<span class="st">`</span><span class="dt">Property Name</span><span class="st">`</span>, <span class="st">&quot;^London Guest House&quot;</span>) <span class="op">~</span><span class="st"> &quot;Guest House&quot;</span>,</span>
+<span id="cb1-11"><a href="sentimentanalysis.html#cb1-11"></a>           <span class="kw">str_detect</span>(<span class="st">`</span><span class="dt">Property Name</span><span class="st">`</span>, <span class="st">&quot;^Xenia&quot;</span>) <span class="op">~</span><span class="st"> &quot;Xenia&quot;</span>,</span>
+<span id="cb1-12"><a href="sentimentanalysis.html#cb1-12"></a>           <span class="kw">str_detect</span>(<span class="st">`</span><span class="dt">Property Name</span><span class="st">`</span>, <span class="st">&quot;^Mandarin&quot;</span>) <span class="op">~</span><span class="st"> &quot;Mandarin&quot;</span>,</span>
+<span id="cb1-13"><a href="sentimentanalysis.html#cb1-13"></a>           <span class="kw">str_detect</span>(<span class="st">`</span><span class="dt">Property Name</span><span class="st">`</span>, <span class="st">&quot;^Mondrian&quot;</span>) <span class="op">~</span><span class="st"> &quot;Mondrian&quot;</span>,</span>
+<span id="cb1-14"><a href="sentimentanalysis.html#cb1-14"></a>           <span class="kw">str_detect</span>(<span class="st">`</span><span class="dt">Property Name</span><span class="st">`</span>, <span class="st">&quot;^Wellesley&quot;</span>) <span class="op">~</span><span class="st"> &quot;Wellesley&quot;</span>,</span>
+<span id="cb1-15"><a href="sentimentanalysis.html#cb1-15"></a>           <span class="ot">TRUE</span> <span class="op">~</span><span class="st"> `</span><span class="dt">Property Name</span><span class="st">`</span>),</span>
+<span id="cb1-16"><a href="sentimentanalysis.html#cb1-16"></a>         <span class="st">`</span><span class="dt">Property Name</span><span class="st">`</span> =<span class="st"> </span><span class="kw">factor</span>(<span class="st">`</span><span class="dt">Property Name</span><span class="st">`</span>),</span>
+<span id="cb1-17"><a href="sentimentanalysis.html#cb1-17"></a>         <span class="dt">review_id =</span> <span class="kw">row_number</span>()</span>
+<span id="cb1-18"><a href="sentimentanalysis.html#cb1-18"></a>  ) <span class="op">%&gt;%</span></span>
+<span id="cb1-19"><a href="sentimentanalysis.html#cb1-19"></a><span class="st">  </span>janitor<span class="op">::</span><span class="kw">clean_names</span>(<span class="dt">case =</span> <span class="st">&quot;snake&quot;</span>) <span class="op">%&gt;%</span></span>
+<span id="cb1-20"><a href="sentimentanalysis.html#cb1-20"></a><span class="st">  </span><span class="kw">select</span>(review_id, <span class="kw">everything</span>())</span>
+<span id="cb1-21"><a href="sentimentanalysis.html#cb1-21"></a></span>
+<span id="cb1-22"><a href="sentimentanalysis.html#cb1-22"></a>skimr<span class="op">::</span><span class="kw">skim</span>(hotel_raw_<span class="dv">1</span>)</span></code></pre></div>
+<table>
+<caption><span id="tab:unnamed-chunk-2">Table 2.1: </span>Data summary</caption>
+<tbody>
+<tr class="odd">
+<td align="left">Name</td>
+<td align="left">hotel_raw_1</td>
+</tr>
+<tr class="even">
+<td align="left">Number of rows</td>
+<td align="left">27330</td>
+</tr>
+<tr class="odd">
+<td align="left">Number of columns</td>
+<td align="left">7</td>
+</tr>
+<tr class="even">
+<td align="left">_______________________</td>
+<td align="left"></td>
+</tr>
+<tr class="odd">
+<td align="left">Column type frequency:</td>
+<td align="left"></td>
+</tr>
+<tr class="even">
+<td align="left">character</td>
+<td align="left">3</td>
+</tr>
+<tr class="odd">
+<td align="left">Date</td>
+<td align="left">1</td>
+</tr>
+<tr class="even">
+<td align="left">factor</td>
+<td align="left">1</td>
+</tr>
+<tr class="odd">
+<td align="left">numeric</td>
+<td align="left">2</td>
+</tr>
+<tr class="even">
+<td align="left">________________________</td>
+<td align="left"></td>
+</tr>
+<tr class="odd">
+<td align="left">Group variables</td>
+<td align="left">None</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Variable type: character</strong></p>
+<table>
+<thead>
+<tr class="header">
+<th align="left">skim_variable</th>
+<th align="right">n_missing</th>
+<th align="right">complete_rate</th>
+<th align="right">min</th>
+<th align="right">max</th>
+<th align="right">empty</th>
+<th align="right">n_unique</th>
+<th align="right">whitespace</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">review_title</td>
+<td align="right">0</td>
+<td align="right">1.00</td>
+<td align="right">1</td>
+<td align="right">508</td>
+<td align="right">0</td>
+<td align="right">22323</td>
+<td align="right">0</td>
+</tr>
+<tr class="even">
+<td align="left">review_text</td>
+<td align="right">0</td>
+<td align="right">1.00</td>
+<td align="right">16</td>
+<td align="right">32759</td>
+<td align="right">0</td>
+<td align="right">27329</td>
+<td align="right">0</td>
+</tr>
+<tr class="odd">
+<td align="left">location_of_the_reviewer</td>
+<td align="right">3953</td>
+<td align="right">0.86</td>
+<td align="right">1</td>
+<td align="right">178</td>
+<td align="right">0</td>
+<td align="right">6624</td>
+<td align="right">0</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Variable type: Date</strong></p>
+<table>
+<thead>
+<tr class="header">
+<th align="left">skim_variable</th>
+<th align="right">n_missing</th>
+<th align="right">complete_rate</th>
+<th align="left">min</th>
+<th align="left">max</th>
+<th align="left">median</th>
+<th align="right">n_unique</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">date_of_review</td>
+<td align="right">1</td>
+<td align="right">1</td>
+<td align="left">2002-04-01</td>
+<td align="left">2018-10-18</td>
+<td align="left">2015-07-22</td>
+<td align="right">3870</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Variable type: factor</strong></p>
+<table>
+<thead>
+<tr class="header">
+<th align="left">skim_variable</th>
+<th align="right">n_missing</th>
+<th align="right">complete_rate</th>
+<th align="left">ordered</th>
+<th align="right">n_unique</th>
+<th align="left">top_counts</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">property_name</td>
+<td align="right">0</td>
+<td align="right">1</td>
+<td align="left">FALSE</td>
+<td align="right">20</td>
+<td align="left">Sav: 5417, Mon: 4330, Rem: 3028, Cor: 2820</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Variable type: numeric</strong></p>
+<table>
+<thead>
+<tr class="header">
+<th align="left">skim_variable</th>
+<th align="right">n_missing</th>
+<th align="right">complete_rate</th>
+<th align="right">mean</th>
+<th align="right">sd</th>
+<th align="right">p0</th>
+<th align="right">p25</th>
+<th align="right">p50</th>
+<th align="right">p75</th>
+<th align="right">p100</th>
+<th align="left">hist</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">review_id</td>
+<td align="right">0</td>
+<td align="right">1</td>
+<td align="right">13665.50</td>
+<td align="right">7889.64</td>
+<td align="right">1</td>
+<td align="right">6833.25</td>
+<td align="right">13665.5</td>
+<td align="right">20497.75</td>
+<td align="right">27330</td>
+<td align="left">▇▇▇▇▇</td>
+</tr>
+<tr class="even">
+<td align="left">review_rating</td>
+<td align="right">0</td>
+<td align="right">1</td>
+<td align="right">4.49</td>
+<td align="right">0.89</td>
+<td align="right">1</td>
+<td align="right">4.00</td>
+<td align="right">5.0</td>
+<td align="right">5.00</td>
+<td align="right">5</td>
+<td align="left">▁▁▁▂▇</td>
+</tr>
+</tbody>
+</table>
+<p>There are 27,330 reviews of 20 hotels posted between 2002-04-01 and 2018-10-18.</p>
+<p>This raw text needs cleaned. One issue is tags like <em>&lt;e9&gt;</em> and unicode characters like <em>&lt;U+0440&gt;</em>. <a href="https://stackoverflow.com/questions/36108790/trouble-with-strings-with-u0092-unicode-characters">One way</a> to get rid of unicode characters is to convert them to ascii tags with <code>iconv()</code> and then remove the tags with <code>str_remove()</code>. For example, <code>iconv()</code> will change &lt;U+0093&gt; to ascii string “&lt;93&gt;” that you can remove with regex <code>"\\&lt;[:alnum]+\\&gt;]"</code> (more help with regex on <a href="https://rstudio.com/resources/cheatsheets/">RStudio’s cheat sheets</a>).</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="sentimentanalysis.html#cb2-1"></a>hotel_raw_<span class="dv">2</span> &lt;-<span class="st"> </span>hotel_raw_<span class="dv">1</span> <span class="op">%&gt;%</span></span>
+<span id="cb2-2"><a href="sentimentanalysis.html#cb2-2"></a><span class="st">  </span><span class="kw">mutate</span>(</span>
+<span id="cb2-3"><a href="sentimentanalysis.html#cb2-3"></a>    <span class="dt">review_text =</span> <span class="kw">iconv</span>(review_text, <span class="dt">from =</span> <span class="st">&quot;&quot;</span>, <span class="dt">to =</span> <span class="st">&quot;ASCII&quot;</span>, <span class="dt">sub =</span> <span class="st">&quot;byte&quot;</span>),</span>
+<span id="cb2-4"><a href="sentimentanalysis.html#cb2-4"></a>    <span class="dt">review_text =</span> <span class="kw">str_remove_all</span>(review_text, <span class="st">&quot;</span><span class="ch">\\</span><span class="st">&lt;[[:alnum:]]+</span><span class="ch">\\</span><span class="st">&gt;&quot;</span>)</span>
+<span id="cb2-5"><a href="sentimentanalysis.html#cb2-5"></a>  )</span></code></pre></div>
+<p>I also want to remove reviews written in a foreign language. One blunt force way to handle this is to look for words common in other languages that do not also occur in English.</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="sentimentanalysis.html#cb3-1"></a>hotel &lt;-<span class="st"> </span>hotel_raw_<span class="dv">2</span> <span class="op">%&gt;%</span></span>
+<span id="cb3-2"><a href="sentimentanalysis.html#cb3-2"></a><span class="st">  </span><span class="kw">filter</span>(<span class="op">!</span><span class="kw">str_detect</span>(review_text, <span class="st">&quot;( das )|( der )|( und )|( en )&quot;</span>)) <span class="op">%&gt;%</span><span class="st"> </span><span class="co"># German</span></span>
+<span id="cb3-3"><a href="sentimentanalysis.html#cb3-3"></a><span class="st">  </span><span class="kw">filter</span>(<span class="op">!</span><span class="kw">str_detect</span>(review_text, <span class="st">&quot;( et )|( de )|( le )|( les )&quot;</span>)) <span class="op">%&gt;%</span><span class="st"> </span><span class="co"># French</span></span>
+<span id="cb3-4"><a href="sentimentanalysis.html#cb3-4"></a><span class="st">  </span><span class="kw">filter</span>(<span class="op">!</span><span class="kw">str_detect</span>(review_text, <span class="st">&quot;( di )|( e )|( la )&quot;</span>)) <span class="op">%&gt;%</span><span class="st">          </span><span class="co"># Italian</span></span>
+<span id="cb3-5"><a href="sentimentanalysis.html#cb3-5"></a><span class="st">  </span><span class="kw">filter</span>(<span class="op">!</span><span class="kw">str_detect</span>(review_text, <span class="st">&quot;( un )|( y )&quot;</span>)) <span class="op">%&gt;%</span><span class="st">                 </span><span class="co"># Spanish</span></span>
+<span id="cb3-6"><a href="sentimentanalysis.html#cb3-6"></a><span class="st">  </span><span class="kw">select</span>(review_id, <span class="kw">everything</span>())</span></code></pre></div>
+<p>That got rid of 3,557 rows. My cleansed data set <code>hotel</code> has 23,773 rows.</p>
+<div id="subjectivity-lexicons" class="section level2">
+<h2><span class="header-section-number">2.1</span> Subjectivity Lexicons</h2>
+<p>There are three common sentiment lexicons. You commonly use <strong>Bing</strong> for polarity scoring, and <strong>AFINN</strong> for identifying emotions.</p>
+<ul>
+<li>Bing classifies words as <em>positive</em> or <em>negative</em>.</li>
+</ul>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="sentimentanalysis.html#cb4-1"></a>sentiment_bing &lt;-<span class="st"> </span><span class="kw">get_sentiments</span>(<span class="st">&quot;bing&quot;</span>) </span>
+<span id="cb4-2"><a href="sentimentanalysis.html#cb4-2"></a>sentiment_bing <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">count</span>(sentiment) <span class="op">%&gt;%</span><span class="st"> </span></span>
+<span id="cb4-3"><a href="sentimentanalysis.html#cb4-3"></a><span class="st">  </span><span class="kw">adorn_totals</span>() <span class="op">%&gt;%</span></span>
+<span id="cb4-4"><a href="sentimentanalysis.html#cb4-4"></a><span class="st">  </span><span class="kw">flextable</span>() <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">autofit</span>() <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">colformat_int</span>(<span class="dt">j =</span> <span class="dv">2</span>) <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">set_caption</span>(<span class="st">&quot;Bing Lexicon&quot;</span>)</span></code></pre></div>
+<div class="tabwid"><style>.cl-2d2dad84{font-family:'Arial';font-size:11px;font-weight:normal;font-style:normal;text-decoration:none;color:rgba(17, 17, 17, 1.00);background-color:transparent;}.cl-2d2dad85{margin:0;text-align:left;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:2px;padding-top:2px;padding-left:5px;padding-right:5px;line-height: 1.00;background-color:transparent;}.cl-2d2dad86{margin:0;text-align:right;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:2px;padding-top:2px;padding-left:5px;padding-right:5px;line-height: 1.00;background-color:transparent;}.cl-2d2dd476{width:45px;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-2d2dd477{width:68px;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-2d2dd478{width:45px;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-2d2dd479{width:68px;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-2d2dd47a{width:45px;background-color:transparent;vertical-align: middle;border-bottom: 2.00px solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-2d2dd47b{width:68px;background-color:transparent;vertical-align: middle;border-bottom: 2.00px solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-2d2dd47c{width:45px;background-color:transparent;vertical-align: middle;border-bottom: 2.00px solid rgba(0, 0, 0, 1.00);border-top: 2.00px solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-2d2dd47d{width:68px;background-color:transparent;vertical-align: middle;border-bottom: 2.00px solid rgba(0, 0, 0, 1.00);border-top: 2.00px solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}</style><table style='border-collapse:collapse;'>
+<caption>
+<span id="tab:unnamed-chunk-5">Table 2.2: </span>Bing Lexicon
+</caption>
+<thead><tr style="overflow-wrap:break-word;"><td class="cl-2d2dd47d"><p class="cl-2d2dad85"><span class="cl-2d2dad84">sentiment</span></p></td><td class="cl-2d2dd47c"><p class="cl-2d2dad86"><span class="cl-2d2dad84">n</span></p></td></tr></thead><tbody><tr style="overflow-wrap:break-word;"><td class="cl-2d2dd477"><p class="cl-2d2dad85"><span class="cl-2d2dad84">negative</span></p></td><td class="cl-2d2dd476"><p class="cl-2d2dad86"><span class="cl-2d2dad84">4,781</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-2d2dd479"><p class="cl-2d2dad85"><span class="cl-2d2dad84">positive</span></p></td><td class="cl-2d2dd478"><p class="cl-2d2dad86"><span class="cl-2d2dad84">2,005</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-2d2dd47b"><p class="cl-2d2dad85"><span class="cl-2d2dad84">Total</span></p></td><td class="cl-2d2dd47a"><p class="cl-2d2dad86"><span class="cl-2d2dad84">6,786</span></p></td></tr></tbody></table></div>
+<ul>
+<li>The AFINN lexicon associates words with a manually rated valence integer between -5 (negative) and +5 (positive) by Finn Arup Nielsen.</li>
+</ul>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="sentimentanalysis.html#cb5-1"></a>sentiment_afinn &lt;-<span class="st"> </span><span class="kw">get_sentiments</span>(<span class="st">&quot;afinn&quot;</span>) </span>
+<span id="cb5-2"><a href="sentimentanalysis.html#cb5-2"></a>sentiment_afinn <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">count</span>(value) <span class="op">%&gt;%</span><span class="st"> </span></span>
+<span id="cb5-3"><a href="sentimentanalysis.html#cb5-3"></a><span class="st">  </span><span class="kw">adorn_totals</span>() <span class="op">%&gt;%</span></span>
+<span id="cb5-4"><a href="sentimentanalysis.html#cb5-4"></a><span class="st">  </span><span class="kw">flextable</span>() <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">autofit</span>() <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">colformat_int</span>(<span class="dt">j =</span> <span class="dv">2</span>) <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">set_caption</span>(<span class="st">&quot;AFINN Lexicon&quot;</span>)</span></code></pre></div>
+<div class="tabwid"><style>.cl-2d528942{font-family:'Arial';font-size:11px;font-weight:normal;font-style:normal;text-decoration:none;color:rgba(17, 17, 17, 1.00);background-color:transparent;}.cl-2d528943{margin:0;text-align:left;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:2px;padding-top:2px;padding-left:5px;padding-right:5px;line-height: 1.00;background-color:transparent;}.cl-2d528944{margin:0;text-align:right;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:2px;padding-top:2px;padding-left:5px;padding-right:5px;line-height: 1.00;background-color:transparent;}.cl-2d52b002{width:47px;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-2d52b003{width:45px;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-2d52b004{width:47px;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-2d52b005{width:45px;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-2d52b006{width:47px;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-2d52b007{width:45px;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-2d52b008{width:45px;background-color:transparent;vertical-align: middle;border-bottom: 2.00px solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-2d52b009{width:47px;background-color:transparent;vertical-align: middle;border-bottom: 2.00px solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-2d52b00a{width:47px;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-2d52b00b{width:45px;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-2d52b00c{width:45px;background-color:transparent;vertical-align: middle;border-bottom: 2.00px solid rgba(0, 0, 0, 1.00);border-top: 2.00px solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-2d52d3a2{width:47px;background-color:transparent;vertical-align: middle;border-bottom: 2.00px solid rgba(0, 0, 0, 1.00);border-top: 2.00px solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}</style><table style='border-collapse:collapse;'>
+<caption>
+<span id="tab:unnamed-chunk-6">Table 2.3: </span>AFINN Lexicon
+</caption>
+<thead><tr style="overflow-wrap:break-word;"><td class="cl-2d52d3a2"><p class="cl-2d528943"><span class="cl-2d528942">value</span></p></td><td class="cl-2d52b00c"><p class="cl-2d528944"><span class="cl-2d528942">n</span></p></td></tr></thead><tbody><tr style="overflow-wrap:break-word;"><td class="cl-2d52b002"><p class="cl-2d528943"><span class="cl-2d528942">-5</span></p></td><td class="cl-2d52b003"><p class="cl-2d528944"><span class="cl-2d528942">16</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-2d52b00a"><p class="cl-2d528943"><span class="cl-2d528942">-4</span></p></td><td class="cl-2d52b00b"><p class="cl-2d528944"><span class="cl-2d528942">43</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-2d52b00a"><p class="cl-2d528943"><span class="cl-2d528942">-3</span></p></td><td class="cl-2d52b00b"><p class="cl-2d528944"><span class="cl-2d528942">264</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-2d52b002"><p class="cl-2d528943"><span class="cl-2d528942">-2</span></p></td><td class="cl-2d52b003"><p class="cl-2d528944"><span class="cl-2d528942">966</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-2d52b00a"><p class="cl-2d528943"><span class="cl-2d528942">-1</span></p></td><td class="cl-2d52b00b"><p class="cl-2d528944"><span class="cl-2d528942">309</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-2d52b002"><p class="cl-2d528943"><span class="cl-2d528942">0</span></p></td><td class="cl-2d52b003"><p class="cl-2d528944"><span class="cl-2d528942">1</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-2d52b002"><p class="cl-2d528943"><span class="cl-2d528942">1</span></p></td><td class="cl-2d52b003"><p class="cl-2d528944"><span class="cl-2d528942">208</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-2d52b002"><p class="cl-2d528943"><span class="cl-2d528942">2</span></p></td><td class="cl-2d52b003"><p class="cl-2d528944"><span class="cl-2d528942">448</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-2d52b00a"><p class="cl-2d528943"><span class="cl-2d528942">3</span></p></td><td class="cl-2d52b00b"><p class="cl-2d528944"><span class="cl-2d528942">172</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-2d52b004"><p class="cl-2d528943"><span class="cl-2d528942">4</span></p></td><td class="cl-2d52b005"><p class="cl-2d528944"><span class="cl-2d528942">45</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-2d52b006"><p class="cl-2d528943"><span class="cl-2d528942">5</span></p></td><td class="cl-2d52b007"><p class="cl-2d528944"><span class="cl-2d528942">5</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-2d52b009"><p class="cl-2d528943"><span class="cl-2d528942">Total</span></p></td><td class="cl-2d52b008"><p class="cl-2d528944"><span class="cl-2d528942">2,477</span></p></td></tr></tbody></table></div>
+<ul>
+<li>The NRC lexicon associates words with eight emotions (anger, fear, anticipation, trust, surprise, sadness, joy, and disgust) corresponding to the second level of <a href="https://www.6seconds.org/2020/08/11/plutchik-wheel-emotions/">Plutchik’s Wheel of Emotions</a> and two sentiments (negative and positive). NRC was created by manual annotation on a crowdsourcing platform. Read more <a href="https://nrc.canada.ca/en/research-development/products-services/technical-advisory-services/sentiment-emotion-lexicons">here</a>.</li>
+</ul>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="sentimentanalysis.html#cb6-1"></a>sentiment_nrc &lt;-<span class="st"> </span><span class="kw">get_sentiments</span>(<span class="st">&quot;nrc&quot;</span>)</span>
+<span id="cb6-2"><a href="sentimentanalysis.html#cb6-2"></a>sentiment_nrc <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">count</span>(sentiment) <span class="op">%&gt;%</span><span class="st"> </span></span>
+<span id="cb6-3"><a href="sentimentanalysis.html#cb6-3"></a><span class="st">  </span><span class="kw">adorn_totals</span>() <span class="op">%&gt;%</span></span>
+<span id="cb6-4"><a href="sentimentanalysis.html#cb6-4"></a><span class="st">  </span><span class="kw">flextable</span>() <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">autofit</span>() <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">colformat_int</span>(<span class="dt">j =</span> <span class="dv">2</span>) <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">set_caption</span>(<span class="st">&quot;NRC Lexicon&quot;</span>)</span></code></pre></div>
+<div class="tabwid"><style>.cl-2d735b5e{font-family:'Arial';font-size:11px;font-weight:normal;font-style:normal;text-decoration:none;color:rgba(17, 17, 17, 1.00);background-color:transparent;}.cl-2d735b5f{margin:0;text-align:left;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:2px;padding-top:2px;padding-left:5px;padding-right:5px;line-height: 1.00;background-color:transparent;}.cl-2d735b60{margin:0;text-align:right;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:2px;padding-top:2px;padding-left:5px;padding-right:5px;line-height: 1.00;background-color:transparent;}.cl-2d738188{width:51px;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-2d738189{width:76px;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-2d73818a{width:51px;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-2d73818b{width:76px;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-2d73818c{width:51px;background-color:transparent;vertical-align: middle;border-bottom: 2.00px solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-2d73818d{width:76px;background-color:transparent;vertical-align: middle;border-bottom: 2.00px solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-2d73818e{width:51px;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-2d73818f{width:76px;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-2d738190{width:51px;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-2d738191{width:76px;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-2d738192{width:51px;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-2d73a8f2{width:76px;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-2d73a8f3{width:51px;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-2d73a8f4{width:76px;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-2d73a8f5{width:51px;background-color:transparent;vertical-align: middle;border-bottom: 2.00px solid rgba(0, 0, 0, 1.00);border-top: 2.00px solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-2d73a8f6{width:76px;background-color:transparent;vertical-align: middle;border-bottom: 2.00px solid rgba(0, 0, 0, 1.00);border-top: 2.00px solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}</style><table style='border-collapse:collapse;'>
+<caption>
+<span id="tab:unnamed-chunk-7">Table 2.4: </span>NRC Lexicon
+</caption>
+<thead><tr style="overflow-wrap:break-word;"><td class="cl-2d73a8f6"><p class="cl-2d735b5f"><span class="cl-2d735b5e">sentiment</span></p></td><td class="cl-2d73a8f5"><p class="cl-2d735b60"><span class="cl-2d735b5e">n</span></p></td></tr></thead><tbody><tr style="overflow-wrap:break-word;"><td class="cl-2d738189"><p class="cl-2d735b5f"><span class="cl-2d735b5e">anger</span></p></td><td class="cl-2d738188"><p class="cl-2d735b60"><span class="cl-2d735b5e">1,247</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-2d73818f"><p class="cl-2d735b5f"><span class="cl-2d735b5e">anticipation</span></p></td><td class="cl-2d73818e"><p class="cl-2d735b60"><span class="cl-2d735b5e">839</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-2d738191"><p class="cl-2d735b5f"><span class="cl-2d735b5e">disgust</span></p></td><td class="cl-2d738190"><p class="cl-2d735b60"><span class="cl-2d735b5e">1,058</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-2d73a8f2"><p class="cl-2d735b5f"><span class="cl-2d735b5e">fear</span></p></td><td class="cl-2d738192"><p class="cl-2d735b60"><span class="cl-2d735b5e">1,476</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-2d738191"><p class="cl-2d735b5f"><span class="cl-2d735b5e">joy</span></p></td><td class="cl-2d738190"><p class="cl-2d735b60"><span class="cl-2d735b5e">689</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-2d738191"><p class="cl-2d735b5f"><span class="cl-2d735b5e">negative</span></p></td><td class="cl-2d738190"><p class="cl-2d735b60"><span class="cl-2d735b5e">3,324</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-2d73818f"><p class="cl-2d735b5f"><span class="cl-2d735b5e">positive</span></p></td><td class="cl-2d73818e"><p class="cl-2d735b60"><span class="cl-2d735b5e">2,312</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-2d73a8f4"><p class="cl-2d735b5f"><span class="cl-2d735b5e">sadness</span></p></td><td class="cl-2d73a8f3"><p class="cl-2d735b60"><span class="cl-2d735b5e">1,191</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-2d73818f"><p class="cl-2d735b5f"><span class="cl-2d735b5e">surprise</span></p></td><td class="cl-2d73818e"><p class="cl-2d735b60"><span class="cl-2d735b5e">534</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-2d73818b"><p class="cl-2d735b5f"><span class="cl-2d735b5e">trust</span></p></td><td class="cl-2d73818a"><p class="cl-2d735b60"><span class="cl-2d735b5e">1,231</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-2d73818d"><p class="cl-2d735b5f"><span class="cl-2d735b5e">Total</span></p></td><td class="cl-2d73818c"><p class="cl-2d735b60"><span class="cl-2d735b5e">13,901</span></p></td></tr></tbody></table></div>
+</div>
+<div id="polarity-scoring" class="section level2">
+<h2><span class="header-section-number">2.2</span> Polarity Scoring</h2>
+<p>You can use three packages to measure text polarity. The simplest method is using <strong>tidytext</strong>. You transform your text into one-row per word with <code>unnest_tokens()</code>, join to one of the sentiment lexicons, and add up the positives and negatives. The polarity score is the net of positive - negative. <strong>qdap</strong> is more sophisticated. It takes into account <em>valence shifters</em>, surrounding words that change the intensity of a sentiment (e.g., “very”) or switch its direction (e.g., “not”).</p>
+<div id="tidytext-1" class="section level3">
+<h3><span class="header-section-number">2.2.1</span> tidytext</h3>
+<p>The tidy way to score polarity is tagging individual words as “positive” and “negative” using the <code>bing</code> lexicon, then defining polarity as difference in counts. In principle, you ought to be able to use the positive|negative subset of NRC, or create weighted counts using AFINN. The <strong>qdap</strong> and <strong>sentimentr</strong> packages also correct for text length. A wordy review using twice as many positives as negatives shouldn’t score twice as positive. Those packages divide by <span class="math inline">\(\sqrt{n}\)</span> to reduce the impact of word count (longer reviews are still more emotional, just less so).</p>
+<p>Another “improvement” I employ below is capturing the words that registered as positive an negative. This is useful for explaining how the polarity score was calculated. I also attached the results back to the original data frame with an outer join since not all reviews would necessarily have any sentiment words (but they did). This leaves me with the original data, plus all my polarity metadata.</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="sentimentanalysis.html#cb7-1"></a>hotel_tidy &lt;-<span class="st"> </span>hotel <span class="op">%&gt;%</span></span>
+<span id="cb7-2"><a href="sentimentanalysis.html#cb7-2"></a><span class="st">  </span><span class="kw">select</span>(review_id, review_text) <span class="op">%&gt;%</span></span>
+<span id="cb7-3"><a href="sentimentanalysis.html#cb7-3"></a><span class="st">  </span><span class="kw">unnest_tokens</span>(<span class="dt">output =</span> <span class="st">&quot;word&quot;</span>, <span class="dt">input =</span> review_text)</span>
+<span id="cb7-4"><a href="sentimentanalysis.html#cb7-4"></a></span>
+<span id="cb7-5"><a href="sentimentanalysis.html#cb7-5"></a>hotel_wordcount &lt;-<span class="st"> </span>hotel_tidy <span class="op">%&gt;%</span></span>
+<span id="cb7-6"><a href="sentimentanalysis.html#cb7-6"></a><span class="st">  </span><span class="kw">count</span>(review_id)</span>
+<span id="cb7-7"><a href="sentimentanalysis.html#cb7-7"></a></span>
+<span id="cb7-8"><a href="sentimentanalysis.html#cb7-8"></a>hotel_tidy_polarity_<span class="dv">1</span> &lt;-<span class="st"> </span>hotel_tidy <span class="op">%&gt;%</span></span>
+<span id="cb7-9"><a href="sentimentanalysis.html#cb7-9"></a><span class="st">  </span><span class="kw">inner_join</span>(<span class="kw">get_sentiments</span>(<span class="st">&quot;bing&quot;</span>), <span class="dt">by =</span> <span class="st">&quot;word&quot;</span>) <span class="op">%&gt;%</span></span>
+<span id="cb7-10"><a href="sentimentanalysis.html#cb7-10"></a><span class="st">  </span><span class="kw">group_by</span>(review_id, sentiment) <span class="op">%&gt;%</span></span>
+<span id="cb7-11"><a href="sentimentanalysis.html#cb7-11"></a><span class="st">  </span><span class="kw">summarize</span>(<span class="dt">.groups =</span> <span class="st">&quot;drop&quot;</span>,</span>
+<span id="cb7-12"><a href="sentimentanalysis.html#cb7-12"></a>            <span class="dt">n =</span> <span class="kw">n</span>(), </span>
+<span id="cb7-13"><a href="sentimentanalysis.html#cb7-13"></a>            <span class="dt">words =</span> <span class="kw">list</span>(word)) <span class="op">%&gt;%</span></span>
+<span id="cb7-14"><a href="sentimentanalysis.html#cb7-14"></a><span class="st">  </span><span class="kw">pivot_wider</span>(<span class="dt">names_from =</span> sentiment, <span class="dt">values_from =</span> <span class="kw">c</span>(n, words), <span class="dt">values_fill =</span> <span class="kw">list</span>(<span class="dt">n =</span> <span class="dv">0</span>))</span>
+<span id="cb7-15"><a href="sentimentanalysis.html#cb7-15"></a></span>
+<span id="cb7-16"><a href="sentimentanalysis.html#cb7-16"></a>hotel_tidy_polarity_bing &lt;-<span class="st"> </span>hotel <span class="op">%&gt;%</span></span>
+<span id="cb7-17"><a href="sentimentanalysis.html#cb7-17"></a><span class="st">  </span><span class="kw">left_join</span>(hotel_wordcount, <span class="dt">by =</span> <span class="st">&quot;review_id&quot;</span>) <span class="op">%&gt;%</span></span>
+<span id="cb7-18"><a href="sentimentanalysis.html#cb7-18"></a><span class="st">  </span><span class="kw">left_join</span>(hotel_tidy_polarity_<span class="dv">1</span>, <span class="dt">by =</span> <span class="st">&quot;review_id&quot;</span>) <span class="op">%&gt;%</span></span>
+<span id="cb7-19"><a href="sentimentanalysis.html#cb7-19"></a><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">polarity_score =</span> (n_positive <span class="op">-</span><span class="st"> </span>n_negative) <span class="op">/</span><span class="st"> </span><span class="kw">sqrt</span>(n),</span>
+<span id="cb7-20"><a href="sentimentanalysis.html#cb7-20"></a>         <span class="dt">polarity_desc =</span> <span class="kw">if_else</span>(polarity_score <span class="op">&gt;=</span><span class="st"> </span><span class="dv">0</span>, <span class="st">&quot;Positive&quot;</span>, <span class="st">&quot;Negative&quot;</span>))</span></code></pre></div>
+<p>Out of curiosity, I’ll try this with AFINN too.</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="sentimentanalysis.html#cb8-1"></a>hotel_tidy_polarity_<span class="dv">2</span> &lt;-<span class="st"> </span>hotel_tidy <span class="op">%&gt;%</span></span>
+<span id="cb8-2"><a href="sentimentanalysis.html#cb8-2"></a><span class="st">  </span><span class="kw">inner_join</span>(<span class="kw">get_sentiments</span>(<span class="st">&quot;afinn&quot;</span>), <span class="dt">by =</span> <span class="st">&quot;word&quot;</span>) <span class="op">%&gt;%</span></span>
+<span id="cb8-3"><a href="sentimentanalysis.html#cb8-3"></a><span class="st">  </span><span class="kw">group_by</span>(review_id) <span class="op">%&gt;%</span></span>
+<span id="cb8-4"><a href="sentimentanalysis.html#cb8-4"></a><span class="st">  </span><span class="kw">summarize</span>(<span class="dt">.groups =</span> <span class="st">&quot;drop&quot;</span>,</span>
+<span id="cb8-5"><a href="sentimentanalysis.html#cb8-5"></a>            <span class="dt">sentiment =</span> <span class="kw">sum</span>(value),</span>
+<span id="cb8-6"><a href="sentimentanalysis.html#cb8-6"></a>            <span class="dt">words =</span> <span class="kw">list</span>(word)) </span>
+<span id="cb8-7"><a href="sentimentanalysis.html#cb8-7"></a></span>
+<span id="cb8-8"><a href="sentimentanalysis.html#cb8-8"></a>hotel_tidy_polarity_afinn &lt;-<span class="st"> </span>hotel <span class="op">%&gt;%</span></span>
+<span id="cb8-9"><a href="sentimentanalysis.html#cb8-9"></a><span class="st">  </span><span class="kw">left_join</span>(hotel_wordcount, <span class="dt">by =</span> <span class="st">&quot;review_id&quot;</span>) <span class="op">%&gt;%</span></span>
+<span id="cb8-10"><a href="sentimentanalysis.html#cb8-10"></a><span class="st">  </span><span class="kw">left_join</span>(hotel_tidy_polarity_<span class="dv">2</span>, <span class="dt">by =</span> <span class="st">&quot;review_id&quot;</span>) <span class="op">%&gt;%</span></span>
+<span id="cb8-11"><a href="sentimentanalysis.html#cb8-11"></a><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">polarity_score =</span> sentiment <span class="op">/</span><span class="st"> </span><span class="kw">sqrt</span>(n),</span>
+<span id="cb8-12"><a href="sentimentanalysis.html#cb8-12"></a>         <span class="dt">polarity_desc =</span> <span class="kw">if_else</span>(polarity_score <span class="op">&gt;=</span><span class="st"> </span><span class="dv">0</span>, <span class="st">&quot;Positive&quot;</span>, <span class="st">&quot;Negative&quot;</span>))</span></code></pre></div>
+<p>How should we present these results? One way is to treat polarity as the numeric measure and group by the factor variable <code>property_name</code>. Here are my Bing results.</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="sentimentanalysis.html#cb9-1"></a>hotel_tidy_polarity_bing <span class="op">%&gt;%</span><span class="st"> </span></span>
+<span id="cb9-2"><a href="sentimentanalysis.html#cb9-2"></a><span class="st">  </span><span class="kw">group_by</span>(property_name) <span class="op">%&gt;%</span><span class="st"> </span></span>
+<span id="cb9-3"><a href="sentimentanalysis.html#cb9-3"></a><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">median_polarity =</span> <span class="kw">median</span>(polarity_score, <span class="dt">na.rm =</span> <span class="ot">TRUE</span>)) <span class="op">%&gt;%</span></span>
+<span id="cb9-4"><a href="sentimentanalysis.html#cb9-4"></a><span class="st">  </span><span class="kw">ungroup</span>() <span class="op">%&gt;%</span></span>
+<span id="cb9-5"><a href="sentimentanalysis.html#cb9-5"></a><span class="st">  </span><span class="kw">arrange</span>(median_polarity) <span class="op">%&gt;%</span></span>
+<span id="cb9-6"><a href="sentimentanalysis.html#cb9-6"></a><span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(<span class="dt">x =</span> <span class="kw">fct_inorder</span>(property_name), <span class="dt">y =</span> polarity_score)) <span class="op">+</span></span>
+<span id="cb9-7"><a href="sentimentanalysis.html#cb9-7"></a><span class="st">  </span><span class="kw">geom_jitter</span>(<span class="dt">width =</span> <span class="fl">0.2</span>, <span class="dt">alpha =</span> <span class="fl">0.3</span>, <span class="dt">color =</span> <span class="st">&quot;#5DA5DA&quot;</span>, <span class="dt">size =</span> <span class="dv">1</span>) <span class="op">+</span></span>
+<span id="cb9-8"><a href="sentimentanalysis.html#cb9-8"></a><span class="st">  </span><span class="kw">geom_boxplot</span>(<span class="dt">alpha =</span> <span class="dv">0</span>) <span class="op">+</span></span>
+<span id="cb9-9"><a href="sentimentanalysis.html#cb9-9"></a><span class="st">  </span><span class="kw">geom_hline</span>(<span class="dt">yintercept =</span> <span class="dv">0</span>, <span class="dt">linetype =</span> <span class="st">&quot;longdash&quot;</span>, <span class="dt">color =</span> <span class="st">&quot;#60BD68&quot;</span>, <span class="dt">size =</span> <span class="fl">1.25</span>) <span class="op">+</span></span>
+<span id="cb9-10"><a href="sentimentanalysis.html#cb9-10"></a><span class="st">  </span><span class="kw">coord_flip</span>() <span class="op">+</span></span>
+<span id="cb9-11"><a href="sentimentanalysis.html#cb9-11"></a><span class="st">  </span><span class="kw">theme_minimal</span>() <span class="op">+</span></span>
+<span id="cb9-12"><a href="sentimentanalysis.html#cb9-12"></a><span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;Few Reviews for a Reason?&quot;</span>,</span>
+<span id="cb9-13"><a href="sentimentanalysis.html#cb9-13"></a>       <span class="dt">subtitle =</span> <span class="st">&quot;Hotels with few reviews tend to have negative reviews.&quot;</span>, </span>
+<span id="cb9-14"><a href="sentimentanalysis.html#cb9-14"></a>       <span class="dt">x =</span> <span class="ot">NULL</span>, <span class="dt">y =</span> <span class="st">&quot;Sentiment Polarity Score&quot;</span>,</span>
+<span id="cb9-15"><a href="sentimentanalysis.html#cb9-15"></a>       <span class="dt">caption =</span> <span class="st">&quot;Bing Polarity = (n_pos - n_neg) / sqrt(n_words)&quot;</span>)</span></code></pre></div>
+<p><img src="text-book_files/figure-html/unnamed-chunk-10-1.png" width="672" /></p>
+<p>And here is is with AFINN.</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="sentimentanalysis.html#cb10-1"></a>hotel_tidy_polarity_afinn <span class="op">%&gt;%</span><span class="st"> </span></span>
+<span id="cb10-2"><a href="sentimentanalysis.html#cb10-2"></a><span class="st">  </span><span class="kw">group_by</span>(property_name) <span class="op">%&gt;%</span><span class="st"> </span></span>
+<span id="cb10-3"><a href="sentimentanalysis.html#cb10-3"></a><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">median_polarity =</span> <span class="kw">median</span>(polarity_score, <span class="dt">na.rm =</span> <span class="ot">TRUE</span>)) <span class="op">%&gt;%</span></span>
+<span id="cb10-4"><a href="sentimentanalysis.html#cb10-4"></a><span class="st">  </span><span class="kw">ungroup</span>() <span class="op">%&gt;%</span></span>
+<span id="cb10-5"><a href="sentimentanalysis.html#cb10-5"></a><span class="st">  </span><span class="kw">arrange</span>(median_polarity) <span class="op">%&gt;%</span></span>
+<span id="cb10-6"><a href="sentimentanalysis.html#cb10-6"></a><span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(<span class="dt">x =</span> <span class="kw">fct_inorder</span>(property_name), <span class="dt">y =</span> polarity_score)) <span class="op">+</span></span>
+<span id="cb10-7"><a href="sentimentanalysis.html#cb10-7"></a><span class="st">  </span><span class="kw">geom_jitter</span>(<span class="dt">width =</span> <span class="fl">0.2</span>, <span class="dt">alpha =</span> <span class="fl">0.3</span>, <span class="dt">color =</span> <span class="st">&quot;#5DA5DA&quot;</span>, <span class="dt">size =</span> <span class="dv">1</span>) <span class="op">+</span></span>
+<span id="cb10-8"><a href="sentimentanalysis.html#cb10-8"></a><span class="st">  </span><span class="kw">geom_boxplot</span>(<span class="dt">alpha =</span> <span class="dv">0</span>) <span class="op">+</span></span>
+<span id="cb10-9"><a href="sentimentanalysis.html#cb10-9"></a><span class="st">  </span><span class="kw">geom_hline</span>(<span class="dt">yintercept =</span> <span class="dv">0</span>, <span class="dt">linetype =</span> <span class="st">&quot;longdash&quot;</span>, <span class="dt">color =</span> <span class="st">&quot;#60BD68&quot;</span>, <span class="dt">size =</span> <span class="fl">1.25</span>) <span class="op">+</span></span>
+<span id="cb10-10"><a href="sentimentanalysis.html#cb10-10"></a><span class="st">  </span><span class="kw">coord_flip</span>() <span class="op">+</span></span>
+<span id="cb10-11"><a href="sentimentanalysis.html#cb10-11"></a><span class="st">  </span><span class="kw">theme_minimal</span>() <span class="op">+</span></span>
+<span id="cb10-12"><a href="sentimentanalysis.html#cb10-12"></a><span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;Few Reviews for a Reason?&quot;</span>,</span>
+<span id="cb10-13"><a href="sentimentanalysis.html#cb10-13"></a>       <span class="dt">subtitle =</span> <span class="st">&quot;Hotels with few reviews tend to have negative reviews.&quot;</span>, </span>
+<span id="cb10-14"><a href="sentimentanalysis.html#cb10-14"></a>       <span class="dt">x =</span> <span class="ot">NULL</span>, <span class="dt">y =</span> <span class="st">&quot;Sentiment Polarity Score&quot;</span>,</span>
+<span id="cb10-15"><a href="sentimentanalysis.html#cb10-15"></a>       <span class="dt">caption =</span> <span class="st">&quot;AFINN Polarity = sentiment / sqrt(n_words)&quot;</span>)</span></code></pre></div>
+<p><img src="text-book_files/figure-html/unnamed-chunk-11-1.png" width="672" /></p>
+<p>Not too different. 2 of the top 3 are the same. The bottom 4 are the same group, just shuffled. Savoy fared better in AFINN than in Bing.</p>
+<p>The data set includes a numeric rating <code>review_rating</code> (1-5). Does the polarity score reveal anything that the numeric rating doesn’t already tell you?</p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="sentimentanalysis.html#cb11-1"></a>hotel_tidy_polarity_bing <span class="op">%&gt;%</span><span class="st"> </span></span>
+<span id="cb11-2"><a href="sentimentanalysis.html#cb11-2"></a><span class="st">  </span><span class="kw">filter</span>(<span class="op">!</span><span class="kw">is.na</span>(polarity_score)) <span class="op">%&gt;%</span></span>
+<span id="cb11-3"><a href="sentimentanalysis.html#cb11-3"></a><span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(<span class="dt">x =</span> <span class="kw">as_factor</span>(review_rating), <span class="dt">y =</span> polarity_score)) <span class="op">+</span></span>
+<span id="cb11-4"><a href="sentimentanalysis.html#cb11-4"></a><span class="st">  </span><span class="kw">geom_jitter</span>(<span class="dt">width =</span> <span class="fl">0.2</span>, <span class="dt">alpha =</span> <span class="fl">0.3</span>, <span class="dt">color =</span> <span class="st">&quot;#5DA5DA&quot;</span>, <span class="dt">size =</span> <span class="dv">1</span>) <span class="op">+</span></span>
+<span id="cb11-5"><a href="sentimentanalysis.html#cb11-5"></a><span class="st">  </span><span class="kw">geom_boxplot</span>(<span class="dt">alpha =</span> <span class="dv">0</span>) <span class="op">+</span></span>
+<span id="cb11-6"><a href="sentimentanalysis.html#cb11-6"></a><span class="st">  </span><span class="kw">theme_minimal</span>() <span class="op">+</span></span>
+<span id="cb11-7"><a href="sentimentanalysis.html#cb11-7"></a><span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;Few Reviews for a Reason?&quot;</span>,</span>
+<span id="cb11-8"><a href="sentimentanalysis.html#cb11-8"></a>       <span class="dt">subtitle =</span> <span class="st">&quot;Hotels with few reviews tend to have negative reviews.&quot;</span>, </span>
+<span id="cb11-9"><a href="sentimentanalysis.html#cb11-9"></a>       <span class="dt">x =</span> <span class="ot">NULL</span>, <span class="dt">y =</span> <span class="st">&quot;Sentiment Polarity Score&quot;</span>,</span>
+<span id="cb11-10"><a href="sentimentanalysis.html#cb11-10"></a>       <span class="dt">caption =</span> <span class="st">&quot;Polarity = (n_pos - n_neg) / sqrt(n_words)&quot;</span>)</span></code></pre></div>
+<p><img src="text-book_files/figure-html/unnamed-chunk-12-1.png" width="672" /></p>
+<p>Most reviews are positive - even for 2-rated hotels. While sentiment does increase with review rating, there are plenty of reviews with a rating of 5 and a polarity score &lt;0. Let’s dig into that a little.</p>
+<p>Here is a 1-rated review with a decent polarity score.</p>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="sentimentanalysis.html#cb12-1"></a>hotel_tidy_polarity_bing <span class="op">%&gt;%</span></span>
+<span id="cb12-2"><a href="sentimentanalysis.html#cb12-2"></a><span class="st">  </span><span class="kw">filter</span>(review_rating <span class="op">==</span><span class="st"> </span><span class="dv">1</span>) <span class="op">%&gt;%</span></span>
+<span id="cb12-3"><a href="sentimentanalysis.html#cb12-3"></a><span class="st">  </span><span class="kw">slice_max</span>(polarity_score) <span class="op">%&gt;%</span></span>
+<span id="cb12-4"><a href="sentimentanalysis.html#cb12-4"></a><span class="st">  </span><span class="kw">select</span>(polarity_score, review_text) <span class="op">%&gt;%</span></span>
+<span id="cb12-5"><a href="sentimentanalysis.html#cb12-5"></a><span class="st">  </span><span class="kw">flextable</span>() <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">autofit</span>()</span></code></pre></div>
+<div class="tabwid"><style>.cl-34d84698{font-family:'Arial';font-size:11px;font-weight:normal;font-style:normal;text-decoration:none;color:rgba(17, 17, 17, 1.00);background-color:transparent;}.cl-34d86a06{margin:0;text-align:right;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:2px;padding-top:2px;padding-left:5px;padding-right:5px;line-height: 1.00;background-color:transparent;}.cl-34d86a07{margin:0;text-align:left;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:2px;padding-top:2px;padding-left:5px;padding-right:5px;line-height: 1.00;background-color:transparent;}.cl-34d8942c{width:89px;background-color:transparent;vertical-align: middle;border-bottom: 2.00px solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-34d8942d{width:2596px;background-color:transparent;vertical-align: middle;border-bottom: 2.00px solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-34d8942e{width:89px;background-color:transparent;vertical-align: middle;border-bottom: 2.00px solid rgba(0, 0, 0, 1.00);border-top: 2.00px solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-34d8942f{width:2596px;background-color:transparent;vertical-align: middle;border-bottom: 2.00px solid rgba(0, 0, 0, 1.00);border-top: 2.00px solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}</style><table style='border-collapse:collapse;'><thead><tr style="overflow-wrap:break-word;"><td class="cl-34d8942e"><p class="cl-34d86a06"><span class="cl-34d84698">polarity_score</span></p></td><td class="cl-34d8942f"><p class="cl-34d86a07"><span class="cl-34d84698">review_text</span></p></td></tr></thead><tbody><tr style="overflow-wrap:break-word;"><td class="cl-34d8942c"><p class="cl-34d86a06"><span class="cl-34d84698">0.8728716</span></p></td><td class="cl-34d8942d"><p class="cl-34d86a07"><span class="cl-34d84698">Stayed here many times both for business and pleasure, alone, with my wife and even with extended family and children. It is in fact impossible to seperate the business and pleasure stays because everytime was a breathtakingly delectable pleasure. Meeting friends and colleagues whether in the lobby one of the resturants always left an impressive memorable impression. Alas, I haven't been able to visit again for sometime - either fully booked or are not able to guarantee convenient parking for my personal chauffeur and car.</span></p></td></tr></tbody></table></div>
+<p>Well, that is amusing - I the reviewer treating the rating as a kind of ranking (first place!). How about a 5-rating with negative sentiment?</p>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="sentimentanalysis.html#cb13-1"></a>hotel_tidy_polarity_bing <span class="op">%&gt;%</span></span>
+<span id="cb13-2"><a href="sentimentanalysis.html#cb13-2"></a><span class="st">  </span><span class="kw">filter</span>(review_rating <span class="op">==</span><span class="st"> </span><span class="dv">5</span>) <span class="op">%&gt;%</span></span>
+<span id="cb13-3"><a href="sentimentanalysis.html#cb13-3"></a><span class="st">  </span><span class="kw">slice_min</span>(polarity_score) <span class="op">%&gt;%</span></span>
+<span id="cb13-4"><a href="sentimentanalysis.html#cb13-4"></a><span class="st">  </span><span class="kw">select</span>(polarity_score, review_text) <span class="op">%&gt;%</span></span>
+<span id="cb13-5"><a href="sentimentanalysis.html#cb13-5"></a><span class="st">  </span><span class="kw">flextable</span>() <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">autofit</span>()</span></code></pre></div>
+<div class="tabwid"><style>.cl-34f4dd44{font-family:'Arial';font-size:11px;font-weight:normal;font-style:normal;text-decoration:none;color:rgba(17, 17, 17, 1.00);background-color:transparent;}.cl-34f4dd45{margin:0;text-align:right;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:2px;padding-top:2px;padding-left:5px;padding-right:5px;line-height: 1.00;background-color:transparent;}.cl-34f4dd46{margin:0;text-align:left;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:2px;padding-top:2px;padding-left:5px;padding-right:5px;line-height: 1.00;background-color:transparent;}.cl-34f50454{width:89px;background-color:transparent;vertical-align: middle;border-bottom: 2.00px solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-34f50455{width:1761px;background-color:transparent;vertical-align: middle;border-bottom: 2.00px solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-34f50456{width:89px;background-color:transparent;vertical-align: middle;border-bottom: 2.00px solid rgba(0, 0, 0, 1.00);border-top: 2.00px solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-34f50457{width:1761px;background-color:transparent;vertical-align: middle;border-bottom: 2.00px solid rgba(0, 0, 0, 1.00);border-top: 2.00px solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}</style><table style='border-collapse:collapse;'><thead><tr style="overflow-wrap:break-word;"><td class="cl-34f50456"><p class="cl-34f4dd45"><span class="cl-34f4dd44">polarity_score</span></p></td><td class="cl-34f50457"><p class="cl-34f4dd46"><span class="cl-34f4dd44">review_text</span></p></td></tr></thead><tbody><tr style="overflow-wrap:break-word;"><td class="cl-34f50454"><p class="cl-34f4dd45"><span class="cl-34f4dd44">-0.70014</span></p></td><td class="cl-34f50455"><p class="cl-34f4dd46"><span class="cl-34f4dd44">Some design faults in the bathroom - no stool, misplaced grab handles and vanity mirror. | Very disappointing experience in Savoy Grill. Good quality ingredients but poorly presented and tasteless. Numerous mistakes in service including charging for expensive drinks which we did not have. Service charge revoked and booking for following night cancelled. |</span></p></td></tr></tbody></table></div>
+<p>Again, I think they got it backwards.</p>
+<p>The polarity scoring can reveal why some hotels rated worse by looking at the words used. (this plot di not come out well).</p>
+<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="sentimentanalysis.html#cb14-1"></a>hotel_tidy_polarity_bing <span class="op">%&gt;%</span></span>
+<span id="cb14-2"><a href="sentimentanalysis.html#cb14-2"></a><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">review_rating =</span> <span class="kw">as.factor</span>(review_rating)) <span class="op">%&gt;%</span></span>
+<span id="cb14-3"><a href="sentimentanalysis.html#cb14-3"></a><span class="st">  </span><span class="kw">filter</span>(<span class="op">!</span><span class="kw">is.na</span>(polarity_desc)) <span class="op">%&gt;%</span></span>
+<span id="cb14-4"><a href="sentimentanalysis.html#cb14-4"></a><span class="st">  </span><span class="kw">select</span>(<span class="op">!</span><span class="kw">c</span>(words_positive, words_negative)) <span class="op">%&gt;%</span><span class="st">  </span><span class="co"># no lists allowed</span></span>
+<span id="cb14-5"><a href="sentimentanalysis.html#cb14-5"></a><span class="st">  </span><span class="kw">unnest_tokens</span>(<span class="st">&quot;word&quot;</span>, review_text) <span class="op">%&gt;%</span></span>
+<span id="cb14-6"><a href="sentimentanalysis.html#cb14-6"></a><span class="st">  </span><span class="kw">anti_join</span>(stop_words, <span class="dt">by =</span> <span class="st">&quot;word&quot;</span>) <span class="op">%&gt;%</span></span>
+<span id="cb14-7"><a href="sentimentanalysis.html#cb14-7"></a><span class="st">  </span><span class="kw">filter</span>(<span class="op">!</span><span class="kw">str_detect</span>(word, <span class="st">&quot;[0-9]&quot;</span>)) <span class="op">%&gt;%</span></span>
+<span id="cb14-8"><a href="sentimentanalysis.html#cb14-8"></a><span class="st">  </span><span class="kw">filter</span>(<span class="op">!</span>word <span class="op">%in%</span><span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;hotel&quot;</span>, <span class="st">&quot;stay&quot;</span>, <span class="st">&quot;night&quot;</span>, <span class="st">&quot;london&quot;</span>)) <span class="op">%&gt;%</span></span>
+<span id="cb14-9"><a href="sentimentanalysis.html#cb14-9"></a><span class="st">  </span><span class="kw">count</span>(review_rating, polarity_desc, word) <span class="op">%&gt;%</span></span>
+<span id="cb14-10"><a href="sentimentanalysis.html#cb14-10"></a><span class="st">  </span><span class="kw">group_by</span>(review_rating, polarity_desc) <span class="op">%&gt;%</span></span>
+<span id="cb14-11"><a href="sentimentanalysis.html#cb14-11"></a><span class="st">  </span><span class="kw">slice_max</span>(<span class="dt">order_by =</span> n, <span class="dt">n =</span> <span class="dv">8</span>, <span class="dt">with_ties =</span> <span class="ot">FALSE</span>) <span class="op">%&gt;%</span></span>
+<span id="cb14-12"><a href="sentimentanalysis.html#cb14-12"></a><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">n =</span> <span class="kw">if_else</span>(polarity_desc <span class="op">==</span><span class="st"> &quot;Negative&quot;</span>, <span class="op">-</span>n, n),</span>
+<span id="cb14-13"><a href="sentimentanalysis.html#cb14-13"></a>         <span class="dt">word =</span> <span class="kw">paste0</span>(<span class="kw">if_else</span>(polarity_desc <span class="op">==</span><span class="st"> &quot;Negative&quot;</span>, <span class="st">&quot;-&quot;</span>, <span class="st">&quot;+&quot;</span>), word)) <span class="op">%&gt;%</span></span>
+<span id="cb14-14"><a href="sentimentanalysis.html#cb14-14"></a><span class="st">  </span><span class="kw">ungroup</span>() <span class="op">%&gt;%</span></span>
+<span id="cb14-15"><a href="sentimentanalysis.html#cb14-15"></a><span class="st">  </span><span class="kw">arrange</span>(review_rating, n) <span class="op">%&gt;%</span></span>
+<span id="cb14-16"><a href="sentimentanalysis.html#cb14-16"></a><span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(<span class="dt">x =</span> <span class="kw">fct_inorder</span>(word), <span class="dt">y =</span> n, <span class="dt">fill =</span> polarity_desc, <span class="dt">color =</span> polarity_desc)) <span class="op">+</span></span>
+<span id="cb14-17"><a href="sentimentanalysis.html#cb14-17"></a><span class="st">  </span><span class="kw">geom_col</span>(<span class="dt">alpha =</span> <span class="fl">0.6</span>) <span class="op">+</span></span>
+<span id="cb14-18"><a href="sentimentanalysis.html#cb14-18"></a><span class="st">  </span><span class="kw">facet_wrap</span>(<span class="op">~</span><span class="kw">as.factor</span>(review_rating), <span class="dt">scales =</span> <span class="st">&quot;free&quot;</span>) <span class="op">+</span></span>
+<span id="cb14-19"><a href="sentimentanalysis.html#cb14-19"></a><span class="st">  </span><span class="kw">scale_fill_few</span>() <span class="op">+</span></span>
+<span id="cb14-20"><a href="sentimentanalysis.html#cb14-20"></a><span class="st">  </span><span class="kw">scale_color_few</span>() <span class="op">+</span></span>
+<span id="cb14-21"><a href="sentimentanalysis.html#cb14-21"></a><span class="st">  </span><span class="kw">coord_flip</span>() <span class="op">+</span></span>
+<span id="cb14-22"><a href="sentimentanalysis.html#cb14-22"></a><span class="st">  </span><span class="kw">theme_minimal</span>() <span class="op">+</span></span>
+<span id="cb14-23"><a href="sentimentanalysis.html#cb14-23"></a><span class="st">  </span><span class="kw">theme</span>(<span class="dt">legend.position =</span> <span class="st">&quot;top&quot;</span>) <span class="op">+</span></span>
+<span id="cb14-24"><a href="sentimentanalysis.html#cb14-24"></a><span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;Top Words by review type&quot;</span>, <span class="dt">y =</span> <span class="st">&quot;Word Count&quot;</span>, <span class="dt">x =</span> <span class="ot">NULL</span>, </span>
+<span id="cb14-25"><a href="sentimentanalysis.html#cb14-25"></a>       <span class="dt">fill =</span> <span class="ot">NULL</span>, <span class="dt">color =</span> <span class="ot">NULL</span>)</span></code></pre></div>
+<p><img src="text-book_files/figure-html/unnamed-chunk-15-1.png" width="672" /></p>
+<p>Word clouds are a nice way to get an overview of the data.</p>
+<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="sentimentanalysis.html#cb15-1"></a>hotel_tidy_polarity_bing <span class="op">%&gt;%</span></span>
+<span id="cb15-2"><a href="sentimentanalysis.html#cb15-2"></a><span class="st">  </span><span class="kw">unnest_tokens</span>(<span class="dt">output =</span> <span class="st">&quot;word&quot;</span>, <span class="dt">input =</span> review_text) <span class="op">%&gt;%</span></span>
+<span id="cb15-3"><a href="sentimentanalysis.html#cb15-3"></a><span class="st">  </span><span class="kw">anti_join</span>(stop_words, <span class="dt">by =</span> <span class="st">&quot;word&quot;</span>) <span class="op">%&gt;%</span></span>
+<span id="cb15-4"><a href="sentimentanalysis.html#cb15-4"></a><span class="st">  </span><span class="kw">filter</span>(<span class="op">!</span><span class="kw">str_detect</span>(word, <span class="st">&quot;[0-9]&quot;</span>) <span class="op">&amp;</span><span class="st"> </span><span class="op">!</span><span class="kw">is.na</span>(polarity_desc)) <span class="op">%&gt;%</span></span>
+<span id="cb15-5"><a href="sentimentanalysis.html#cb15-5"></a><span class="st">  </span><span class="kw">filter</span>(<span class="op">!</span>word <span class="op">%in%</span><span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;hotel&quot;</span>, <span class="st">&quot;stay&quot;</span>, <span class="st">&quot;night&quot;</span>, <span class="st">&quot;london&quot;</span>)) <span class="op">%&gt;%</span></span>
+<span id="cb15-6"><a href="sentimentanalysis.html#cb15-6"></a><span class="st">  </span><span class="kw">count</span>(word, polarity_desc, <span class="dt">wt =</span> n) <span class="op">%&gt;%</span></span>
+<span id="cb15-7"><a href="sentimentanalysis.html#cb15-7"></a><span class="st">  </span><span class="kw">pivot_wider</span>(<span class="dt">names_from =</span> polarity_desc, <span class="dt">values_from =</span> n, <span class="dt">values_fill =</span> <span class="dv">0</span>) <span class="op">%&gt;%</span></span>
+<span id="cb15-8"><a href="sentimentanalysis.html#cb15-8"></a><span class="st">  </span>data.table<span class="op">::</span><span class="kw">data.table</span>() <span class="op">%&gt;%</span></span>
+<span id="cb15-9"><a href="sentimentanalysis.html#cb15-9"></a><span class="st">  </span><span class="kw">as.matrix</span>(<span class="dt">rownames =</span> <span class="st">&quot;word&quot;</span>) <span class="op">%&gt;%</span></span>
+<span id="cb15-10"><a href="sentimentanalysis.html#cb15-10"></a><span class="st">  </span>wordcloud<span class="op">::</span><span class="kw">comparison.cloud</span>(<span class="dt">max.words =</span> <span class="dv">20</span>, <span class="dt">title.size =</span> <span class="fl">1.5</span>)</span></code></pre></div>
+<pre><code>## Warning in wordcloud::comparison.cloud(., max.words = 20, title.size = 1.5):
+## location could not be fit on page. It will not be plotted.</code></pre>
+<pre><code>## Warning in wordcloud::comparison.cloud(., max.words = 20, title.size = 1.5):
+## amazing could not be fit on page. It will not be plotted.</code></pre>
+<pre><code>## Warning in wordcloud::comparison.cloud(., max.words = 20, title.size = 1.5):
+## wonderful could not be fit on page. It will not be plotted.</code></pre>
+<p><img src="text-book_files/figure-html/unnamed-chunk-16-1.png" width="672" /></p>
+</div>
+<div id="sentimentr" class="section level3">
+<h3><span class="header-section-number">2.2.2</span> sentimentr</h3>
+<p><strong>sentimentr</strong> calculates polarity at the sentence level. It improves on tidytext in that it takes into account the context in which the sentiment words occur, that is, the <em>valence shifters</em>.</p>
+<ul>
+<li>A <em>negator</em> flips the sign of a polarized word (e.g., “I do <strong><em>not</em></strong> like it.”). See <code>lexicon::hash_valence_shifters[y==1]</code>.</li>
+<li>An <em>amplifier</em> (intensifier) increases the impact (e.g., “I <strong><em>really</em></strong> like it.”). See <code>lexicon::hash_valence_shifters[y==2]</code>.</li>
+<li>A <em>de-amplifier</em> (downtoner) reduces the impact (e.g., “I <strong>hardly</strong> like it.”). See <code>lexicon::hash_valence_shifters[y==3]</code>.</li>
+<li>An <em>adversative conjunction</em> overrules the previous clause containing a polarized word (e.g., “I like it <strong><em>but</em></strong> it’s not worth it.”). See <code>lexicon::hash_valence_shifters[y==4]</code>.</li>
+</ul>
+<p><strong>sentimentr</strong> uses a lexicon package combined from the <strong>syuzhet</strong> and <strong>lexicon</strong> packages. Positive words are scored +1 and negative words are scored -1. <strong>sentimentr</strong> identifies clusters of words within sentences of the text. The 4 words before and 2 words after are candidate valence shifters. Polarized words are weighted by the valence shifter weights: negators = -1; amplifiers and de-amplifiers = 1.8; adversative conjunctions decrease the value of the prior cluster and increase the value of the following cluster. Neutral words hold no value, but do affect the word count.</p>
+<div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb19-1"><a href="sentimentanalysis.html#cb19-1"></a>hotel_sentr_polarity_<span class="dv">1</span> &lt;-<span class="st"> </span>hotel <span class="op">%&gt;%</span></span>
+<span id="cb19-2"><a href="sentimentanalysis.html#cb19-2"></a><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">sentences =</span> <span class="kw">get_sentences</span>(review_text)) <span class="op">%$%</span></span>
+<span id="cb19-3"><a href="sentimentanalysis.html#cb19-3"></a><span class="st">  </span><span class="kw">sentiment_by</span>(sentences, review_id)</span>
+<span id="cb19-4"><a href="sentimentanalysis.html#cb19-4"></a></span>
+<span id="cb19-5"><a href="sentimentanalysis.html#cb19-5"></a>hotel_sentr_polarity &lt;-<span class="st"> </span>hotel <span class="op">%&gt;%</span></span>
+<span id="cb19-6"><a href="sentimentanalysis.html#cb19-6"></a><span class="st">  </span><span class="kw">left_join</span>(hotel_sentr_polarity_<span class="dv">1</span>, <span class="dt">by =</span> <span class="st">&quot;review_id&quot;</span>) <span class="op">%&gt;%</span></span>
+<span id="cb19-7"><a href="sentimentanalysis.html#cb19-7"></a><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">polarity_desc =</span> <span class="kw">if_else</span>(ave_sentiment <span class="op">&gt;=</span><span class="st"> </span><span class="dv">0</span>, <span class="st">&quot;Positive&quot;</span>, <span class="st">&quot;Negative&quot;</span>))</span></code></pre></div>
+<p>Here is the chart treating polarity as the numeric measure and group by the factor variable <code>property_name</code>.</p>
+<div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb20-1"><a href="sentimentanalysis.html#cb20-1"></a>hotel_sentr_polarity <span class="op">%&gt;%</span><span class="st"> </span></span>
+<span id="cb20-2"><a href="sentimentanalysis.html#cb20-2"></a><span class="st">  </span><span class="kw">group_by</span>(property_name) <span class="op">%&gt;%</span><span class="st"> </span></span>
+<span id="cb20-3"><a href="sentimentanalysis.html#cb20-3"></a><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">median_polarity =</span> <span class="kw">median</span>(ave_sentiment, <span class="dt">na.rm =</span> <span class="ot">TRUE</span>)) <span class="op">%&gt;%</span></span>
+<span id="cb20-4"><a href="sentimentanalysis.html#cb20-4"></a><span class="st">  </span><span class="kw">ungroup</span>() <span class="op">%&gt;%</span></span>
+<span id="cb20-5"><a href="sentimentanalysis.html#cb20-5"></a><span class="st">  </span><span class="kw">arrange</span>(median_polarity) <span class="op">%&gt;%</span></span>
+<span id="cb20-6"><a href="sentimentanalysis.html#cb20-6"></a><span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(<span class="dt">x =</span> <span class="kw">fct_inorder</span>(property_name), <span class="dt">y =</span> ave_sentiment)) <span class="op">+</span></span>
+<span id="cb20-7"><a href="sentimentanalysis.html#cb20-7"></a><span class="st">  </span><span class="kw">geom_jitter</span>(<span class="dt">width =</span> <span class="fl">0.2</span>, <span class="dt">alpha =</span> <span class="fl">0.3</span>, <span class="dt">color =</span> <span class="st">&quot;#5DA5DA&quot;</span>, <span class="dt">size =</span> <span class="dv">1</span>) <span class="op">+</span></span>
+<span id="cb20-8"><a href="sentimentanalysis.html#cb20-8"></a><span class="st">  </span><span class="kw">geom_boxplot</span>(<span class="dt">alpha =</span> <span class="dv">0</span>) <span class="op">+</span></span>
+<span id="cb20-9"><a href="sentimentanalysis.html#cb20-9"></a><span class="st">  </span><span class="kw">geom_hline</span>(<span class="dt">yintercept =</span> <span class="dv">0</span>, <span class="dt">linetype =</span> <span class="st">&quot;longdash&quot;</span>, <span class="dt">color =</span> <span class="st">&quot;#60BD68&quot;</span>, <span class="dt">size =</span> <span class="fl">1.25</span>) <span class="op">+</span></span>
+<span id="cb20-10"><a href="sentimentanalysis.html#cb20-10"></a><span class="st">  </span><span class="kw">coord_flip</span>() <span class="op">+</span></span>
+<span id="cb20-11"><a href="sentimentanalysis.html#cb20-11"></a><span class="st">  </span><span class="kw">theme_minimal</span>() <span class="op">+</span></span>
+<span id="cb20-12"><a href="sentimentanalysis.html#cb20-12"></a><span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;Few Reviews for a Reason?&quot;</span>,</span>
+<span id="cb20-13"><a href="sentimentanalysis.html#cb20-13"></a>       <span class="dt">subtitle =</span> <span class="st">&quot;Hotels with few reviews tend to have negative reviews.&quot;</span>, </span>
+<span id="cb20-14"><a href="sentimentanalysis.html#cb20-14"></a>       <span class="dt">x =</span> <span class="ot">NULL</span>, <span class="dt">y =</span> <span class="st">&quot;Sentiment Polarity Score&quot;</span>,</span>
+<span id="cb20-15"><a href="sentimentanalysis.html#cb20-15"></a>       <span class="dt">caption =</span> <span class="st">&quot;Sentimentr Polarity&quot;</span>)</span></code></pre></div>
+<p><img src="text-book_files/figure-html/unnamed-chunk-18-1.png" width="672" /></p>
+<p>Here, Xenia came out on top.</p>
+<p>The data set includes a numeric rating <code>review_rating</code> (1-5). Does the polarity score reveal anything that the numeric rating doesn’t already tell you?</p>
+<div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb21-1"><a href="sentimentanalysis.html#cb21-1"></a>hotel_sentr_polarity <span class="op">%&gt;%</span><span class="st"> </span></span>
+<span id="cb21-2"><a href="sentimentanalysis.html#cb21-2"></a><span class="st">  </span><span class="kw">filter</span>(<span class="op">!</span><span class="kw">is.na</span>(ave_sentiment)) <span class="op">%&gt;%</span></span>
+<span id="cb21-3"><a href="sentimentanalysis.html#cb21-3"></a><span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(<span class="dt">x =</span> <span class="kw">as_factor</span>(review_rating), <span class="dt">y =</span> ave_sentiment)) <span class="op">+</span></span>
+<span id="cb21-4"><a href="sentimentanalysis.html#cb21-4"></a><span class="st">  </span><span class="kw">geom_jitter</span>(<span class="dt">width =</span> <span class="fl">0.2</span>, <span class="dt">alpha =</span> <span class="fl">0.3</span>, <span class="dt">color =</span> <span class="st">&quot;#5DA5DA&quot;</span>, <span class="dt">size =</span> <span class="dv">1</span>) <span class="op">+</span></span>
+<span id="cb21-5"><a href="sentimentanalysis.html#cb21-5"></a><span class="st">  </span><span class="kw">geom_boxplot</span>(<span class="dt">alpha =</span> <span class="dv">0</span>) <span class="op">+</span></span>
+<span id="cb21-6"><a href="sentimentanalysis.html#cb21-6"></a><span class="st">  </span><span class="kw">theme_minimal</span>() <span class="op">+</span></span>
+<span id="cb21-7"><a href="sentimentanalysis.html#cb21-7"></a><span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;Few Reviews for a Reason?&quot;</span>,</span>
+<span id="cb21-8"><a href="sentimentanalysis.html#cb21-8"></a>       <span class="dt">subtitle =</span> <span class="st">&quot;Hotels with few reviews tend to have negative reviews.&quot;</span>, </span>
+<span id="cb21-9"><a href="sentimentanalysis.html#cb21-9"></a>       <span class="dt">x =</span> <span class="ot">NULL</span>, <span class="dt">y =</span> <span class="st">&quot;Sentiment Polarity Score&quot;</span>,</span>
+<span id="cb21-10"><a href="sentimentanalysis.html#cb21-10"></a>       <span class="dt">caption =</span> <span class="st">&quot;Polarity = (n_pos - n_neg) / sqrt(n_words)&quot;</span>)</span></code></pre></div>
+<p><img src="text-book_files/figure-html/unnamed-chunk-19-1.png" width="672" /></p>
+<p>One nice feature of <strong>sentimentr</strong> is that it creates a highlighted text based on sentiment score (green = positive, red = negative).</p>
+<div class="sourceCode" id="cb22"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb22-1"><a href="sentimentanalysis.html#cb22-1"></a>hotel_sentr_polarity <span class="op">%&gt;%</span><span class="st"> </span></span>
+<span id="cb22-2"><a href="sentimentanalysis.html#cb22-2"></a><span class="st">    </span><span class="kw">highlight</span>()</span></code></pre></div>
+</div>
+<div id="qdap" class="section level3">
+<h3><span class="header-section-number">2.2.3</span> qdap</h3>
+<p><code>qdap::polarity(text.var, grouping.var = NULL)</code> calculates the polarity score for each character string <code>text.var</code>, grouping by optional character vector <code>grouping.var</code>. <code>polarity</code> uses the sentiment dictionary to tag polarized words. It considers a context cluster of words around polarized words as valence shifters (neutral, negator, amplifier, or de-amplifier). Neutral words hold no value but do affect word count. <code>polarity</code> applies the dictionary weights to each polarized word and then further weights by the number and position of the valence shifters. Last, it sums the context cluster and divides by the square root of the word count, yielding an unbounded polarity score.</p>
+<div class="sourceCode" id="cb23"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb23-1"><a href="sentimentanalysis.html#cb23-1"></a><span class="co"># hotel_sentr_polarity &lt;- hotel %&gt;%</span></span>
+<span id="cb23-2"><a href="sentimentanalysis.html#cb23-2"></a><span class="co">#   mutate(sentences = get_sentences(review_text)) %&gt;%</span></span>
+<span id="cb23-3"><a href="sentimentanalysis.html#cb23-3"></a><span class="co">#   sentiment_by(sentences, list(review_id))</span></span>
+<span id="cb23-4"><a href="sentimentanalysis.html#cb23-4"></a><span class="co"># hotel_qdap_polarity &lt;- hotel %$%</span></span>
+<span id="cb23-5"><a href="sentimentanalysis.html#cb23-5"></a><span class="co">#   polarity(review_text, review_id)</span></span>
+<span id="cb23-6"><a href="sentimentanalysis.html#cb23-6"></a><span class="co"># </span></span>
+<span id="cb23-7"><a href="sentimentanalysis.html#cb23-7"></a><span class="co"># scores(hotel_qdap_polarity)</span></span></code></pre></div>
+<p>The <code>counts()</code> function returns one row for each line of text. It includes a list of the positive and negative words that contribute to the polarity score. Line 57 has a polarity score of zero because it has a pair of positive and negative words.</p>
+<div class="sourceCode" id="cb24"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb24-1"><a href="sentimentanalysis.html#cb24-1"></a><span class="co"># sawyer[57,]</span></span>
+<span id="cb24-2"><a href="sentimentanalysis.html#cb24-2"></a><span class="co"># counts(sawyer_tm_polarity)[57,]</span></span>
+<span id="cb24-3"><a href="sentimentanalysis.html#cb24-3"></a><span class="co"># counts(sawyer_tm_polarity)[57, c(&quot;pos.words&quot;, &quot;neg.words&quot;)] %&gt;% unlist()</span></span></code></pre></div>
+<p>Oh, but wait - Twain doesn’t use <em>mighty</em> as a positive adjective, but rather, as an amplifier adverb. <em>Mighty</em> appears <code>sawyer %&gt;% filter(str_detect(text, "mighty")) %&gt;% nrow</code> times in Tom Sawyer. We should remove it from the <code>polarity.frame</code> and add it to the <code>amplifiers</code>.</p>
+<div class="sourceCode" id="cb25"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb25-1"><a href="sentimentanalysis.html#cb25-1"></a><span class="co"># custom_frame &lt;- sentiment_frame(</span></span>
+<span id="cb25-2"><a href="sentimentanalysis.html#cb25-2"></a><span class="co">#   positives = qdapDictionaries::positive.words[qdapDictionaries::positive.words != &quot;mighty&quot;],</span></span>
+<span id="cb25-3"><a href="sentimentanalysis.html#cb25-3"></a><span class="co">#   negatives = qdapDictionaries::negative.words</span></span>
+<span id="cb25-4"><a href="sentimentanalysis.html#cb25-4"></a><span class="co"># )</span></span>
+<span id="cb25-5"><a href="sentimentanalysis.html#cb25-5"></a><span class="co"># </span></span>
+<span id="cb25-6"><a href="sentimentanalysis.html#cb25-6"></a><span class="co"># sawyer_tm_polarity_2 &lt;- sawyer %&gt;%</span></span>
+<span id="cb25-7"><a href="sentimentanalysis.html#cb25-7"></a><span class="co">#   mutate(text = str_remove_all(text, &quot;\\_&quot;)) %$%</span></span>
+<span id="cb25-8"><a href="sentimentanalysis.html#cb25-8"></a><span class="co">#   polarity(</span></span>
+<span id="cb25-9"><a href="sentimentanalysis.html#cb25-9"></a><span class="co">#     text, chapter, </span></span>
+<span id="cb25-10"><a href="sentimentanalysis.html#cb25-10"></a><span class="co">#     polarity.frame = custom_frame,</span></span>
+<span id="cb25-11"><a href="sentimentanalysis.html#cb25-11"></a><span class="co">#     amplifiers = sort(c(qdapDictionaries::amplification.words, &quot;mighty&quot;))</span></span>
+<span id="cb25-12"><a href="sentimentanalysis.html#cb25-12"></a><span class="co">#   )</span></span>
+<span id="cb25-13"><a href="sentimentanalysis.html#cb25-13"></a><span class="co"># </span></span>
+<span id="cb25-14"><a href="sentimentanalysis.html#cb25-14"></a><span class="co"># counts(sawyer_tm_polarity_2)[57,] </span></span></code></pre></div>
+<p>Something is still wrong here. It removed <em>mighty</em> as a positive word, but did not apply it as amplifier. It seems to be confused by the presence of the comma in “tomorrow, to punish”. I’ll drop the matter for now, but perhaps how we parse the data into rows makes a difference. It also advises that you run <code>SentSplit()</code> on the data first, but the function never stopped running, so I abandoned it.</p>
+<p>Here is a plot of the polarity results.</p>
+<div class="sourceCode" id="cb26"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb26-1"><a href="sentimentanalysis.html#cb26-1"></a><span class="co"># plot(sawyer_tm_polarity_2)</span></span></code></pre></div>
+<p>Chapter 22 had the lowest polarity score and chapter 34 the highest.</p>
+<div class="sourceCode" id="cb27"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb27-1"><a href="sentimentanalysis.html#cb27-1"></a><span class="co"># sawyer_tm_polarity_2 %&gt;% </span></span>
+<span id="cb27-2"><a href="sentimentanalysis.html#cb27-2"></a><span class="co">#   scores() %&gt;%</span></span>
+<span id="cb27-3"><a href="sentimentanalysis.html#cb27-3"></a><span class="co">#   mutate(chapter = as.integer(chapter)) %&gt;%</span></span>
+<span id="cb27-4"><a href="sentimentanalysis.html#cb27-4"></a><span class="co">#   ggplot(aes(x = chapter, y = ave.polarity)) +</span></span>
+<span id="cb27-5"><a href="sentimentanalysis.html#cb27-5"></a><span class="co">#   geom_point() +</span></span>
+<span id="cb27-6"><a href="sentimentanalysis.html#cb27-6"></a><span class="co">#   geom_segment(aes(x = chapter, xend = chapter, y = 0, yend = ave.polarity)) +</span></span>
+<span id="cb27-7"><a href="sentimentanalysis.html#cb27-7"></a><span class="co">#   geom_smooth() +</span></span>
+<span id="cb27-8"><a href="sentimentanalysis.html#cb27-8"></a><span class="co">#   geom_hline(yintercept = 0, color = &quot;red&quot;) +</span></span>
+<span id="cb27-9"><a href="sentimentanalysis.html#cb27-9"></a><span class="co">#   theme_minimal() +</span></span>
+<span id="cb27-10"><a href="sentimentanalysis.html#cb27-10"></a><span class="co">#   labs(title = &quot;Adventures of Tom Sawyer Chronological Polarity&quot;)</span></span></code></pre></div>
+<p>Create to strings, one with the positive chapters, and one from the negative chapters.</p>
+<div class="sourceCode" id="cb28"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb28-1"><a href="sentimentanalysis.html#cb28-1"></a><span class="co"># sawyer_poloarity_pos &lt;- sawyer_tm_polarity_2$all %&gt;%</span></span>
+<span id="cb28-2"><a href="sentimentanalysis.html#cb28-2"></a><span class="co">#   filter(polarity &gt; 0) %&gt;%</span></span>
+<span id="cb28-3"><a href="sentimentanalysis.html#cb28-3"></a><span class="co">#   pull(text.var) %&gt;%</span></span>
+<span id="cb28-4"><a href="sentimentanalysis.html#cb28-4"></a><span class="co">#   paste(collapse = &quot; &quot;)</span></span>
+<span id="cb28-5"><a href="sentimentanalysis.html#cb28-5"></a><span class="co"># </span></span>
+<span id="cb28-6"><a href="sentimentanalysis.html#cb28-6"></a><span class="co"># sawyer_poloarity_neg &lt;- sawyer_tm_polarity_2$all %&gt;%</span></span>
+<span id="cb28-7"><a href="sentimentanalysis.html#cb28-7"></a><span class="co">#   filter(polarity &lt; 0) %&gt;%</span></span>
+<span id="cb28-8"><a href="sentimentanalysis.html#cb28-8"></a><span class="co">#   pull(text.var) %&gt;%</span></span>
+<span id="cb28-9"><a href="sentimentanalysis.html#cb28-9"></a><span class="co">#   paste(collapse = &quot; &quot;) </span></span>
+<span id="cb28-10"><a href="sentimentanalysis.html#cb28-10"></a><span class="co"># </span></span>
+<span id="cb28-11"><a href="sentimentanalysis.html#cb28-11"></a><span class="co"># sawyer_polarity_tdm &lt;- c(sawyer_poloarity_pos, sawyer_poloarity_neg) %&gt;%</span></span>
+<span id="cb28-12"><a href="sentimentanalysis.html#cb28-12"></a><span class="co">#   VectorSource() %&gt;%</span></span>
+<span id="cb28-13"><a href="sentimentanalysis.html#cb28-13"></a><span class="co">#   VCorpus() %&gt;%</span></span>
+<span id="cb28-14"><a href="sentimentanalysis.html#cb28-14"></a><span class="co">#   TermDocumentMatrix(control = list(weighting = weightTfIdf, </span></span>
+<span id="cb28-15"><a href="sentimentanalysis.html#cb28-15"></a><span class="co">#                                     removePunctuation = TRUE,</span></span>
+<span id="cb28-16"><a href="sentimentanalysis.html#cb28-16"></a><span class="co">#                                     stopwords = stopwords(kind = &quot;en&quot;)))</span></span></code></pre></div>
+<p>Often authors will use more words when they are more passionate. Lengthy reviews may inflate overall sentiment since the reviews will inherently contain more positive or negative language as the review lengthens.</p>
+</div>
+</div>
+<div id="emotion-classification" class="section level2">
+<h2><span class="header-section-number">2.3</span> Emotion Classification</h2>
+<p>Bar plots are usually a clearer alternative, but radar charts do look pretty.</p>
+<p><a href="https://en.wikipedia.org/wiki/Robert_Plutchik#/media/File:Plutchik-wheel.svg" class="uri">https://en.wikipedia.org/wiki/Robert_Plutchik#/media/File:Plutchik-wheel.svg</a></p>
+<div class="sourceCode" id="cb29"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb29-1"><a href="sentimentanalysis.html#cb29-1"></a><span class="co"># dat &lt;- sawyer_tidy %&gt;%</span></span>
+<span id="cb29-2"><a href="sentimentanalysis.html#cb29-2"></a><span class="co">#   inner_join(get_sentiments(&quot;nrc&quot;), by = &quot;word&quot;) %&gt;%</span></span>
+<span id="cb29-3"><a href="sentimentanalysis.html#cb29-3"></a><span class="co">#   filter(!sentiment %in% c(&quot;positive&quot;, &quot;negative&quot;)) %&gt;%</span></span>
+<span id="cb29-4"><a href="sentimentanalysis.html#cb29-4"></a><span class="co">#   mutate(sentiment = case_when(sentiment == &quot;joy&quot; ~ 1,</span></span>
+<span id="cb29-5"><a href="sentimentanalysis.html#cb29-5"></a><span class="co">#                                sentiment == &quot;trust&quot; ~ 2,</span></span>
+<span id="cb29-6"><a href="sentimentanalysis.html#cb29-6"></a><span class="co">#                                sentiment == &quot;fear&quot; ~ 3,</span></span>
+<span id="cb29-7"><a href="sentimentanalysis.html#cb29-7"></a><span class="co">#                                sentiment == &quot;surprise&quot; ~ 4,</span></span>
+<span id="cb29-8"><a href="sentimentanalysis.html#cb29-8"></a><span class="co">#                                sentiment == &quot;sadness&quot; ~ 5,</span></span>
+<span id="cb29-9"><a href="sentimentanalysis.html#cb29-9"></a><span class="co">#                                sentiment == &quot;disgust&quot; ~ 6,</span></span>
+<span id="cb29-10"><a href="sentimentanalysis.html#cb29-10"></a><span class="co">#                                sentiment == &quot;anger&quot; ~ 7,</span></span>
+<span id="cb29-11"><a href="sentimentanalysis.html#cb29-11"></a><span class="co">#                                sentiment == &quot;anticipation&quot; ~ 8,</span></span>
+<span id="cb29-12"><a href="sentimentanalysis.html#cb29-12"></a><span class="co">#                                TRUE ~ 9),</span></span>
+<span id="cb29-13"><a href="sentimentanalysis.html#cb29-13"></a><span class="co">#          sentiment = factor(sentiment, levels = c(1:9),</span></span>
+<span id="cb29-14"><a href="sentimentanalysis.html#cb29-14"></a><span class="co">#                             labels = c(&quot;joy&quot;, &quot;trust&quot;, &quot;fear&quot;, &quot;surprise&quot;,</span></span>
+<span id="cb29-15"><a href="sentimentanalysis.html#cb29-15"></a><span class="co">#                                        &quot;sadness&quot;, &quot;disgust&quot;, &quot;anger&quot;,</span></span>
+<span id="cb29-16"><a href="sentimentanalysis.html#cb29-16"></a><span class="co">#                                        &quot;anticipation&quot;, &quot;other&quot;))) %&gt;%</span></span>
+<span id="cb29-17"><a href="sentimentanalysis.html#cb29-17"></a><span class="co">#   count(sentiment) </span></span>
+<span id="cb29-18"><a href="sentimentanalysis.html#cb29-18"></a><span class="co"># </span></span>
+<span id="cb29-19"><a href="sentimentanalysis.html#cb29-19"></a><span class="co"># dat %&gt;% </span></span>
+<span id="cb29-20"><a href="sentimentanalysis.html#cb29-20"></a><span class="co">#   radarchart::chartJSRadar()</span></span></code></pre></div>
+<div class="sourceCode" id="cb30"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb30-1"><a href="sentimentanalysis.html#cb30-1"></a><span class="co"># library(gutenbergr)</span></span>
+<span id="cb30-2"><a href="sentimentanalysis.html#cb30-2"></a><span class="co"># sawyer_raw &lt;- gutenberg_works(title == &quot;The Adventures of Tom Sawyer&quot;) %&gt;%</span></span>
+<span id="cb30-3"><a href="sentimentanalysis.html#cb30-3"></a><span class="co">#   gutenberg_download()</span></span>
+<span id="cb30-4"><a href="sentimentanalysis.html#cb30-4"></a><span class="co"># hotel %&gt;% filter(is.na(date_of_review))</span></span>
+<span id="cb30-5"><a href="sentimentanalysis.html#cb30-5"></a><span class="co"># min(hotel$date_of_review, na.rm = TRUE)</span></span>
+<span id="cb30-6"><a href="sentimentanalysis.html#cb30-6"></a><span class="co"># skimr::skim(sawyer_raw)</span></span></code></pre></div>
+<p><code>sawyer_raw</code> is a tibble with 8,832 rows, with one row per line of text and 0-78 characters per line. This is a corpus with a single document and no metadata (although you could get multiple books at once, and attach the title and author as metadata).</p>
+<p>Most text requires some cleaning. I will want to remove the title lines, and add add some metadata, including the chapter number and line number.</p>
+<div class="sourceCode" id="cb31"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb31-1"><a href="sentimentanalysis.html#cb31-1"></a><span class="co"># sawyer &lt;- sawyer_raw %&gt;%</span></span>
+<span id="cb31-2"><a href="sentimentanalysis.html#cb31-2"></a><span class="co">#   tail(-455) %&gt;%  # chapter 1 starts on line 456</span></span>
+<span id="cb31-3"><a href="sentimentanalysis.html#cb31-3"></a><span class="co">#   mutate(</span></span>
+<span id="cb31-4"><a href="sentimentanalysis.html#cb31-4"></a><span class="co">#     is_chap = str_detect(text, regex(&quot;^chapter [\\divxlc]&quot;, ignore_case = TRUE)),</span></span>
+<span id="cb31-5"><a href="sentimentanalysis.html#cb31-5"></a><span class="co">#     chapter = cumsum(is_chap)</span></span>
+<span id="cb31-6"><a href="sentimentanalysis.html#cb31-6"></a><span class="co">#   ) %&gt;%</span></span>
+<span id="cb31-7"><a href="sentimentanalysis.html#cb31-7"></a><span class="co">#   filter(text != &quot;&quot; &amp; !str_detect(text, regex(&quot;^chapter [\\divxlc]&quot;, ignore_case = TRUE))) %&gt;%</span></span>
+<span id="cb31-8"><a href="sentimentanalysis.html#cb31-8"></a><span class="co">#   mutate(line = row_number()) %&gt;%</span></span>
+<span id="cb31-9"><a href="sentimentanalysis.html#cb31-9"></a><span class="co">#   select(line, chapter, text)</span></span>
+<span id="cb31-10"><a href="sentimentanalysis.html#cb31-10"></a><span class="co"># head(sawyer)</span></span></code></pre></div>
+<p>A subjectivity lexicon is a predefined list of words associated with emotional context such as positive/negative. <code>qdap::polarity()</code> uses the <code>lexicon::hash_sentiment_huliu</code> lexicon with sentiment values in (+1, 0, -1.05, -1, -2). It is similar to <code>tidytext::sentiments()</code> AFINN lexicon (-5 to 5). <code>tidytext::sentiments()</code> also includes the NRC lexicon (classifying among 8 emotions) and the Bing lexicon (classifying as positive or negative).</p>
+<p>Subjectivity lexicons are typically short (a few thousand words), but work because of Zipf’s law. According to this law, the nth-ranked item in a frequency table has a frequency count equal to 1/n of the top-ranked item. So infrequently used words are used <em>very</em> infrequently.</p>
+</div>
+<div id="comparison-cloud" class="section level2">
+<h2><span class="header-section-number">2.4</span> Comparison Cloud</h2>
+<div class="sourceCode" id="cb32"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb32-1"><a href="sentimentanalysis.html#cb32-1"></a><span class="co"># sawyer_tidy %&gt;%</span></span>
+<span id="cb32-2"><a href="sentimentanalysis.html#cb32-2"></a><span class="co">#   anti_join(stop_words, by = &quot;word&quot;) %&gt;%</span></span>
+<span id="cb32-3"><a href="sentimentanalysis.html#cb32-3"></a><span class="co">#   filter(!str_detect(word, &quot;[0-9]&quot;)) %&gt;%</span></span>
+<span id="cb32-4"><a href="sentimentanalysis.html#cb32-4"></a><span class="co">#   inner_join(get_sentiments(&quot;nrc&quot;), by = &quot;word&quot;) %&gt;%</span></span>
+<span id="cb32-5"><a href="sentimentanalysis.html#cb32-5"></a><span class="co">#   filter(sentiment %in% c(&quot;positive&quot;, &quot;negative&quot;)) %&gt;%</span></span>
+<span id="cb32-6"><a href="sentimentanalysis.html#cb32-6"></a><span class="co">#   count(chapter, sentiment) %&gt;%</span></span>
+<span id="cb32-7"><a href="sentimentanalysis.html#cb32-7"></a><span class="co">#   group_by(chapter) %&gt;%</span></span>
+<span id="cb32-8"><a href="sentimentanalysis.html#cb32-8"></a><span class="co">#   mutate(pct = n / sum(n)) %&gt;%</span></span>
+<span id="cb32-9"><a href="sentimentanalysis.html#cb32-9"></a><span class="co">#   ggplot(aes(x = chapter, y = pct, fill = sentiment, color = sentiment)) + </span></span>
+<span id="cb32-10"><a href="sentimentanalysis.html#cb32-10"></a><span class="co">#   geom_area(alpha = 0.6) +</span></span>
+<span id="cb32-11"><a href="sentimentanalysis.html#cb32-11"></a><span class="co">#   scale_x_continuous(breaks = 1:35, minor_breaks = NULL) +</span></span>
+<span id="cb32-12"><a href="sentimentanalysis.html#cb32-12"></a><span class="co">#   scale_fill_few() +</span></span>
+<span id="cb32-13"><a href="sentimentanalysis.html#cb32-13"></a><span class="co">#   scale_color_few() +</span></span>
+<span id="cb32-14"><a href="sentimentanalysis.html#cb32-14"></a><span class="co">#   geom_hline(yintercept = 0.5, linetype = 2) +</span></span>
+<span id="cb32-15"><a href="sentimentanalysis.html#cb32-15"></a><span class="co">#   theme_minimal() +</span></span>
+<span id="cb32-16"><a href="sentimentanalysis.html#cb32-16"></a><span class="co">#   theme(legend.position = &quot;top&quot;) +</span></span>
+<span id="cb32-17"><a href="sentimentanalysis.html#cb32-17"></a><span class="co">#   labs(title = &quot;Sentiment Proportion by Chapter&quot;, x = NULL, y = NULL, fill = NULL, color = NULL)</span></span></code></pre></div>
+<div class="sourceCode" id="cb33"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb33-1"><a href="sentimentanalysis.html#cb33-1"></a><span class="co"># sawyer_tidy %&gt;%</span></span>
+<span id="cb33-2"><a href="sentimentanalysis.html#cb33-2"></a><span class="co">#   anti_join(stop_words, by = &quot;word&quot;) %&gt;%</span></span>
+<span id="cb33-3"><a href="sentimentanalysis.html#cb33-3"></a><span class="co">#   filter(!str_detect(word, &quot;[0-9]&quot;)) %&gt;%</span></span>
+<span id="cb33-4"><a href="sentimentanalysis.html#cb33-4"></a><span class="co">#   inner_join(get_sentiments(&quot;afinn&quot;), by = &quot;word&quot;) %&gt;%</span></span>
+<span id="cb33-5"><a href="sentimentanalysis.html#cb33-5"></a><span class="co">#   ggplot(aes(x = value)) +</span></span>
+<span id="cb33-6"><a href="sentimentanalysis.html#cb33-6"></a><span class="co">#   geom_density(fill = ggthemes::few_pal()(1), alpha = 0.6) +</span></span>
+<span id="cb33-7"><a href="sentimentanalysis.html#cb33-7"></a><span class="co">#   theme_minimal() +</span></span>
+<span id="cb33-8"><a href="sentimentanalysis.html#cb33-8"></a><span class="co">#   labs(title = &quot;AFINN Score Density&quot;)</span></span></code></pre></div>
+<div class="sourceCode" id="cb34"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb34-1"><a href="sentimentanalysis.html#cb34-1"></a><span class="co"># sawyer_tidy %&gt;%</span></span>
+<span id="cb34-2"><a href="sentimentanalysis.html#cb34-2"></a><span class="co">#   inner_join(get_sentiments(&quot;bing&quot;), by = &quot;word&quot;) %&gt;%</span></span>
+<span id="cb34-3"><a href="sentimentanalysis.html#cb34-3"></a><span class="co">#   count(chapter, line, sentiment) %&gt;%</span></span>
+<span id="cb34-4"><a href="sentimentanalysis.html#cb34-4"></a><span class="co">#   pivot_wider(names_from = sentiment, values_from = n, values_fill = 0) %&gt;%</span></span>
+<span id="cb34-5"><a href="sentimentanalysis.html#cb34-5"></a><span class="co">#   mutate(polarity = positive - negative) %&gt;%</span></span>
+<span id="cb34-6"><a href="sentimentanalysis.html#cb34-6"></a><span class="co">#   ggplot(aes(x = as.factor(chapter), y = polarity)) +</span></span>
+<span id="cb34-7"><a href="sentimentanalysis.html#cb34-7"></a><span class="co">#   geom_boxplot() +</span></span>
+<span id="cb34-8"><a href="sentimentanalysis.html#cb34-8"></a><span class="co">#   geom_jitter(aes(color = as.factor(chapter)), alpha = 0.6, size = .5, show.legend = FALSE) +</span></span>
+<span id="cb34-9"><a href="sentimentanalysis.html#cb34-9"></a><span class="co">#   theme_minimal() +</span></span>
+<span id="cb34-10"><a href="sentimentanalysis.html#cb34-10"></a><span class="co">#   labs(title = &quot;Chapter Polarity&quot;)</span></span></code></pre></div>
+<div class="sourceCode" id="cb35"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb35-1"><a href="sentimentanalysis.html#cb35-1"></a><span class="co"># sawyer_tidy %&gt;%</span></span>
+<span id="cb35-2"><a href="sentimentanalysis.html#cb35-2"></a><span class="co">#   inner_join(get_sentiments(&quot;afinn&quot;), by = &quot;word&quot;) %&gt;%</span></span>
+<span id="cb35-3"><a href="sentimentanalysis.html#cb35-3"></a><span class="co">#   count(chapter, value) %&gt;%</span></span>
+<span id="cb35-4"><a href="sentimentanalysis.html#cb35-4"></a><span class="co">#   ggplot(aes(area = n, fill = value)) +</span></span>
+<span id="cb35-5"><a href="sentimentanalysis.html#cb35-5"></a><span class="co">#   treemapify::geom_treemap()</span></span></code></pre></div>
+<p>One more cleaning step. Since these reviews are recorded in web sites, they are likely rife with spelling errors. I’ll use the <code>misspellings</code> dataset from the <strong>fuzzyjoin</strong> package to remove them.</p>
+<div class="sourceCode" id="cb36"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb36-1"><a href="sentimentanalysis.html#cb36-1"></a><span class="co"># data(&quot;misspellings&quot;, package = &quot;fuzzyjoin&quot;)</span></span>
+<span id="cb36-2"><a href="sentimentanalysis.html#cb36-2"></a><span class="co"># </span></span>
+<span id="cb36-3"><a href="sentimentanalysis.html#cb36-3"></a><span class="co"># # Some misspelling have multiple correct possibilities - choose one</span></span>
+<span id="cb36-4"><a href="sentimentanalysis.html#cb36-4"></a><span class="co"># misspellings_winner &lt;- misspellings %&gt;%</span></span>
+<span id="cb36-5"><a href="sentimentanalysis.html#cb36-5"></a><span class="co">#   group_by(misspelling) %&gt;%</span></span>
+<span id="cb36-6"><a href="sentimentanalysis.html#cb36-6"></a><span class="co">#   slice(n = 1)</span></span>
+<span id="cb36-7"><a href="sentimentanalysis.html#cb36-7"></a><span class="co"># </span></span>
+<span id="cb36-8"><a href="sentimentanalysis.html#cb36-8"></a><span class="co"># hotel &lt;- hotel_raw_3 %&gt;%</span></span>
+<span id="cb36-9"><a href="sentimentanalysis.html#cb36-9"></a><span class="co">#   unnest_tokens(&quot;word&quot;, review_text) %&gt;%</span></span>
+<span id="cb36-10"><a href="sentimentanalysis.html#cb36-10"></a><span class="co">#   left_join(misspellings, by = c(&quot;word&quot; = &quot;misspelling&quot;)) %&gt;%</span></span>
+<span id="cb36-11"><a href="sentimentanalysis.html#cb36-11"></a><span class="co">#   word = coalesce(correct, word)</span></span>
+<span id="cb36-12"><a href="sentimentanalysis.html#cb36-12"></a><span class="co"># hotel_raw_2 %&gt;% filter(review_id %in% c(28)) %&gt;%</span></span>
+<span id="cb36-13"><a href="sentimentanalysis.html#cb36-13"></a><span class="co">#   select(review_text) %&gt;%</span></span>
+<span id="cb36-14"><a href="sentimentanalysis.html#cb36-14"></a><span class="co">#   flextable::flextable()</span></span></code></pre></div>
+</div>
+<div id="statistical-test" class="section level2">
+<h2><span class="header-section-number">2.5</span> Statistical Test</h2>
+<p>Since this is a comparison of a numeric outcome to a multinominal predictor (<code>property_name</code>) or ordinal predictor(<code>review_rating</code>), you could perform an ANOVA test.</p>
+<div class="sourceCode" id="cb37"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb37-1"><a href="sentimentanalysis.html#cb37-1"></a>my_aov &lt;-<span class="st"> </span><span class="kw">aov</span>(polarity_score <span class="op">~</span><span class="st"> </span><span class="kw">as.factor</span>(review_rating), <span class="dt">data =</span> hotel_tidy_polarity_bing)</span>
+<span id="cb37-2"><a href="sentimentanalysis.html#cb37-2"></a>my_anova &lt;-<span class="st"> </span><span class="kw">anova</span>(my_aov)</span>
+<span id="cb37-3"><a href="sentimentanalysis.html#cb37-3"></a><span class="kw">tidy</span>(my_anova)</span></code></pre></div>
+<pre><code>## # A tibble: 2 x 6
+##   term                        df sumsq  meansq statistic p.value
+##   &lt;chr&gt;                    &lt;int&gt; &lt;dbl&gt;   &lt;dbl&gt;     &lt;dbl&gt;   &lt;dbl&gt;
+## 1 as.factor(review_rating)     4  908. 227.        1875.       0
+## 2 Residuals                23271 2818.   0.121       NA       NA</code></pre>
+<div class="sourceCode" id="cb39"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb39-1"><a href="sentimentanalysis.html#cb39-1"></a><span class="co">#plot(TukeyHSD(my_aov))</span></span>
+<span id="cb39-2"><a href="sentimentanalysis.html#cb39-2"></a></span>
+<span id="cb39-3"><a href="sentimentanalysis.html#cb39-3"></a>my_lm &lt;-<span class="st"> </span><span class="kw">lm</span>(polarity_score <span class="op">~</span><span class="st"> </span><span class="kw">as.factor</span>(review_rating), <span class="dt">data =</span> hotel_tidy_polarity_bing)</span>
+<span id="cb39-4"><a href="sentimentanalysis.html#cb39-4"></a><span class="kw">summary</span>(my_lm)</span></code></pre></div>
+<pre><code>## 
+## Call:
+## lm(formula = polarity_score ~ as.factor(review_rating), data = hotel_tidy_polarity_bing)
+## 
+## Residuals:
+##      Min       1Q   Median       3Q      Max 
+## -1.50252 -0.23263 -0.00321  0.22338  2.88057 
+## 
+## Coefficients:
+##                           Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept)               -0.14021    0.01574   -8.91   &lt;2e-16 ***
+## as.factor(review_rating)2  0.22704    0.02143   10.59   &lt;2e-16 ***
+## as.factor(review_rating)3  0.47721    0.01838   25.97   &lt;2e-16 ***
+## as.factor(review_rating)4  0.80924    0.01653   48.96   &lt;2e-16 ***
+## as.factor(review_rating)5  0.94258    0.01597   59.01   &lt;2e-16 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Residual standard error: 0.348 on 23271 degrees of freedom
+##   (497 observations deleted due to missingness)
+## Multiple R-squared:  0.2438, Adjusted R-squared:  0.2436 
+## F-statistic:  1875 on 4 and 23271 DF,  p-value: &lt; 2.2e-16</code></pre>
+<div class="sourceCode" id="cb41"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb41-1"><a href="sentimentanalysis.html#cb41-1"></a><span class="kw">tbl_regression</span>(my_lm)</span></code></pre></div>
+<style>html {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Helvetica Neue', 'Fira Sans', 'Droid Sans', Arial, sans-serif;
+}
+
+#tkopdcxccq .gt_table {
+  display: table;
+  border-collapse: collapse;
+  margin-left: auto;
+  margin-right: auto;
+  color: #333333;
+  font-size: 16px;
+  font-weight: normal;
+  font-style: normal;
+  background-color: #FFFFFF;
+  width: auto;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #A8A8A8;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #A8A8A8;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+}
+
+#tkopdcxccq .gt_heading {
+  background-color: #FFFFFF;
+  text-align: center;
+  border-bottom-color: #FFFFFF;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#tkopdcxccq .gt_title {
+  color: #333333;
+  font-size: 125%;
+  font-weight: initial;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  border-bottom-color: #FFFFFF;
+  border-bottom-width: 0;
+}
+
+#tkopdcxccq .gt_subtitle {
+  color: #333333;
+  font-size: 85%;
+  font-weight: initial;
+  padding-top: 0;
+  padding-bottom: 4px;
+  border-top-color: #FFFFFF;
+  border-top-width: 0;
+}
+
+#tkopdcxccq .gt_bottom_border {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#tkopdcxccq .gt_col_headings {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#tkopdcxccq .gt_col_heading {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 6px;
+  padding-left: 5px;
+  padding-right: 5px;
+  overflow-x: hidden;
+}
+
+#tkopdcxccq .gt_column_spanner_outer {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  padding-top: 0;
+  padding-bottom: 0;
+  padding-left: 4px;
+  padding-right: 4px;
+}
+
+#tkopdcxccq .gt_column_spanner_outer:first-child {
+  padding-left: 0;
+}
+
+#tkopdcxccq .gt_column_spanner_outer:last-child {
+  padding-right: 0;
+}
+
+#tkopdcxccq .gt_column_spanner {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 6px;
+  overflow-x: hidden;
+  display: inline-block;
+  width: 100%;
+}
+
+#tkopdcxccq .gt_group_heading {
+  padding: 8px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+}
+
+#tkopdcxccq .gt_empty_group_heading {
+  padding: 0.5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: middle;
+}
+
+#tkopdcxccq .gt_from_md > :first-child {
+  margin-top: 0;
+}
+
+#tkopdcxccq .gt_from_md > :last-child {
+  margin-bottom: 0;
+}
+
+#tkopdcxccq .gt_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  margin: 10px;
+  border-top-style: solid;
+  border-top-width: 1px;
+  border-top-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  overflow-x: hidden;
+}
+
+#tkopdcxccq .gt_stub {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 12px;
+}
+
+#tkopdcxccq .gt_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#tkopdcxccq .gt_first_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+}
+
+#tkopdcxccq .gt_grand_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#tkopdcxccq .gt_first_grand_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-style: double;
+  border-top-width: 6px;
+  border-top-color: #D3D3D3;
+}
+
+#tkopdcxccq .gt_striped {
+  background-color: rgba(128, 128, 128, 0.05);
+}
+
+#tkopdcxccq .gt_table_body {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#tkopdcxccq .gt_footnotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#tkopdcxccq .gt_footnote {
+  margin: 0px;
+  font-size: 90%;
+  padding: 4px;
+}
+
+#tkopdcxccq .gt_sourcenotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#tkopdcxccq .gt_sourcenote {
+  font-size: 90%;
+  padding: 4px;
+}
+
+#tkopdcxccq .gt_left {
+  text-align: left;
+}
+
+#tkopdcxccq .gt_center {
+  text-align: center;
+}
+
+#tkopdcxccq .gt_right {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+#tkopdcxccq .gt_font_normal {
+  font-weight: normal;
+}
+
+#tkopdcxccq .gt_font_bold {
+  font-weight: bold;
+}
+
+#tkopdcxccq .gt_font_italic {
+  font-style: italic;
+}
+
+#tkopdcxccq .gt_super {
+  font-size: 65%;
+}
+
+#tkopdcxccq .gt_footnote_marks {
+  font-style: italic;
+  font-size: 65%;
+}
+</style>
+<div id="tkopdcxccq" style="overflow-x:auto;overflow-y:auto;width:auto;height:auto;"><table class="gt_table">
+  
+  <thead class="gt_col_headings">
+    <tr>
+      <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1"><strong>Characteristic</strong></th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1"><strong>Beta</strong></th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1"><strong>95% CI</strong><sup class="gt_footnote_marks">1</sup></th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1"><strong>p-value</strong></th>
+    </tr>
+  </thead>
+  <tbody class="gt_table_body">
+    <tr>
+      <td class="gt_row gt_left">as.factor(review_rating)</td>
+      <td class="gt_row gt_center"></td>
+      <td class="gt_row gt_center"></td>
+      <td class="gt_row gt_center"></td>
+    </tr>
+    <tr>
+      <td class="gt_row gt_left" style="text-align: left; text-indent: 10px;">1</td>
+      <td class="gt_row gt_center">&mdash;</td>
+      <td class="gt_row gt_center">&mdash;</td>
+      <td class="gt_row gt_center"></td>
+    </tr>
+    <tr>
+      <td class="gt_row gt_left" style="text-align: left; text-indent: 10px;">2</td>
+      <td class="gt_row gt_center">0.23</td>
+      <td class="gt_row gt_center">0.19, 0.27</td>
+      <td class="gt_row gt_center"><0.001</td>
+    </tr>
+    <tr>
+      <td class="gt_row gt_left" style="text-align: left; text-indent: 10px;">3</td>
+      <td class="gt_row gt_center">0.48</td>
+      <td class="gt_row gt_center">0.44, 0.51</td>
+      <td class="gt_row gt_center"><0.001</td>
+    </tr>
+    <tr>
+      <td class="gt_row gt_left" style="text-align: left; text-indent: 10px;">4</td>
+      <td class="gt_row gt_center">0.81</td>
+      <td class="gt_row gt_center">0.78, 0.84</td>
+      <td class="gt_row gt_center"><0.001</td>
+    </tr>
+    <tr>
+      <td class="gt_row gt_left" style="text-align: left; text-indent: 10px;">5</td>
+      <td class="gt_row gt_center">0.94</td>
+      <td class="gt_row gt_center">0.91, 1.0</td>
+      <td class="gt_row gt_center"><0.001</td>
+    </tr>
+  </tbody>
+  
+  <tfoot>
+    <tr class="gt_footnotes">
+      <td colspan="4">
+        <p class="gt_footnote">
+          <sup class="gt_footnote_marks">
+            <em>1</em>
+          </sup>
+           
+          CI = Confidence Interval
+          <br />
+        </p>
+      </td>
+    </tr>
+  </tfoot>
+</table></div>
+
+</div>
+</div>
+            </section>
+
+          </div>
+        </div>
+      </div>
+<a href="topicmodeling.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+<a href="applications.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
+    </div>
+  </div>
+<script src="libs/gitbook-2.6.7/js/app.min.js"></script>
+<script src="libs/gitbook-2.6.7/js/lunr.js"></script>
+<script src="libs/gitbook-2.6.7/js/clipboard.min.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-search.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-sharing.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-fontsettings.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-bookdown.js"></script>
+<script src="libs/gitbook-2.6.7/js/jquery.highlight.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-clipboard.js"></script>
+<script>
+gitbook.require(["gitbook"], function(gitbook) {
+gitbook.start({
+"sharing": {
+"github": false,
+"facebook": true,
+"twitter": true,
+"linkedin": false,
+"weibo": false,
+"instapaper": false,
+"vk": false,
+"all": ["facebook", "twitter", "linkedin", "weibo", "instapaper"]
+},
+"fontsettings": {
+"theme": "white",
+"family": "sans",
+"size": 2
+},
+"edit": {
+"link": null,
+"text": null
+},
+"history": {
+"link": null,
+"text": null
+},
+"view": {
+"link": null,
+"text": null
+},
+"download": ["text-book.pdf", "text-book.epub"],
+"toc": {
+"collapse": "subsection"
+}
+});
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    var src = "true";
+    if (src === "" || src === "true") src = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML";
+    if (location.protocol !== "file:")
+      if (/^https?:/.test(src))
+        src = src.replace(/^https?:/, '');
+    script.src = src;
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+</body>
+
+</html>
