@@ -159,8 +159,6 @@ greenhouse_omega <- sjstats::anova_stats(greenhouse_anova) %>%
 ```
 $\omega^2$ ranges from -1 to +1. In this example, $\omega^2$ is `r greenhouse_omega`.
 
-
-
 #### ANOVA Conditions
 
 The ANOVA test applies when the dependent variable is continuous, the independent variable is categorical, and the observations are independent *within* groups. Independent means the observations should be from a random sample, or from an experiment using random assignment.  Each group's size should be less than 10% of its population size. The groups must also be independent of each other (non-paired, and non-repeated measures). Additionally, there are three conditions related to the data distribution. If any condition does not hold, and the suggested work-arounds do not work switch to the non-parametric [Kruskal-Wallis Test].
@@ -319,7 +317,7 @@ anova(greenhouse_lm)
 
 The *F* test does not indicate which populations cause the rejection of $H_0$. For this, use one of the post-hoc tests: Tukey, Fisher's Least Significant Difference (LSD), Bonferroni, Scheffe, or Dunnett. Post hoc tests are appropriate if you are investigating all possible pairwise comparisons with no specific hypotheses about specific groups differing from others.
 
-Here is the Tukey test.  As expected, all three fertilizer factor levels differ from the control.  `F3` differed from `F2`, but `F1` was not significantly different from either `F2` or `F3`.
+Here is the Tukey test. As expected, all three fertilizer factor levels differ from the control.  `F3` differed from `F2`, but `F1` was not significantly different from either `F2` or `F3`.
 
 ```{r}
 greenhouse_tukey <- TukeyHSD(greenhouse_aov)
@@ -344,12 +342,14 @@ Data are mean $\pm$ standard deviation. There was an increase in growth from `r 
 
 Report like this.
 
-> A one-way ANOVA was conducted to determine if plant growth was different for groups with different fertilizer types. Plants were classified into four groups: control (*n* = 6), fertilizer 1 (*n* = 6), fertilizer 2 (*n* = 6), and fertilizer 3 (n = 6). There were no outliers, as assessed by boxplot; data was normally distributed for each group, as assessed by Shapiro-Wilk test (*p* > .05); and there was homogeneity of variances, as assessed by Levene's test of homogeneity of variances (*p* = `r round(greenhouse_levene[1, 3], 3)`). Data is presented as mean $\pm$ standard deviation. Plant growth was statistically significantly different between different fertilizer groups, *F*(`r greenhouse_anova$Df[1]`, `r greenhouse_anova$Df[2]`) = `r round(greenhouse_anova[1, 4], 3)`, p < .0005, $\omega^2$ = `r greenhouse_omega`. Plant growth increased from the control (`r pull(greenhouse_desc[1, "mean"])` $\pm$ `r format(pull(greenhouse_desc[1,"sd"]), nsmall = 1)`), to fertilizer F1 (`r pull(greenhouse_desc[2, "mean"])` $\pm$ `r format(pull(greenhouse_desc[2,"sd"]), digits = 2, nsmall = 1)`), fertilizer F2 (`r format(pull(greenhouse_desc[3, "mean"]), digits = 3, nsmall = 1)` $\pm$ `r format(pull(greenhouse_desc[3,"sd"]), digits = 2, nsmall = 1)`), and fertilizer F3 (`r pull(greenhouse_desc[4, "mean"])` $\pm$ `r format(pull(greenhouse_desc[4,"sd"]), digits = 2, nsmall = 1)`) fertilizer groups. Tukey post hoc analysis revealed statistically significant increases from control to F1 (`r format(greenhouse_tukey$group[1, 1], digits=2, nsmall = 1)`, 95% CI (`r format(greenhouse_tukey$group[1, 2], digits=2, nsmall = 1)` to `r format(greenhouse_tukey$group[1, 3], digits=2, nsmall = 1)`), *p* = `r format(greenhouse_tukey$group[1, 4], digits=2, nsmall = 3)`), control to F2 (`r format(greenhouse_tukey$group[2, 1], digits=2, nsmall = 1)`, 95% CI (`r format(greenhouse_tukey$group[2, 2], digits=2, nsmall = 1)` to `r format(greenhouse_tukey$group[2, 3], digits=2, nsmall = 1)`), *p* = `r format(greenhouse_tukey$group[2, 4], digits=2, nsmall = 3)`), and control to F3 (`r format(greenhouse_tukey$group[3, 1], digits=2, nsmall = 1)`, 95% CI (`r format(greenhouse_tukey$group[3, 2], digits=2, nsmall = 1)` to `r format(greenhouse_tukey$group[3, 3], digits=2, nsmall = 1)`), *p* = `r format(greenhouse_tukey$group[3, 4], digits=2, nsmall = 3)`), as well as the increase from F2 to F3 (`r format(greenhouse_tukey$group[6, 1], digits=2, nsmall = 1)`, 95% CI (`r format(greenhouse_tukey$group[6, 2], digits=2, nsmall = 1)` to `r format(greenhouse_tukey$group[6, 3], digits=2, nsmall = 1)`), *p* = `r format(greenhouse_tukey$group[6, 4], digits=2, nsmall = 3)`), but there were no statistically significant group differences between F1 and F2 or F1 and F3.
+> A one-way ANOVA was conducted to determine if plant growth was different for groups with different fertilizer types. Plants were classified into four groups: control (*n* = 6), fertilizer 1 (*n* = 6), fertilizer 2 (*n* = 6), and fertilizer 3 (n = 6). There was a single outlier, as assessed by boxplot, and was retained because it did not change the conclusions; data was normally distributed for each group, as assessed by Shapiro-Wilk test (*p* > .05); and there was homogeneity of variances, as assessed by Levene's test of homogeneity of variances (*p* = `r round(greenhouse_levene[1, 3], 3)`). Data is presented as mean $\pm$ standard deviation. Plant growth was statistically significantly different between different fertilizer groups, *F*(`r greenhouse_anova$Df[1]`, `r greenhouse_anova$Df[2]`) = `r round(greenhouse_anova[1, 4], 3)`, p < .0005, $\omega^2$ = `r greenhouse_omega`. Plant growth increased from the control (`r pull(greenhouse_desc[1, "mean"])` $\pm$ `r format(pull(greenhouse_desc[1,"sd"]), nsmall = 1)`), to fertilizer F1 (`r pull(greenhouse_desc[2, "mean"])` $\pm$ `r format(pull(greenhouse_desc[2,"sd"]), digits = 2, nsmall = 1)`), fertilizer F2 (`r format(pull(greenhouse_desc[3, "mean"]), digits = 3, nsmall = 1)` $\pm$ `r format(pull(greenhouse_desc[3,"sd"]), digits = 2, nsmall = 1)`), and fertilizer F3 (`r pull(greenhouse_desc[4, "mean"])` $\pm$ `r format(pull(greenhouse_desc[4,"sd"]), digits = 2, nsmall = 1)`) fertilizer groups. Tukey post hoc analysis revealed statistically significant increases from control to F1 (`r format(greenhouse_tukey$group[1, 1], digits=2, nsmall = 1)`, 95% CI (`r format(greenhouse_tukey$group[1, 2], digits=2, nsmall = 1)` to `r format(greenhouse_tukey$group[1, 3], digits=2, nsmall = 1)`), *p* = `r format(greenhouse_tukey$group[1, 4], digits=2, nsmall = 3)`), control to F2 (`r format(greenhouse_tukey$group[2, 1], digits=2, nsmall = 1)`, 95% CI (`r format(greenhouse_tukey$group[2, 2], digits=2, nsmall = 1)` to `r format(greenhouse_tukey$group[2, 3], digits=2, nsmall = 1)`), *p* = `r format(greenhouse_tukey$group[2, 4], digits=2, nsmall = 3)`), and control to F3 (`r format(greenhouse_tukey$group[3, 1], digits=2, nsmall = 1)`, 95% CI (`r format(greenhouse_tukey$group[3, 2], digits=2, nsmall = 1)` to `r format(greenhouse_tukey$group[3, 3], digits=2, nsmall = 1)`), *p* = `r format(greenhouse_tukey$group[3, 4], digits=2, nsmall = 3)`), as well as the increase from F2 to F3 (`r format(greenhouse_tukey$group[6, 1], digits=2, nsmall = 1)`, 95% CI (`r format(greenhouse_tukey$group[6, 2], digits=2, nsmall = 1)` to `r format(greenhouse_tukey$group[6, 3], digits=2, nsmall = 1)`), *p* = `r format(greenhouse_tukey$group[6, 4], digits=2, nsmall = 3)`), but there were no statistically significant group differences between F1 and F2 or F1 and F3.
 
 
 ### Welch's ANOVA w/Games-Howell
 
-Welch's ANOVA with the Games-Howell post-hoc test is a viable alternative to the established Fisher One-way ANOVA with the Tukey post-hoc test when the equality of variances assumption is violated. In the data set below, you can see how Step C appears to have a larger variance.
+Welch's ANOVA test is an alternative to the one-way ANOVA test in cases where the equality of variances assumption is violated.
+
+Here is a case study. Researchers compare the force (in newtons) generated in three steps. Data set `newton` contains 30 observations per each of the *k* = 3 step levels (*N* = 90) - a balanced design.
 
 ```{r echo=FALSE, fig.height=2.5}
 newton <- data.frame(
@@ -381,31 +381,205 @@ newton %>%
        caption = "Error Bars: 95% CI")
 ```
 
+```{r echo=FALSE}
+# table1 requires this metadata
+label(newton$newtons) <- "Force"
+units(newton$newtons) <- "newtons"
+
+table1(~ newtons | step, data = newton)
+```
+
+```{r}
+newton_desc <- newton %>% 
+  group_by(step) %>% 
+  summarize(.groups = "drop", n = n(), mean = mean(newtons), sd = sd(newtons))
+```
+
+Data is presented as mean $\pm$ standard deviation. Force (newtons) increased from step 1 (*n* = `r pull(newton_desc[1, "n"])`, `r pull(newton_desc[1, "mean"]) %>% format(digits = 3, nsmall = 0)` $\pm$ `r pull(newton_desc[1,"sd"]) %>% format(digits = 3, nsmall = 0)`), to step 2 (*n* = `r pull(newton_desc[2, "n"])`, `r pull(newton_desc[2, "mean"]) %>% format(digits = 3, nsmall = 0)` $\pm$ `r pull(newton_desc[2,"sd"]) %>% format(digits = 3, nsmall = 0)`), to step 3 (*n* = `r pull(newton_desc[3, "n"])`, `r pull(newton_desc[3, "mean"]) %>% format(digits = 3, nsmall = 0)` $\pm$ `r pull(newton_desc[3,"sd"]) %>% format(digits = 3, nsmall = 0)`).
+
+Start by running the standard ANOVA test:
+
+```{r}
+newton_aov <- aov(newtons ~ step, data = newton)
+newton_anova <- anova(newton_aov)
+
+newton_anova %>% 
+  tidy() %>%
+  flextable() %>%
+  set_table_properties(width = 0.8, layout = "autofit") %>%
+  colformat_num(j = c(3, 4, 5), digits = 1) %>%
+  colformat_num(j = 6, digits = 4) %>%
+  set_caption("Results of ANOVA for Force vs Step")
+```
+
+The one-way ANOVA indicates amount of force was statistically significantly different for different levels of step, *F*(2, 87) = 28.4, *p* < .0001.
+
+#### ANOVA Conditions
+
+Check the three ANOVA conditions: no outliers, normality, and equal variances.
+
+##### Outliers {-}
+
+Assess outliers with a box plot. Our example includes an outlier in step *A*.
+
+```{r echo=FALSE, fig.height=2.5}
+newton %>%
+  ggplot(aes(x = step, y = newtons)) +
+  geom_boxplot(fill = "snow3", color = "snow4", alpha = 0.6, width = 0.5, 
+               outlier.color = "goldenrod", outlier.size = 2) +
+  theme_minimal() +
+  labs(title = "Boxplot of Force vs Step",
+       y = "Force (newtons)", x = "Step")
+```
+
+You can either transform the dependent variable, see if taking it out changes your conclusion, or use a non-parametric test. Let's try removing the outlier (*id#* 13). 
+
+```{r}
+newton2 <- newton %>% mutate(id = row_number())
+newton_aov2 <- aov(newtons ~ step, data = newton2 %>% filter(!id == 7))
+newton_anova2 <- anova(newton_aov2)
+```
+
+```{r echo=FALSE}
+newton_anova2 %>% 
+  tidy() %>%
+  flextable() %>%
+  set_table_properties(width = 0.8, layout = "autofit") %>%
+  colformat_num(j = c(3, 4, 5), digits = 1) %>%
+  colformat_num(j = 6, digits = 4) %>%
+  set_caption("Results of ANOVA for Force vs Step") %>%
+  footnote(i = 1, j = 1,
+           value = as_paragraph("Note: One outlier in step A removed."),
+           ref_symbols = c(""),
+           part = "header", inline = TRUE)
+
+```
+
+The conclusion is the same, so leaving it in is fine!
+
+##### Normality {-}
+
+You can assume the populations are normally distributed if $n_j >= 30$, but I'll examine the Q-Q plot and run a [Shapiro-Wilk Test] anyway.
+
+The QQ plots below appear to be approximately normal...
+
+```{r}
+newton %>%
+  ggplot(aes(sample = newtons)) +
+  stat_qq() +
+  stat_qq_line(col = "goldenrod") +
+  facet_wrap(~step) +
+  theme_minimal() +
+  labs(title = "Normal Q-Q Plot")
+```
+
+...but the Shapiro-Wilk test fails for step *A* and *B* -- evidence of its sensitivity for large *n*. I will ignore this violation.
+
+```{r}
+x <- by(newton, newton$step, function(x) shapiro.test(x$newtons) %>% tidy())
+
+x[1:3] %>%
+  bind_rows() %>%
+  mutate(group = names(x)) %>%
+  dplyr::select(group, everything(), - method) %>%
+  flextable() %>% 
+  set_table_properties(width = 0.6, layout = "autofit") %>%
+  set_caption("Shapiro-Wilk Normality Test")
+```
+
+##### Equal Variances {-}
+
+The equality of sample variances condition is less critical when sample sizes are similar among the groups. Following the rule of thumb that no group's standard deviation be more than double that of any other, we look okay.
+
+```{r echo=FALSE}
+newton %>% 
+  group_by(step) %>% 
+  summarize(.groups = "drop", sd = sd(newtons)) %>%
+  flextable() %>%
+  set_table_properties(width = 0.5, layout = "autofit")
+```
+
+However, Levene's test rejects the null hypothesis of equality of variance.
+
+```{r}
+newton_levene <- car::leveneTest(newtons ~ step, data = newton) 
+newton_levene %>% 
+  tidy() %>%
+  flextable() %>%
+  set_table_properties(width = 0.6, layout = "autofit") %>% 
+  set_caption("Levene's Test for Homogeneity of Variance")
+```
+
+So does Bartlett.  
+
+```{r}
+bartlett.test(newtons ~ step, data = newton) %>% 
+  tidy() %>%
+  dplyr::select(-method) %>%
+  flextable() %>%
+  set_table_properties(width = 0.6, layout = "autofit") %>% 
+  set_caption("Bartlett's Test for Homogeneity of Variance")
+```
+
+We could transform the response variable to remove the heterogeneity. The Box-Cox procedure suggests an inverse square root transformation.
+
+|$\lambda$ | $Y^\lambda$ | Transformation |
+|---|---|---|
+|2 | $Y^2$ | Square |
+|1 | $Y^1$ | (no transformation) |
+|.5 | $Y^{.5}$ | Square Root |
+|0 | $\ln(Y)$ | Log |
+|-.5 | $Y^{-.5}$ | Inverse Square Root |
+|-1 | $Y^{-1}$ | Inverse|
+
+The Box-Cox procedure does not recommend any particular transformation of the data in this case.
+
+```{r message=FALSE}
+MASS::boxcox(newton_aov, plotit = TRUE)
+```
+
+```{r}
+newton3 <- newton %>%
+  mutate(newtons_isr = newtons^(-0.5))
+newton_levene3 <- car::leveneTest(newtons_isr ~ step, data = newton3) 
+newton_levene3 %>% 
+  tidy() %>%
+  flextable() %>%
+  set_table_properties(width = 0.6, layout = "autofit") %>% 
+  set_caption("Levene's Test for Homogeneity of Variance")
+```
+
+Huzzah - it worked! Before we continue on, we should backtrack and re-test the outliers and normality conditions. However, because the point of this section is to try Welch's ANOVA, I'm going use it instead of transforming the response variable. Use `oneway.test(..., var.equal = FALSE)` to run a Welch's ANOVA.
+
 ```{r}
 newton_anova <- oneway.test(newtons ~ step, data = newton, var.equal = FALSE)
 newton_anova
-newton_aov <- aov(newtons ~ step, data = newton)
-PMCMRplus::gamesHowellTest(newton_aov)
 ```
 
+Welch's ANOVA indicates amount of force was statistically significantly different for different steps, *F*(2, 56.2) = 26.2, *p* < .0001.
 
+I don't think you can calculate $\omega^2$ for a Welch's ANOVA object.
 
-Now we are ready for the one-way ANOVA test.  The null hypothesis is that all means are equal.  The p-value is <.0001, so we reject $H_0$.
-```{r}
-# summary(pig.aov <- aov(weight ~ diet, data = pig))
+#### Games-Howell Post Hoc Test
+
+Use the `PMCMRplus::gamesHowellTest()` to run the Games-Howell post hoc test. As expected, the three steps differ from each other.
+
+```{r message=FALSE}
+newton_gameshowell <- PMCMRplus::gamesHowellTest(newton_aov)
+summary(newton_gameshowell)
 ```
 
+Data are mean $\pm$ standard deviation. There was an increase in growth from `r pull(greenhouse_desc[1, "mean"])` $\pm$ `r pull(greenhouse_desc[1, "sd"])` in the control group to `r pull(greenhouse_desc[2, "mean"])` $\pm$ `r format(pull(greenhouse_desc[2, "sd"]), digits = 2, nsmall = 1)` in the group with fertilizer F1, an increase of `r greenhouse_tukey$group[1, "diff"]` (95% CI, `r format(greenhouse_tukey$group[1, "lwr"], digits = 2, nsmall = 1)` to `r format(greenhouse_tukey$group[1, "upr"], digits = 2, nsmall = 1)`), which was statistically significant (*p* < .0001)... etc.
+
+#### Reporting a Welch's ANOVA
+
+> A Welch's ANOVA was conducted to determine if force was different for different steps. Measurements were classified into three groups: A (*n* = 30), B (*n* = 30), and C (n = 30). There was a single outlier, as assessed by boxplot, and was retained because it did not change the conclusions; data was normally distributed for each group, as assessed by Q-Q plot. ; Homogeneity of variances was violated, as assessed by Levene's Test of Homogeneity of Variance (*p* = `r round(newton_levene[1, 3], 3)`). Data is presented as mean $\pm$ standard deviation. Force was statistically significantly different between different steps, *F*(`r newton_anova$parameter[1]`, `r newton_anova$parameter[2]`) = `r round(newton_anova$statistic, 3)`, p < .0005. Force increased from A (`r pull(newton_desc[1, "mean"])` $\pm$ `r format(pull(newton_desc[1,"sd"]), nsmall = 1)`), to B (`r pull(newton_desc[2, "mean"])` $\pm$ `r format(pull(newton_desc[2,"sd"]), digits = 2, nsmall = 1)`), to C (`r pull(newton_desc[3, "mean"])` $\pm$ `r format(pull(newton_desc[3,"sd"]), digits = 2, nsmall = 1)`). Games-Howell post hoc analysis revealed statistically significant increases from A to B (`r format(greenhouse_tukey$group[1, 1], digits=2, nsmall = 1)`, 95% CI (`r format(greenhouse_tukey$group[1, 2], digits=2, nsmall = 1)` to `r format(greenhouse_tukey$group[1, 3], digits=2, nsmall = 1)`), *p* = `r format(greenhouse_tukey$group[1, 4], digits=2, nsmall = 3)`), control to F2 (`r format(greenhouse_tukey$group[2, 1], digits=2, nsmall = 1)`, 95% CI (`r format(greenhouse_tukey$group[2, 2], digits=2, nsmall = 1)` to `r format(greenhouse_tukey$group[2, 3], digits=2, nsmall = 1)`), *p* = `r format(greenhouse_tukey$group[2, 4], digits=2, nsmall = 3)`), and control to F3 (`r format(greenhouse_tukey$group[3, 1], digits=2, nsmall = 1)`, 95% CI (`r format(greenhouse_tukey$group[3, 2], digits=2, nsmall = 1)` to `r format(greenhouse_tukey$group[3, 3], digits=2, nsmall = 1)`), *p* = `r format(greenhouse_tukey$group[3, 4], digits=2, nsmall = 3)`), as well as the increase from F2 to F3 (`r format(greenhouse_tukey$group[6, 1], digits=2, nsmall = 1)`, 95% CI (`r format(greenhouse_tukey$group[6, 2], digits=2, nsmall = 1)` to `r format(greenhouse_tukey$group[6, 3], digits=2, nsmall = 1)`), *p* = `r format(greenhouse_tukey$group[6, 4], digits=2, nsmall = 3)`), but there were no statistically significant group differences between F1 and F2 or F1 and F3.
+
+> Games-Howell post hoc analysis revealed that the increase from sedentary to moderate (2.97, 95% CI (1.07 to 4.88)) was statistically significant (p = .003), as well as the increase from sedentary to high (3.35, 95% CI (1.66 to 5.05), p = .001).
 
 
+### MANOVA
 
-
-
-
-
-
-
-
-In a multi-factor experiment each level of m
 Multi-factor ANOVA (MANOVA) is a method to compare mean responses by treatment factor level of two or more treatments applied in combination. The null hypotheses are $H_0: \mu_{1.} = \mu_{2.} = \dots = \mu_{a.}$ for the $a$ levels of factor 1, $H_0: \mu_{.1} = \mu_{.2} = \dots = \mu_{.b}$ for the $b$ levels of factor 2, etc. for all the factors in the experiment, and $H_0: $ no interaction for all the factor interactions.
 
 There are two equivalent ways to state the MANOVA model:
@@ -415,9 +589,6 @@ $$Y_{ijk} = \mu_{ij} + \epsilon_{ijk}$$
 In this notation $Y_{ijk}$ refers to the $k^{th}$ observation in the $j^{th}$ level of factor two and the $i^{th}$ level of factor 1.  Potentially there could be additional factors.  This model formulation decomposes the response into a cell mean and an error term.  The second makes the factor effect more explicit and is thus more common:
 
 $$Y_{ijk} = \mu + \alpha_i + \beta_j + (\alpha\beta)_{ij} +  \epsilon_{ijk}$$
-
-$\alpha_i 
-
 
 ### Multiple Variance Comparison F Test
 

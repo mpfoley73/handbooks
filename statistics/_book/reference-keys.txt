@@ -54,3 +54,15 @@ reporting
 tab:unnamed-chunk-18
 tab:unnamed-chunk-16
 tab:unnamed-chunk-19
+reporting-a-one-way-anova
+welchs-anova-wgames-howell
+tab:unnamed-chunk-23
+tab:unnamed-chunk-26
+tab:unnamed-chunk-28
+tab:unnamed-chunk-30
+tab:unnamed-chunk-31
+tab:unnamed-chunk-33
+anova-conditions-1
+games-howell-post-hoc-test
+reporting-a-welchs-anova
+manova
