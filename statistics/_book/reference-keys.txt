@@ -66,3 +66,4 @@ anova-conditions-1
 games-howell-post-hoc-test
 reporting-a-welchs-anova
 manova
+tab:unnamed-chunk-35
