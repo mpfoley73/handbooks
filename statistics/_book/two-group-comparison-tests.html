@@ -4,11 +4,11 @@
 
   <meta charset="utf-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <title>Chapter 6 Final Words | A Minimal Book Example</title>
+  <title>Chapter 3 Two-Group Comparison Tests | A Minimal Book Example</title>
   <meta name="description" content="This is a minimal example of using the bookdown package to write a book. The output format for this example is bookdown::gitbook." />
   <meta name="generator" content="bookdown 0.21 and GitBook 2.6.7" />
 
-  <meta property="og:title" content="Chapter 6 Final Words | A Minimal Book Example" />
+  <meta property="og:title" content="Chapter 3 Two-Group Comparison Tests | A Minimal Book Example" />
   <meta property="og:type" content="book" />
   
   
@@ -16,7 +16,7 @@
   
 
   <meta name="twitter:card" content="summary" />
-  <meta name="twitter:title" content="Chapter 6 Final Words | A Minimal Book Example" />
+  <meta name="twitter:title" content="Chapter 3 Two-Group Comparison Tests | A Minimal Book Example" />
   
   <meta name="twitter:description" content="This is a minimal example of using the bookdown package to write a book. The output format for this example is bookdown::gitbook." />
   
@@ -31,8 +31,8 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black" />
   
   
-<link rel="prev" href="applications.html"/>
-<link rel="next" href="final-words-1.html"/>
+<link rel="prev" href="one-group-inference-tests.html"/>
+<link rel="next" href="multi-group-comparison-tests.html"/>
 <script src="libs/jquery-2.2.3/jquery.min.js"></script>
 <link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
 <link href="libs/gitbook-2.6.7/css/plugin-table.css" rel="stylesheet" />
@@ -233,18 +233,66 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
           <div class="page-inner">
 
             <section class="normal" id="section-">
-<div id="final-words" class="section level1">
-<h1><span class="header-section-number">Chapter 6</span> Final Words</h1>
-<p>We have finished a nice book.</p>
-<div id="pearson" class="section level2">
-<h2><span class="header-section-number">6.1</span> Pearson</h2>
+<div id="two-group-comparison-tests" class="section level1">
+<h1><span class="header-section-number">Chapter 3</span> Two-Group Comparison Tests</h1>
+<div id="two-group-comparison-tests-for-numeric-vars" class="section level2">
+<h2><span class="header-section-number">3.1</span> Two-Group Comparison Tests for Numeric Vars</h2>
+<div id="sample-independent-t-test-for-numeric-vars" class="section level3">
+<h3><span class="header-section-number">3.1.1</span> 2 Sample Independent t Test for Numeric Vars</h3>
+<p>This test applies when you know the population variance.</p>
 </div>
-<div id="chi-square" class="section level2">
-<h2><span class="header-section-number">6.2</span> Chi-Square</h2>
+<div id="sample-welchs-t-test-for-numeric-vars" class="section level3">
+<h3><span class="header-section-number">3.1.2</span> 2 Sample Welch’s t Test for Numeric Vars</h3>
+<p>This test applies when the variable variances are unequal.</p>
 </div>
-<div id="spearman" class="section level2">
-<h2><span class="header-section-number">6.3</span> Spearman</h2>
+<div id="paired-sample-t-test-for-numeric-vars" class="section level3">
+<h3><span class="header-section-number">3.1.3</span> Paired Sample t Test for Numeric Vars</h3>
+<p>This test applies when you have paired samples.</p>
+</div>
+<div id="mann-whitney-u-test-for-numeric-vars" class="section level3">
+<h3><span class="header-section-number">3.1.4</span> Mann-Whitney U Test for Numeric Vars</h3>
+<p>This test applies when the variable distributions are non-normally.</p>
+</div>
+<div id="wilcoxon-paired-sample-test-for-numeric-vars" class="section level3">
+<h3><span class="header-section-number">3.1.5</span> Wilcoxon Paired-Sample Test for Numeric Vars</h3>
+<p>This test applies when the variable distributions are non-normally distributed and samples are paired.</p>
+</div>
+<div id="pearsons-correlation-for-numeric-vars" class="section level3">
+<h3><span class="header-section-number">3.1.6</span> Pearson’s Correlation for Numeric Vars</h3>
+</div>
+<div id="spearmans-ranked-correlation-for-numeric-vars" class="section level3">
+<h3><span class="header-section-number">3.1.7</span> Spearman’s Ranked Correlation for Numeric Vars</h3>
+</div>
+</div>
+<div id="two-group-comparison-tests-for-categorical-vars" class="section level2">
+<h2><span class="header-section-number">3.2</span> Two-Group Comparison Tests for Categorical Vars</h2>
+<div id="sample-independent-t-test-for-categorical-vars" class="section level3">
+<h3><span class="header-section-number">3.2.1</span> 2 Sample Independent t Test for Categorical Vars</h3>
+<p>This test applies when you know the population variance.</p>
+</div>
+<div id="sample-welchs-t-test-for-categorical-vars" class="section level3">
+<h3><span class="header-section-number">3.2.2</span> 2 Sample Welch’s t Test for Categorical Vars</h3>
+<p>This test applies when the variable variances are unequal.</p>
+</div>
+<div id="paired-sample-t-test-for-categorical-vars" class="section level3">
+<h3><span class="header-section-number">3.2.3</span> Paired Sample t Test for Categorical Vars</h3>
+<p>This test applies when you have paired samples.</p>
+</div>
+<div id="mann-whitney-u-test-for-categorical-vars" class="section level3">
+<h3><span class="header-section-number">3.2.4</span> Mann-Whitney U Test for Categorical Vars</h3>
+<p>This test applies when the variable distributions are non-normally.</p>
+</div>
+<div id="wilcoxon-paired-sample-test-for-categorical-vars" class="section level3">
+<h3><span class="header-section-number">3.2.5</span> Wilcoxon Paired-Sample Test for Categorical Vars</h3>
+<p>This test applies when the variable distributions are non-normally distributed and samples are paired.</p>
+</div>
+<div id="pearsons-correlation-for-categorical-vars" class="section level3">
+<h3><span class="header-section-number">3.2.6</span> Pearson’s Correlation for Categorical Vars</h3>
+</div>
+<div id="spearmans-ranked-correlation-for-categorical-vars" class="section level3">
+<h3><span class="header-section-number">3.2.7</span> Spearman’s Ranked Correlation for Categorical Vars</h3>
 
+</div>
 </div>
 </div>
             </section>
@@ -252,8 +300,8 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
           </div>
         </div>
       </div>
-<a href="applications.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
-<a href="final-words-1.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
+<a href="one-group-inference-tests.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+<a href="multi-group-comparison-tests.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
     </div>
   </div>
 <script src="libs/gitbook-2.6.7/js/app.min.js"></script>

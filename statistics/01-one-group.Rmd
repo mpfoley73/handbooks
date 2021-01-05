@@ -1,0 +1,32 @@
+# One-Group Inference Tests
+
+http://webspace.ship.edu/pgmarr/Geo441/Statistical%20Test%20Flow%20Chart.pdf
+
+
+## One-Group Inference with Numeric Variable
+
+### 1 Sample z Test for Numeric Var
+
+This test applies when you know the population variance.
+
+### 1 sample t Test for Numeric Var
+
+This test applies when you do not know the population variance.
+
+### Wilcoxon 1-Sample Median Test for Numeric Var
+
+This test applies when the variable is not normally distributed.
+
+## One-Group Inference with Categorical Variable
+
+### 1 Sample z Test for Categorical Var
+
+This test applies when you know the population variance.
+
+### 1 sample t Test for Categorical Var
+
+This test applies when you do not know the population variance.
+
+### Wilcoxon 1-Sample Median Test for Categorical Var
+
+This test applies when the variable is not normally distributed.

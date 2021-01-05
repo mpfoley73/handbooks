@@ -1,0 +1,54 @@
+# Two-Group Comparison Tests
+
+## Two-Group Comparison Tests for Numeric Vars
+
+### 2 Sample Independent t Test for Numeric Vars
+
+This test applies when you know the population variance.
+
+### 2 Sample Welch's t Test for Numeric Vars
+
+This test applies when the variable variances are unequal.
+
+### Paired Sample t Test for Numeric Vars
+
+This test applies when you have paired samples.
+
+### Mann-Whitney U Test for Numeric Vars
+
+This test applies when the variable distributions are non-normally.
+
+### Wilcoxon Paired-Sample Test for Numeric Vars
+
+This test applies when the variable distributions are non-normally distributed and samples are paired.
+
+### Pearson's Correlation for Numeric Vars
+
+### Spearman's Ranked Correlation for Numeric Vars
+
+## Two-Group Comparison Tests for Categorical Vars
+
+### 2 Sample Independent t Test for Categorical Vars
+
+This test applies when you know the population variance.
+
+### 2 Sample Welch's t Test for Categorical Vars
+
+This test applies when the variable variances are unequal.
+
+### Paired Sample t Test for Categorical Vars
+
+This test applies when you have paired samples.
+
+### Mann-Whitney U Test for Categorical Vars
+
+This test applies when the variable distributions are non-normally.
+
+### Wilcoxon Paired-Sample Test for Categorical Vars
+
+This test applies when the variable distributions are non-normally distributed and samples are paired.
+
+### Pearson's Correlation for Categorical Vars
+
+### Spearman's Ranked Correlation for Categorical Vars
+

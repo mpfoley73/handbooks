@@ -4,11 +4,11 @@
 
   <meta charset="utf-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <title>Chapter 6 Final Words | A Minimal Book Example</title>
+  <title>Chapter 8 Probability | A Minimal Book Example</title>
   <meta name="description" content="This is a minimal example of using the bookdown package to write a book. The output format for this example is bookdown::gitbook." />
   <meta name="generator" content="bookdown 0.21 and GitBook 2.6.7" />
 
-  <meta property="og:title" content="Chapter 6 Final Words | A Minimal Book Example" />
+  <meta property="og:title" content="Chapter 8 Probability | A Minimal Book Example" />
   <meta property="og:type" content="book" />
   
   
@@ -16,7 +16,7 @@
   
 
   <meta name="twitter:card" content="summary" />
-  <meta name="twitter:title" content="Chapter 6 Final Words | A Minimal Book Example" />
+  <meta name="twitter:title" content="Chapter 8 Probability | A Minimal Book Example" />
   
   <meta name="twitter:description" content="This is a minimal example of using the bookdown package to write a book. The output format for this example is bookdown::gitbook." />
   
@@ -31,8 +31,8 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black" />
   
   
-<link rel="prev" href="applications.html"/>
-<link rel="next" href="final-words-1.html"/>
+<link rel="prev" href="final-words-1.html"/>
+<link rel="next" href="references.html"/>
 <script src="libs/jquery-2.2.3/jquery.min.js"></script>
 <link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
 <link href="libs/gitbook-2.6.7/css/plugin-table.css" rel="stylesheet" />
@@ -233,18 +233,26 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
           <div class="page-inner">
 
             <section class="normal" id="section-">
-<div id="final-words" class="section level1">
-<h1><span class="header-section-number">Chapter 6</span> Final Words</h1>
-<p>We have finished a nice book.</p>
-<div id="pearson" class="section level2">
-<h2><span class="header-section-number">6.1</span> Pearson</h2>
+<div id="Probablity" class="section level1">
+<h1><span class="header-section-number">Chapter 8</span> Probability</h1>
+<div id="bayesian-inference" class="section level2">
+<h2><span class="header-section-number">8.1</span> Bayesian Inference</h2>
+<p>The Bayesian model for inference adds to the statistical model <span class="math inline">\(\{f_\theta : \theta \in \Omega\}\)</span> a prior probability measure <span class="math inline">\(\Pi\)</span> for <span class="math inline">\(\theta\)</span>. For example, suppose <span class="math inline">\(\theta\)</span> is the probability a flipping a coin to heads, with <span class="math inline">\(\Omega = [0,1]\)</span>. The statistician’s conservative believe <span class="math inline">\(\pi\)</span> may be a wide bell curve centered on <span class="math inline">\(\theta=0.5\)</span>, or maybe the statistician is quite confident, so <span class="math inline">\(\pi\)</span> is a daring narrow bell curve around <span class="math inline">\(\theta=0.5\)</span>. By the law of total probability, the probability of event <span class="math inline">\(s\)</span> is a joint distribution, <span class="math inline">\(\pi(\theta)f_\theta(s)\)</span>. The marginal distribution of <span class="math inline">\(s\)</span> is <span class="math inline">\(m(s) = \int_\Omega \pi(\theta)f_\theta(s)d\theta.\)</span></p>
+<p>After <span class="math inline">\(s\)</span> is observed the posterior distribution of <span class="math inline">\(\theta\)</span> is the conditional distribution of <span class="math inline">\(\theta\)</span> given <span class="math inline">\(s\)</span> is</p>
+<p><span class="math display">\[\pi(\theta|s) = \frac{\pi(\theta)f_\theta(s)}{m(s)}\]</span></p>
+<p>Suppose you observe a sample from a Bernoulli distribution with an unknown success probability, <span class="math inline">\(\theta \in [0,1].\)</span> You take a uniform prior, <span class="math inline">\(\pi= Beta(\alpha, \beta) = Beta(1,1).\)</span>. Your sample of <span class="math inline">\(n = 40\)</span> includes <span class="math inline">\(n\bar{x} = 10\)</span> successes. Then the posterior of <span class="math inline">\(\theta\)</span> is <span class="math inline">\(Beta(11,31):\)</span></p>
+<p>The likelihood <span class="math inline">\(\theta^{n\bar{x}}\left(1-\theta\right)^{n(1-\bar{x})}\)</span> times the prior <span class="math inline">\(B^{-1}(\alpha, \beta)\theta^{\alpha-1}(1-\theta)^{\beta-1}.\)</span></p>
 </div>
-<div id="chi-square" class="section level2">
-<h2><span class="header-section-number">6.2</span> Chi-Square</h2>
-</div>
-<div id="spearman" class="section level2">
-<h2><span class="header-section-number">6.3</span> Spearman</h2>
+<div id="stochastic-processes" class="section level2">
+<h2><span class="header-section-number">8.2</span> Stochastic Processes</h2>
+<p>Stochastic processes are proceed randomly over time.</p>
+<p>The simplest version is the <strong>random walk</strong>. A random walk is a sequence <span class="math inline">\(\{X_n\}\)</span> of random variables, with <span class="math inline">\(X_0\)</span> = 1 and <span class="math inline">\(P\left(X_{n+1} = X_n + 1 \right) = p\)</span> where <span class="math inline">\(p\)</span> is the probability of “success” and its complement is <span class="math inline">\(q= 1-p\)</span>. It follows that, given an initial value <span class="math inline">\(a\)</span>, <span class="math inline">\(P\left(X_n = a + k\right) = \binom{n}{\frac{n+k}{2}} p^{(n+k)/2}q^{(n-k)/2}\)</span> for <span class="math inline">\(k = -n, -n+2, -n+4, \dots,n\)</span>, and <span class="math inline">\(E\left(X_n\right) = a + n(2p-1)\)</span>.</p>
+<div id="markov-chains" class="section level3">
+<h3><span class="header-section-number">8.2.1</span> Markov Chains</h3>
+<p>A Markov chain is the random motion of an object. Given a <em>state space</em> <span class="math inline">\(S\)</span> of all places an object can go, and a set of transition probabilities <span class="math inline">\(\{p_{ij}: i,j \in S\}\)</span> to move from state <span class="math inline">\(i\)</span> to <span class="math inline">\(j\)</span>, and a probability <span class="math inline">\(u_i = P\left(X_0 = i\right)\)</span> that the object starts at state <span class="math inline">\(i\)</span>, then <span class="math inline">\(P\left(X_{n+1} = j|X_n =i\right)=p_{ij}\)</span></p>
+<p><a href="#ANOVA"><strong>??</strong></a></p>
 
+</div>
 </div>
 </div>
             </section>
@@ -252,8 +260,8 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
           </div>
         </div>
       </div>
-<a href="applications.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
-<a href="final-words-1.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
+<a href="final-words-1.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+<a href="references.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
     </div>
   </div>
 <script src="libs/gitbook-2.6.7/js/app.min.js"></script>
