@@ -24,7 +24,7 @@
 <meta name="author" content="Yihui Xie" />
 
 
-<meta name="date" content="2021-01-05" />
+<meta name="date" content="2021-01-07" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -53,11 +53,6 @@
 <script src="libs/accessible-code-block-0.0.1/empty-anchor.js"></script>
 <link href="libs/anchor-sections-1.0/anchor-sections.css" rel="stylesheet" />
 <script src="libs/anchor-sections-1.0/anchor-sections.js"></script>
-<link href="libs/table1-1.0/table1_defaults.css" rel="stylesheet" />
-<script src="libs/kePrint-0.0.1/kePrint.js"></script>
-<link href="libs/lightable-0.0.1/lightable.css" rel="stylesheet" />
-<link href="libs/tabwid-1.0.0/tabwid.css" rel="stylesheet" />
-<script src="libs/tabwid-1.0.0/tabwid.js"></script>
 
 
 <style type="text/css">
@@ -185,7 +180,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <li class="chapter" data-level="4.6.2" data-path="multi-group-comparison-tests.html"><a href="multi-group-comparison-tests.html#welchs-anova-wgames-howell"><i class="fa fa-check"></i><b>4.6.2</b> Welch’s ANOVA w/Games-Howell</a></li>
 <li class="chapter" data-level="4.6.3" data-path="multi-group-comparison-tests.html"><a href="multi-group-comparison-tests.html#manova"><i class="fa fa-check"></i><b>4.6.3</b> MANOVA</a></li>
 <li class="chapter" data-level="4.6.4" data-path="multi-group-comparison-tests.html"><a href="multi-group-comparison-tests.html#multiple-variance-comparison-f-test"><i class="fa fa-check"></i><b>4.6.4</b> Multiple Variance Comparison F Test</a></li>
-<li class="chapter" data-level="4.6.5" data-path="multi-group-comparison-tests.html"><a href="multi-group-comparison-tests.html#example"><i class="fa fa-check"></i><b>4.6.5</b> Example</a></li>
+<li class="chapter" data-level="4.6.5" data-path="multi-group-comparison-tests.html"><a href="multi-group-comparison-tests.html#example-3"><i class="fa fa-check"></i><b>4.6.5</b> Example</a></li>
 <li class="chapter" data-level="4.6.6" data-path="multi-group-comparison-tests.html"><a href="multi-group-comparison-tests.html#repeated-measures"><i class="fa fa-check"></i><b>4.6.6</b> Repeated Measures</a></li>
 <li class="chapter" data-level="4.6.7" data-path="multi-group-comparison-tests.html"><a href="multi-group-comparison-tests.html#two-way"><i class="fa fa-check"></i><b>4.6.7</b> Two-Way</a></li>
 <li class="chapter" data-level="4.6.8" data-path="multi-group-comparison-tests.html"><a href="multi-group-comparison-tests.html#randomized-blocks"><i class="fa fa-check"></i><b>4.6.8</b> Randomized Blocks</a></li>
@@ -235,16 +230,177 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
             <section class="normal" id="section-">
 <div id="one-group-inference-tests" class="section level1">
 <h1><span class="header-section-number">Chapter 2</span> One-Group Inference Tests</h1>
-<p><a href="http://webspace.ship.edu/pgmarr/Geo441/Statistical%20Test%20Flow%20Chart.pdf" class="uri">http://webspace.ship.edu/pgmarr/Geo441/Statistical%20Test%20Flow%20Chart.pdf</a></p>
+<p><em>One-group</em> refers to a single population whose metric you are trying to measure. In the case of a quantitative metric, you are typically measuring its mean value. In the case of a count variable, you are typically measuring its proportion.</p>
 <div id="one-group-inference-with-numeric-variable" class="section level2">
 <h2><span class="header-section-number">2.1</span> One-Group Inference with Numeric Variable</h2>
+<p>The tests in this section use the sample mean, <span class="math inline">\(\bar{x}\)</span>, as an estimate of the population mean, <span class="math inline">\(\mu\)</span>. The tests apply when the data is <em>independent</em>. Using the normal or student-t distribution, you can create a confidence interval around the estimate, or evaluate an hypothesized population mean, <span class="math inline">\(\mu_0\)</span>. Which test you use depends on what you know about the population distribution (normal vs non-normal) and its variance (known or unknown):</p>
+<table>
+<thead>
+<tr class="header">
+<th></th>
+<th>Normal Distribution</th>
+<th>Non-Normal</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Known Variance</td>
+<td><em>z</em>-test</td>
+<td>Wilcoxon Median</td>
+</tr>
+<tr class="even">
+<td>Unknown Variance</td>
+<td><em>t</em>-test</td>
+<td>Wilcoxon Median</td>
+</tr>
+</tbody>
+</table>
 <div id="sample-z-test-for-numeric-var" class="section level3">
 <h3><span class="header-section-number">2.1.1</span> 1 Sample z Test for Numeric Var</h3>
-<p>This test applies when you know the population variance.</p>
+<p>The <em>z</em> test is also called the normal approximation <em>z</em> test. It only applies when the sampling distribution of the population mean is normally distributed with known variance, and there are no significant outliers. The sampling distribution is normally distributed when the underlying population is normally distributed, or when the sample size is large <span class="math inline">\((n &gt;= 30)\)</span>, as follows from the central limit theorem. The <em>t</em> test returns similar results, plus it is valid when the standard error is unknown, and that is pretty much always. For that reason, you probably will never use this test.</p>
+<p>Under the normal approximation method, the measured mean <span class="math inline">\(\bar{x}\)</span> approximates the population mean <span class="math inline">\(\mu\)</span>, and the sampling distribution has a normal distribution centered at <span class="math inline">\(\mu\)</span> with standard error <span class="math inline">\(se_\mu = \frac{\sigma}{\sqrt{n}}\)</span> where <span class="math inline">\(\sigma\)</span> is the standard deviation of the underlying population. Define a <span class="math inline">\((1 - \alpha)\%\)</span> confidence interval as <span class="math inline">\(\bar{x} \pm z_{(1 - \alpha) {/} 2} se_\mu\)</span>, or test <span class="math inline">\(H_0: \mu = \mu_0\)</span> with test statistic <span class="math inline">\(Z = \frac{\bar{x} - \mu_0}{se_\mu}\)</span>.</p>
+<div id="example" class="section level4 unnumbered">
+<h4>Example</h4>
+<p>The <code>mtcars</code> data set is a sample of <em>n</em> = 32 cars. The mean fuel economy is <span class="math inline">\(\bar{x} \pm s\)</span> = 20.1 <span class="math inline">\(\pm\)</span> 6.0 mpg. The prior measured overall fuel economy for vehicles was <span class="math inline">\(\mu_0 \pm \sigma\)</span> = 18.0 <span class="math inline">\(\pm\)</span> 6.0 mpg. Has fuel economy improved?</p>
+<p>The sample size is <span class="math inline">\(\ge\)</span> 30, so the sampling distribution of the population mean is normally distributed. The population variance is known, so use the <em>z</em> test.</p>
+<p><span class="math inline">\(H_0: \mu = 16.0\)</span>, and <span class="math inline">\(H_a: \mu &gt; 16.0\)</span> - a right-tail test. The test statistic is <span class="math inline">\(Z = \frac{\bar{x} - \mu_0}{se_\mu}=\)</span> 1.97 where <span class="math inline">\(se_\mu = \frac{\mu}{\sqrt{n}} =\)</span> 1.06. <span class="math inline">\(P(z &gt; Z) =\)</span> 0.0244, so reject <span class="math inline">\(H_0\)</span> at the <span class="math inline">\(\alpha =\)</span> 0.05 level of significance.</p>
+<p><img src="statistics_files/figure-html/unnamed-chunk-4-1.png" width="624" /></p>
+<p>The <span class="math inline">\(95%\)</span> confidence interval for <span class="math inline">\(\mu\)</span> is <span class="math inline">\(\bar{x} \pm z_{(1 - \alpha){/}2} se_\mu\)</span> where <span class="math inline">\(z_{(1 - \alpha){/}2} =\)</span> 1.96. <span class="math inline">\(\mu =\)</span> 20.09 <span class="math inline">\(\pm\)</span> 2.08 (95% CI 18.01 to 22.17).</p>
+<p><img src="statistics_files/figure-html/unnamed-chunk-6-1.png" width="624" /></p>
+</div>
+<div id="example-1" class="section level4">
+<h4><span class="header-section-number">2.1.1.1</span> Example</h4>
+<p><em>A random sample of</em> <span class="math inline">\(n = 16\)</span> <em>Americans measured pounds of beef consumed in a year. Evaluate the hypothesis that the population value is</em> <span class="math inline">\(\mu_0=115\)</span> <em>pounds.</em></p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="one-group-inference-tests.html#cb1-1"></a>lbs &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="dv">118</span>, <span class="dv">115</span>, <span class="dv">125</span>, <span class="dv">110</span>, <span class="dv">112</span>, <span class="dv">130</span>, <span class="dv">117</span>, <span class="dv">112</span>, </span>
+<span id="cb1-2"><a href="one-group-inference-tests.html#cb1-2"></a>         <span class="dv">115</span>, <span class="dv">120</span>, <span class="dv">113</span>, <span class="dv">118</span>, <span class="dv">119</span>, <span class="dv">122</span>, <span class="dv">123</span>, <span class="dv">126</span>)</span>
+<span id="cb1-3"><a href="one-group-inference-tests.html#cb1-3"></a>n &lt;-<span class="st"> </span><span class="kw">length</span>(lbs)</span>
+<span id="cb1-4"><a href="one-group-inference-tests.html#cb1-4"></a>(x_bar &lt;-<span class="st"> </span><span class="kw">mean</span>(lbs))</span></code></pre></div>
+<pre><code>## [1] 118.4375</code></pre>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="one-group-inference-tests.html#cb3-1"></a>(s &lt;-<span class="st"> </span><span class="kw">sd</span>(lbs))</span></code></pre></div>
+<pre><code>## [1] 5.656486</code></pre>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="one-group-inference-tests.html#cb5-1"></a>(se &lt;-<span class="st"> </span>s <span class="op">/</span><span class="st"> </span><span class="kw">sqrt</span>(n))</span></code></pre></div>
+<pre><code>## [1] 1.414121</code></pre>
+<p><span class="math inline">\(n &lt; 30\)</span>, so only use the t-test if the sample data follows a normal distribution. Test for normality by starting with the assumption that the distribution is normal, <span class="math inline">\(H_0: normal\)</span>, then falsifying the assumption if sufficient evidence exists.</p>
+<p>Look for substantial deviations from a straight line. This one looks good.</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="one-group-inference-tests.html#cb7-1"></a><span class="kw">qqnorm</span>(lbs)</span>
+<span id="cb7-2"><a href="one-group-inference-tests.html#cb7-2"></a><span class="kw">qqline</span>(lbs)</span></code></pre></div>
+<p><img src="statistics_files/figure-html/unnamed-chunk-8-1.png" width="672" /></p>
+<p>For a more quantitative analysis, use the Anderson-Darling normality test. The test p-value is the probability of calculating the test statistic if the distribution is normal. The p-value is .88, so do not reject <span class="math inline">\(H_0\)</span>.</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="one-group-inference-tests.html#cb8-1"></a><span class="kw">library</span>(nortest)</span>
+<span id="cb8-2"><a href="one-group-inference-tests.html#cb8-2"></a></span>
+<span id="cb8-3"><a href="one-group-inference-tests.html#cb8-3"></a><span class="kw">ad.test</span>(lbs)</span></code></pre></div>
+<pre><code>## 
+##  Anderson-Darling normality test
+## 
+## data:  lbs
+## A = 0.19325, p-value = 0.8753</code></pre>
+<p>The null hypothesis is <span class="math inline">\(H_0: \mu_0 = 115\)</span> pounds with alternative hypothesis <span class="math inline">\(H_a: \mu_0 \ne 115\)</span> pounds.</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="one-group-inference-tests.html#cb10-1"></a>mu_<span class="dv">0</span> &lt;-<span class="st"> </span><span class="dv">115</span></span>
+<span id="cb10-2"><a href="one-group-inference-tests.html#cb10-2"></a>alpha &lt;-<span class="st"> </span><span class="fl">0.05</span></span></code></pre></div>
+<p>Conduct the t-test. The p-value is less than .05 (just barely!), so reject <span class="math inline">\(H_0\)</span>.</p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="one-group-inference-tests.html#cb11-1"></a>(t.test.result &lt;-<span class="st"> </span><span class="kw">t.test</span>(<span class="dt">x =</span> lbs,</span>
+<span id="cb11-2"><a href="one-group-inference-tests.html#cb11-2"></a>                         <span class="dt">alternative =</span> <span class="st">&quot;two.sided&quot;</span>, </span>
+<span id="cb11-3"><a href="one-group-inference-tests.html#cb11-3"></a>                         <span class="dt">mu =</span> mu_<span class="dv">0</span>, </span>
+<span id="cb11-4"><a href="one-group-inference-tests.html#cb11-4"></a>                         <span class="dt">conf.level =</span> (<span class="dv">1</span> <span class="op">-</span><span class="st"> </span>alpha)))</span></code></pre></div>
+<pre><code>## 
+##  One Sample t-test
+## 
+## data:  lbs
+## t = 2.4308, df = 15, p-value = 0.02808
+## alternative hypothesis: true mean is not equal to 115
+## 95 percent confidence interval:
+##  115.4234 121.4516
+## sample estimates:
+## mean of x 
+##  118.4375</code></pre>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="one-group-inference-tests.html#cb13-1"></a>lrr =<span class="st"> </span>mu_<span class="dv">0</span> <span class="op">+</span><span class="st"> </span><span class="kw">qt</span>(<span class="dt">p =</span> alpha, <span class="dt">df =</span> n <span class="op">-</span><span class="st"> </span><span class="dv">1</span>, <span class="dt">lower.tail =</span> <span class="ot">TRUE</span>) <span class="op">*</span><span class="st"> </span>se</span>
+<span id="cb13-2"><a href="one-group-inference-tests.html#cb13-2"></a>urr =<span class="st"> </span>mu_<span class="dv">0</span> <span class="op">+</span><span class="st"> </span><span class="kw">qt</span>(<span class="dt">p =</span> alpha, <span class="dt">df =</span> n <span class="op">-</span><span class="st"> </span><span class="dv">1</span>, <span class="dt">lower.tail =</span> <span class="ot">FALSE</span>) <span class="op">*</span><span class="st"> </span>se</span>
+<span id="cb13-3"><a href="one-group-inference-tests.html#cb13-3"></a><span class="kw">data.frame</span>(<span class="dt">mu =</span> <span class="dv">1000</span><span class="op">:</span><span class="dv">1250</span> <span class="op">/</span><span class="st"> </span><span class="dv">10</span>) <span class="op">%&gt;%</span></span>
+<span id="cb13-4"><a href="one-group-inference-tests.html#cb13-4"></a><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">t =</span> (mu <span class="op">-</span><span class="st"> </span>mu_<span class="dv">0</span>) <span class="op">/</span><span class="st"> </span>se) <span class="op">%&gt;%</span></span>
+<span id="cb13-5"><a href="one-group-inference-tests.html#cb13-5"></a><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">prob =</span> <span class="kw">dt</span>(<span class="dt">x =</span> t, <span class="dt">df =</span> n <span class="op">-</span><span class="st"> </span><span class="dv">1</span>)) <span class="op">%&gt;%</span></span>
+<span id="cb13-6"><a href="one-group-inference-tests.html#cb13-6"></a><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">rr =</span> <span class="kw">ifelse</span>(mu <span class="op">&lt;</span><span class="st"> </span>lrr <span class="op">|</span><span class="st"> </span>mu <span class="op">&gt;</span><span class="st"> </span>urr, prob, <span class="dv">0</span>)) <span class="op">%&gt;%</span></span>
+<span id="cb13-7"><a href="one-group-inference-tests.html#cb13-7"></a><span class="kw">ggplot</span>() <span class="op">+</span></span>
+<span id="cb13-8"><a href="one-group-inference-tests.html#cb13-8"></a><span class="st">  </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="dt">x =</span> mu, <span class="dt">y =</span> prob)) <span class="op">+</span></span>
+<span id="cb13-9"><a href="one-group-inference-tests.html#cb13-9"></a><span class="st">  </span><span class="kw">geom_area</span>(<span class="kw">aes</span>(<span class="dt">x =</span> mu, <span class="dt">y =</span> rr), <span class="dt">fill =</span> <span class="st">&quot;red&quot;</span>, <span class="dt">alpha =</span> <span class="fl">0.3</span>) <span class="op">+</span></span>
+<span id="cb13-10"><a href="one-group-inference-tests.html#cb13-10"></a><span class="st">  </span><span class="kw">geom_vline</span>(<span class="kw">aes</span>(<span class="dt">xintercept =</span> mu_<span class="dv">0</span>), <span class="dt">color =</span> <span class="st">&quot;black&quot;</span>) <span class="op">+</span></span>
+<span id="cb13-11"><a href="one-group-inference-tests.html#cb13-11"></a><span class="st">  </span><span class="kw">geom_vline</span>(<span class="kw">aes</span>(<span class="dt">xintercept =</span> x_bar), <span class="dt">color =</span> <span class="st">&quot;blue&quot;</span>) <span class="op">+</span></span>
+<span id="cb13-12"><a href="one-group-inference-tests.html#cb13-12"></a><span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span><span class="st">&quot;Two-Tail Hypothesis Test&quot;</span>,</span>
+<span id="cb13-13"><a href="one-group-inference-tests.html#cb13-13"></a>       <span class="dt">subtitle =</span> <span class="kw">bquote</span>(<span class="st">&quot;mu_0=&quot;</span> <span class="op">~</span><span class="st"> </span>.(mu_<span class="dv">0</span>) <span class="op">~</span><span class="st"> </span></span>
+<span id="cb13-14"><a href="one-group-inference-tests.html#cb13-14"></a><span class="st">                           &quot;, x_bar =&quot;</span> <span class="op">~</span><span class="st"> </span>.(<span class="kw">round</span>(x_bar, <span class="dv">1</span>)) <span class="op">~</span><span class="st"> </span></span>
+<span id="cb13-15"><a href="one-group-inference-tests.html#cb13-15"></a><span class="st">                           &quot;, p-value =&quot;</span> <span class="op">~</span><span class="st"> </span>.(<span class="kw">round</span>(t.test.result<span class="op">$</span>p.value, <span class="dv">4</span>))),</span>
+<span id="cb13-16"><a href="one-group-inference-tests.html#cb13-16"></a>       <span class="dt">x =</span> <span class="st">&quot;mu&quot;</span>,</span>
+<span id="cb13-17"><a href="one-group-inference-tests.html#cb13-17"></a>       <span class="dt">y =</span> <span class="st">&quot;Probability&quot;</span>) <span class="op">+</span></span>
+<span id="cb13-18"><a href="one-group-inference-tests.html#cb13-18"></a><span class="st">  </span><span class="kw">theme</span>(<span class="dt">legend.position=</span><span class="st">&quot;none&quot;</span>,</span>
+<span id="cb13-19"><a href="one-group-inference-tests.html#cb13-19"></a>        <span class="dt">axis.text.y =</span> <span class="kw">element_blank</span>(), </span>
+<span id="cb13-20"><a href="one-group-inference-tests.html#cb13-20"></a>        <span class="dt">axis.ticks.y =</span> <span class="kw">element_blank</span>()) </span></code></pre></div>
+<p><img src="statistics_files/figure-html/unnamed-chunk-12-1.png" width="672" /></p>
+</div>
+<div id="calculating-sample-size" class="section level4">
+<h4><span class="header-section-number">2.1.1.2</span> Calculating Sample Size</h4>
+<p>Determine the sample size required for a maximum error <span class="math inline">\(\epsilon\)</span> in the estimate by solving the confidence interval equation for <span class="math inline">\(n=\frac{{t_{\alpha/2,n-1}^2se^2}}{{\epsilon^2}}\)</span> . Unfortunately, <span class="math inline">\(t_{\alpha/2,n-1}^2\)</span> is dependent on <span class="math inline">\(n\)</span>, so replace it with <span class="math inline">\(z_{\alpha/2}^2\)</span>. What about <span class="math inline">\(s^2\)</span>? Estimate it from the literature, a pilot study, or using the empirical rule of <span class="math inline">\(95%\)</span> of range falling within two standard deviations, <span class="math inline">\(s=\frac{{range}}{{4}}\)</span>.</p>
+<div id="example-2" class="section level5">
+<h5><span class="header-section-number">2.1.1.2.1</span> Example</h5>
+<p><em>If the maximum tolerable error is</em> <span class="math inline">\(\epsilon=3\)</span><em>, and the sample variance is</em> <span class="math inline">\(s^2 = 10^2\)</span><em>, what sample size provides an</em> <span class="math inline">\(\alpha=0.05\)</span> <em>conidence level?</em></p>
+<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="one-group-inference-tests.html#cb14-1"></a>alpha =<span class="st"> </span><span class="fl">0.05</span></span>
+<span id="cb14-2"><a href="one-group-inference-tests.html#cb14-2"></a>s =<span class="st"> </span><span class="dv">10</span></span>
+<span id="cb14-3"><a href="one-group-inference-tests.html#cb14-3"></a>epsilon =<span class="st"> </span><span class="dv">3</span></span>
+<span id="cb14-4"><a href="one-group-inference-tests.html#cb14-4"></a>z_crit =<span class="st"> </span><span class="kw">qnorm</span>(<span class="dt">p =</span> <span class="dv">1</span> <span class="op">-</span><span class="st"> </span>alpha <span class="op">/</span><span class="st"> </span><span class="dv">2</span>, </span>
+<span id="cb14-5"><a href="one-group-inference-tests.html#cb14-5"></a>               <span class="dt">mean =</span> <span class="dv">0</span>, </span>
+<span id="cb14-6"><a href="one-group-inference-tests.html#cb14-6"></a>               <span class="dt">sd =</span> <span class="dv">1</span>, </span>
+<span id="cb14-7"><a href="one-group-inference-tests.html#cb14-7"></a>               <span class="dt">lower.tail =</span> <span class="ot">TRUE</span>)</span>
+<span id="cb14-8"><a href="one-group-inference-tests.html#cb14-8"></a>(<span class="dt">n =</span> <span class="kw">ceiling</span>(z_crit<span class="op">^</span><span class="dv">2</span> <span class="op">*</span><span class="st"> </span>s<span class="op">^</span><span class="dv">2</span> <span class="op">/</span><span class="st"> </span>epsilon<span class="op">^</span><span class="dv">2</span>))</span></code></pre></div>
+<pre><code>## [1] 43</code></pre>
+<p><span class="math inline">\(n\)</span> varies with confidence level and maximum error.</p>
+<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="one-group-inference-tests.html#cb16-1"></a><span class="kw">library</span>(tidyr)  <span class="co"># for spread</span></span>
+<span id="cb16-2"><a href="one-group-inference-tests.html#cb16-2"></a></span>
+<span id="cb16-3"><a href="one-group-inference-tests.html#cb16-3"></a>alpha &lt;-<span class="st"> </span><span class="kw">c</span>(.<span class="dv">10</span>, <span class="fl">.10</span>, <span class="fl">.10</span>, <span class="fl">.05</span>, <span class="fl">.05</span>, <span class="fl">.05</span>, <span class="fl">.01</span>, <span class="fl">.01</span>, <span class="fl">.01</span>)</span>
+<span id="cb16-4"><a href="one-group-inference-tests.html#cb16-4"></a>epsilon &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="dv">1</span>, <span class="dv">3</span>, <span class="dv">5</span>, <span class="dv">1</span>, <span class="dv">3</span>, <span class="dv">5</span>, <span class="dv">1</span>, <span class="dv">3</span>, <span class="dv">5</span>)</span>
+<span id="cb16-5"><a href="one-group-inference-tests.html#cb16-5"></a>dataframe &lt;-<span class="st"> </span><span class="kw">data.frame</span>(alpha, epsilon)</span>
+<span id="cb16-6"><a href="one-group-inference-tests.html#cb16-6"></a>dataframe &lt;-<span class="st"> </span>dataframe <span class="op">%&gt;%</span><span class="st"> </span></span>
+<span id="cb16-7"><a href="one-group-inference-tests.html#cb16-7"></a><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">z_crit =</span> <span class="kw">qnorm</span>(<span class="dt">p =</span> <span class="dv">1</span> <span class="op">-</span><span class="st"> </span>alpha <span class="op">/</span><span class="st"> </span><span class="dv">2</span>, <span class="dt">mean =</span> <span class="dv">0</span>, <span class="dt">sd =</span> <span class="dv">1</span>, </span>
+<span id="cb16-8"><a href="one-group-inference-tests.html#cb16-8"></a>                        <span class="dt">lower.tail =</span> <span class="ot">TRUE</span>),</span>
+<span id="cb16-9"><a href="one-group-inference-tests.html#cb16-9"></a>         <span class="dt">n =</span> <span class="kw">ceiling</span>(z_crit<span class="op">^</span><span class="dv">2</span> <span class="op">*</span><span class="st"> </span>s<span class="op">^</span><span class="dv">2</span> <span class="op">/</span><span class="st"> </span>epsilon<span class="op">^</span><span class="dv">2</span>))</span>
+<span id="cb16-10"><a href="one-group-inference-tests.html#cb16-10"></a>dataframe<span class="op">$</span>z_crit &lt;-<span class="st"> </span><span class="ot">NULL</span></span>
+<span id="cb16-11"><a href="one-group-inference-tests.html#cb16-11"></a><span class="kw">spread</span>(dataframe, <span class="dt">key =</span> epsilon, n) <span class="op">%&gt;%</span></span>
+<span id="cb16-12"><a href="one-group-inference-tests.html#cb16-12"></a><span class="st">  </span>knitr<span class="op">::</span><span class="kw">kable</span>()</span></code></pre></div>
+<table>
+<thead>
+<tr class="header">
+<th align="right">alpha</th>
+<th align="right">1</th>
+<th align="right">3</th>
+<th align="right">5</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="right">0.01</td>
+<td align="right">664</td>
+<td align="right">74</td>
+<td align="right">27</td>
+</tr>
+<tr class="even">
+<td align="right">0.05</td>
+<td align="right">385</td>
+<td align="right">43</td>
+<td align="right">16</td>
+</tr>
+<tr class="odd">
+<td align="right">0.10</td>
+<td align="right">271</td>
+<td align="right">31</td>
+<td align="right">11</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 </div>
 <div id="sample-t-test-for-numeric-var" class="section level3">
 <h3><span class="header-section-number">2.1.2</span> 1 sample t Test for Numeric Var</h3>
-<p>This test applies when you do not know the population variance.</p>
+<p>The one-sample <em>t</em> test applies when the sampling distribution of the population mean is normally distributed and there are no significant outliers. Unlike the <em>z</em> test, the population variance can be unknown. The sampling distribution is normally distributed when the underlying population is normally distributed, or when the sample size is large <span class="math inline">\((n &gt;= 30)\)</span>, as follows from the central limit theorem.</p>
+<p>Under the <em>t</em> test method, the measured mean <span class="math inline">\(\bar{x}\)</span> approximates the population mean <span class="math inline">\(\mu\)</span>. The sample standard deviation, <span class="math inline">\(s\)</span>, estimates the (always) unknown <span class="math inline">\(\sigma\)</span>. The resulting sampling distribution has a t-distribution centered at <span class="math inline">\(\mu\)</span> with standard error <span class="math inline">\(se_\bar{x} = \frac{s}{\sqrt{n}}\)</span>. Define a <span class="math inline">\((1 - \alpha)\%\)</span> confidence interval as <span class="math inline">\(\bar{x} \pm t_{(1 - \alpha){/}2} se_\bar{x}\)</span>, or test <span class="math inline">\(H_0: \mu = \mu_0\)</span> with test statistic <span class="math inline">\(T = \frac{\bar{x} - \mu_0}{se_\bar{x}}\)</span>.</p>
+<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb17-1"><a href="one-group-inference-tests.html#cb17-1"></a>dep &lt;-<span class="st"> </span>foreign<span class="op">::</span><span class="kw">read.spss</span>(<span class="st">&quot;./input/one-sample-t-test.sav&quot;</span>, <span class="dt">to.data.frame =</span> <span class="ot">TRUE</span>)</span></code></pre></div>
 </div>
 <div id="wilcoxon-1-sample-median-test-for-numeric-var" class="section level3">
 <h3><span class="header-section-number">2.1.3</span> Wilcoxon 1-Sample Median Test for Numeric Var</h3>
