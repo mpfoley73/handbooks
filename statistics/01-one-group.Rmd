@@ -2,6 +2,9 @@
 
 ```{r include=FALSE}
 library(tidyverse)
+library(broom)
+library(gtsummary)
+library(flextable)
 ```
 
 
@@ -18,7 +21,7 @@ The tests in this section use the sample mean, $\bar{x}$, as an estimate of the 
 
 ### 1 Sample z Test for Numeric Var
 
-The *z* test is also called the normal approximation *z* test.  It only applies when the sampling distribution of the population mean is normally distributed with known variance, and there are no significant outliers. The sampling distribution is normally distributed when the underlying population is normally distributed, or when the sample size is large $(n >= 30)$, as follows from the central limit theorem. The *t* test returns similar results, plus it is valid when the standard error is unknown, and that is pretty much always. For that reason, you probably will never use this test.
+The *z* test is also called the normal approximation *z* test.  It only applies when the sampling distribution of the population mean is normally distributed with known variance, and there are no significant outliers. The sampling distribution is normally distributed when the underlying population is normally distributed, or when the sample size is large $(n >= 30)$, as follows from the central limit theorem. The *t* test returns similar results, plus it is valid when the variance is unknown, and that is pretty much always. For that reason, you probably will never use this test.
 
 Under the normal approximation method, the measured mean $\bar{x}$ approximates the population mean $\mu$, and the sampling distribution has a normal distribution centered at $\mu$ with standard error $se_\mu = \frac{\sigma}{\sqrt{n}}$ where $\sigma$ is the standard deviation of the underlying population. Define a $(1 - \alpha)\%$ confidence interval as $\bar{x} \pm z_{(1 - \alpha) {/} 2} se_\mu$, or test $H_0: \mu = \mu_0$ with test statistic $Z = \frac{\bar{x} - \mu_0}{se_\mu}$.  
 
@@ -42,7 +45,7 @@ Z <- (x_bar - mu_0) / se
 p <- pnorm(q = Z, lower.tail = FALSE)
 ```
 
-$H_0: \mu = 16.0$, and $H_a: \mu > 16.0$ - a right-tail test. The test statistic is $Z = \frac{\bar{x} - \mu_0}{se_\mu}=$ `r Z %>% format(digits = 1, nsmall = 2)` where $se_\mu = \frac{\mu}{\sqrt{n}} =$ `r se %>% format(digits = 1, nsmall = 2)`. $P(z > Z) =$ `r p %>% format(digits = 1, nsmall = 4)`, so reject $H_0$ at the $\alpha =$ 0.05 level of significance.
+$H_0: \mu = 16.0$, and $H_a: \mu > 16.0$ - a right-tail test. The test statistic is $Z = \frac{\bar{x} - \mu_0}{se_\mu}=$ `r Z %>% format(digits = 1, nsmall = 2)` where $se_{\mu_0} = \frac{\mu_0}{\sqrt{n}} =$ `r se %>% format(digits = 1, nsmall = 2)`. $P(z > Z) =$ `r p %>% format(digits = 1, nsmall = 4)`, so reject $H_0$ at the $\alpha =$ 0.05 level of significance.
 
 ```{r echo=FALSE, warning=FALSE, fig.height=3.5, fig.width=6.5}
 lrr = -Inf  # right-tailed test
@@ -71,7 +74,7 @@ ci_low <- x_bar - epsilon
 ci_high <- x_bar + epsilon
 ```
 
-The $95%$ confidence interval for $\mu$ is $\bar{x} \pm z_{(1 - \alpha){/}2} se_\mu$ where $z_{(1 - \alpha){/}2} =$ `r z_crit %>% round(2)`. $\mu =$ `r x_bar %>% format(digits = 1, nsmall = 2)` $\pm$ `r epsilon %>% format(digits = 1, nsmall = 2)` (95% CI `r ci_low %>% format(digits = 1, nsmall = 2)` to `r ci_high %>% format(digits = 1, nsmall = 2)`).
+The 95% confidence interval for $\mu$ is $\bar{x} \pm z_{(1 - \alpha){/}2} se_\mu$ where $z_{(1 - \alpha){/}2} =$ `r z_crit %>% round(2)`. $\mu =$ `r x_bar %>% format(digits = 1, nsmall = 2)` $\pm$ `r epsilon %>% format(digits = 1, nsmall = 2)` (95% CI `r ci_low %>% format(digits = 1, nsmall = 2)` to `r ci_high %>% format(digits = 1, nsmall = 2)`).
 
 ```{r echo=FALSE, warning=FALSE, fig.height=3.5, fig.width=6.5}
 data.frame(mu = seq(15, 25, by = .1)) %>%
@@ -88,67 +91,117 @@ data.frame(mu = seq(15, 25, by = .1)) %>%
   labs(title = "95% CI",x = "mu",y = "Probability") 
 ```
 
-#### Example
-*A random sample of* $n = 16$ *Americans measured pounds of beef consumed in a year.  Evaluate the hypothesis that the population value is* $\mu_0=115$ *pounds.*
+### 1 sample t Test for Numeric Var
+
+The one-sample *t* test applies when the sampling distribution of the population mean is normally distributed and there are no significant outliers. Unlike the *z* test, the population variance can be unknown. The sampling distribution is normally distributed when the underlying population is normally distributed, or when the sample size is large $(n >= 30)$, as follows from the central limit theorem. 
+
+Under the *t* test method, the measured mean $\bar{x}$ approximates the population mean $\mu$. The sample standard deviation, $s$, estimates the (always) unknown $\sigma$. The resulting sampling distribution has a t-distribution centered at $\mu$ with standard error $se_\bar{x} = \frac{s}{\sqrt{n}}$. Define a $(1 - \alpha)\%$ confidence interval as $\bar{x} \pm t_{(1 - \alpha){/}2} se_\bar{x}$, or test $H_0: \mu = \mu_0$ with test statistic $T = \frac{\bar{x} - \mu_0}{se_\bar{x}}$.
+
+```{r include=FALSE}
+dep <- foreign::read.spss("./input/one-sample-t-test.sav", to.data.frame = TRUE)
+
+mu_0 <- 4.0
+x_bar <- mean(dep$dep_score)
+s <- sd(dep$dep_score)
+```
+
+Here is a case study. A researcher recruits a random sample of 40 participants to take part in the study about depression intervention. The researcher measures the participants' depression levels prior to the study and compares it to the "normal" level - 4.0. The null hypothesis is that the sample is representative of the overall population. Mean depression score (`r format(x_bar, digits = 2, nsmall = 2)` $\pm$ `r format(s, digits = 2, nsmall = 2)`) was lower than the population 'normal' depression score of (`r format(mu_0, digits = 2, nsmall = 2)`.
+
 ```{r}
-lbs <- c(118, 115, 125, 110, 112, 130, 117, 112, 
-         115, 120, 113, 118, 119, 122, 123, 126)
-n <- length(lbs)
-(x_bar <- mean(lbs))
-(s <- sd(lbs))
-(se <- s / sqrt(n))
+dep %>% gtsummary::tbl_summary(statistic = list(all_continuous() ~ "{mean} ({sd})"))
 ```
 
-$n < 30$, so only use the t-test if the sample data follows a normal distribution.  Test for normality by starting with the assumption that the distribution is normal, $H_0: normal$, then falsifying the assumption if sufficient evidence exists.
+#### Conditions {-}
 
-Look for substantial deviations from a straight line.  This one looks good.
-```{r warning=FALSE}
-qqnorm(lbs)
-qqline(lbs)
+The one-sample *t* test applies when the dependent variable is continuous and the observations are independent. Additionally, there are two conditions related to the data distribution. If any condition does not hold, and the suggested work-arounds do not work switch to the non-parametric [Wilcoxon 1-Sample Median Test for Numeric Var].
+
+1. **No outliers**. There should be no significant outliers in the groups. Outliers exert a large influence on the mean and standard deviation. Test with a box plot. If there are outliers, you might be able to drop them or transform the data.
+2. **Normality**.  Each group's values should be *nearly* normally distributed ("nearly" because ANOVA is considered robust to the normality assumption). This condition is especially important with small sample sizes. Test with the Q-Q plots or the Shapiro-Wilk test for normality. If the data is very non-normal, you might be able to transform your response variable.
+
+##### Outliers {-}
+
+Assess outliers with a box plot. Box plot whiskers extend up to 1.5\*IQR from the upper and lower hinges and outliers (beyond the whiskers) are are plotted individually. Our example includes an outlier in fertilizer group *F2*.
+
+```{r echo=FALSE, fig.height=2.5}
+dep %>%
+  ggplot(aes(x = "dep_score", y = dep_score)) +
+  geom_boxplot(fill = "snow3", color = "snow4", alpha = 0.6, width = 0.5, 
+               outlier.color = "goldenrod", outlier.size = 2) +
+  theme_minimal() +
+  labs(title = "Boxplot of Depression Score",
+       y = "Score", x = NULL)
 ```
 
-For a more quantitative analysis, use the Anderson-Darling normality test.  The test p-value is the probability of calculating the test statistic if the distribution is normal.  The p-value is .88, so do not reject $H_0$.
-```{r, warning=FALSE}
-library(nortest)
+> There were no outliers in the data, as assessed by inspection of a boxplot.
 
-ad.test(lbs)
+Outliers might occur from data entry errors or measurement errors, so investigate and fix or throw them out. However, if the outlier is a genuine extreme value, you still have a couple options before reverting to Wilcoxon.
+
+* Transform the dependent variable. Don't do this unless the data is also non-normal. It also has the downside of making interpretation more difficult.
+* Leave it in if it doesn't affect the conclusion (compared to taking it out).
+
+##### Normality {-}
+
+You can assume the populations are normally distributed if $n_j >= 30$. Otherwise, try the Q-Q plot, or skewness and kurtosis values, or histograms. If you still don't feel confident about normality, run a [Shapiro-Wilk Test] or Kolmogorov-Smirnov Test. If $n_j >= 50$, stick with graphical methods because at larger sample sizes Shapiro-Wilk flags even minor deviations from normality.
+
+The QQ plot below appears to be approximately normal.
+
+```{r fig.height=2.5}
+dep %>%
+  ggplot(aes(sample = dep_score)) +
+  stat_qq() +
+  stat_qq_line(col = "goldenrod") +
+  theme_minimal() +
+  labs(title = "Normal Q-Q Plot")
 ```
 
-The null hypothesis is $H_0: \mu_0 = 115$ pounds with alternative hypothesis $H_a: \mu_0 \ne 115$ pounds. 
+The Shapiro-Wilk test corroborates this conclusion - it fails to reject the null hypothesis of normally distributed populations.
+
 ```{r}
-mu_0 <- 115
-alpha <- 0.05
+shapiro.test(dep$dep_score) %>% 
+  tidy() %>%
+  flextable() %>% 
+  set_table_properties(width = 0.6, layout = "autofit") %>%
+  set_caption("Shapiro-Wilk Normality Test")
 ```
 
-Conduct the t-test.  The p-value is less than .05 (just barely!), so reject $H_0$.
+> Depression scores were normally distributed, as assessed by Shapiro-Wilk's test (p > .05).
+
+If the data is not normally distributed, you still have a couple options before reverting to Wilcoxon.
+
+* Transform the dependent variable.
+* Carry on regardless. One-sample *t* tests are fairly robust to deviations from normality.
+
+#### Results {-}
+
+Conduct the t-test. The p-value is less than .05, so reject $H_0$. To get the 95% CI around the *difference*, run the test using the difference, $\mu_0 - \bar{x}$.
+
 ```{r}
-(t.test.result <- t.test(x = lbs,
-                         alternative = "two.sided", 
-                         mu = mu_0, 
-                         conf.level = (1 - alpha)))
+(dep_95ci <- t.test(x = mu_0 - dep$dep_score, alternative = "two.sided", conf.level = .95))
 ```
+
+Depression score was statistically significantly lower by `r format(dep_95ci$estimate, digits = 2, nsmall = 2)` (95% CI, `r format(dep_95ci$conf.int[1], digits = 1, nsmall = 2)` to `r format(dep_95ci$conf.int[2], digits = 1, nsmall = 2)`) than a normal depression score of `r format(mu_0, digits = 1, nsmall = 1)`, t(`r dep_95ci$parameter`) = `r format(dep_95ci$statistic, digits = 1, nsmall = 3)`, *p* = `r format(dep_95ci$p.value, digits = 1, nsmall = 3)`.
 
 ```{r message=FALSE, warning=FALSE}
-lrr = mu_0 + qt(p = alpha, df = n - 1, lower.tail = TRUE) * se
-urr = mu_0 + qt(p = alpha, df = n - 1, lower.tail = FALSE) * se
-data.frame(mu = 1000:1250 / 10) %>%
-  mutate(t = (mu - mu_0) / se) %>%
-  mutate(prob = dt(x = t, df = n - 1)) %>%
-  mutate(rr = ifelse(mu < lrr | mu > urr, prob, 0)) %>%
-ggplot() +
-  geom_line(aes(x = mu, y = prob)) +
-  geom_area(aes(x = mu, y = rr), fill = "red", alpha = 0.3) +
-  geom_vline(aes(xintercept = mu_0), color = "black") +
-  geom_vline(aes(xintercept = x_bar), color = "blue") +
-  labs(title ="Two-Tail Hypothesis Test",
-       subtitle = bquote("mu_0=" ~ .(mu_0) ~ 
-                           ", x_bar =" ~ .(round(x_bar, 1)) ~ 
-                           ", p-value =" ~ .(round(t.test.result$p.value, 4))),
-       x = "mu",
-       y = "Probability") +
-  theme(legend.position="none",
-        axis.text.y = element_blank(), 
-        axis.ticks.y = element_blank()) 
+# lrr = mu_0 + qt(p = alpha, df = n - 1, lower.tail = TRUE) * se
+# urr = mu_0 + qt(p = alpha, df = n - 1, lower.tail = FALSE) * se
+# data.frame(mu = 1000:1250 / 10) %>%
+#   mutate(t = (mu - mu_0) / se) %>%
+#   mutate(prob = dt(x = t, df = n - 1)) %>%
+#   mutate(rr = ifelse(mu < lrr | mu > urr, prob, 0)) %>%
+# ggplot() +
+#   geom_line(aes(x = mu, y = prob)) +
+#   geom_area(aes(x = mu, y = rr), fill = "red", alpha = 0.3) +
+#   geom_vline(aes(xintercept = mu_0), color = "black") +
+#   geom_vline(aes(xintercept = x_bar), color = "blue") +
+#   labs(title ="Two-Tail Hypothesis Test",
+#        subtitle = bquote("mu_0=" ~ .(mu_0) ~ 
+#                            ", x_bar =" ~ .(round(x_bar, 1)) ~ 
+#                            ", p-value =" ~ .(round(t.test.result$p.value, 4))),
+#        x = "mu",
+#        y = "Probability") +
+#   theme(legend.position="none",
+#         axis.text.y = element_blank(), 
+#         axis.ticks.y = element_blank()) 
 ```
 
 
@@ -185,16 +238,6 @@ spread(dataframe, key = epsilon, n) %>%
 ```
 
 
-
-### 1 sample t Test for Numeric Var
-
-The one-sample *t* test applies when the sampling distribution of the population mean is normally distributed and there are no significant outliers. Unlike the *z* test, the population variance can be unknown. The sampling distribution is normally distributed when the underlying population is normally distributed, or when the sample size is large $(n >= 30)$, as follows from the central limit theorem. 
-
-Under the *t* test method, the measured mean $\bar{x}$ approximates the population mean $\mu$. The sample standard deviation, $s$, estimates the (always) unknown $\sigma$. The resulting sampling distribution has a t-distribution centered at $\mu$ with standard error $se_\bar{x} = \frac{s}{\sqrt{n}}$. Define a $(1 - \alpha)\%$ confidence interval as $\bar{x} \pm t_{(1 - \alpha){/}2} se_\bar{x}$, or test $H_0: \mu = \mu_0$ with test statistic $T = \frac{\bar{x} - \mu_0}{se_\bar{x}}$.
-
-```{r message=FALSE}
-dep <- foreign::read.spss("./input/one-sample-t-test.sav", to.data.frame = TRUE)
-```
 
 ### Wilcoxon 1-Sample Median Test for Numeric Var
 

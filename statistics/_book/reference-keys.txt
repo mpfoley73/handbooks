@@ -81,3 +81,5 @@ example-1
 calculating-sample-size
 example-2
 example-3
+tab:unnamed-chunk-11
+results
