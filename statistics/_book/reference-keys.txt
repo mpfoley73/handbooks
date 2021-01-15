@@ -83,3 +83,5 @@ example-2
 example-3
 tab:unnamed-chunk-11
 results
+one-sample-z-test-for-numeric-var
+one-sample-t-test-for-numeric-var

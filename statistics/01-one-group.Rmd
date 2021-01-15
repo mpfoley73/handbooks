@@ -19,7 +19,7 @@ The tests in this section use the sample mean, $\bar{x}$, as an estimate of the 
 |Known Variance|*z*-test|Wilcoxon Median|
 |Unknown Variance|*t*-test|Wilcoxon Median|
 
-### 1 Sample z Test for Numeric Var
+### One Sample z Test for Numeric Var
 
 The *z* test is also called the normal approximation *z* test.  It only applies when the sampling distribution of the population mean is normally distributed with known variance, and there are no significant outliers. The sampling distribution is normally distributed when the underlying population is normally distributed, or when the sample size is large $(n >= 30)$, as follows from the central limit theorem. The *t* test returns similar results, plus it is valid when the variance is unknown, and that is pretty much always. For that reason, you probably will never use this test.
 
@@ -91,21 +91,22 @@ data.frame(mu = seq(15, 25, by = .1)) %>%
   labs(title = "95% CI",x = "mu",y = "Probability") 
 ```
 
-### 1 sample t Test for Numeric Var
+### One sample t Test for Numeric Var
 
 The one-sample *t* test applies when the sampling distribution of the population mean is normally distributed and there are no significant outliers. Unlike the *z* test, the population variance can be unknown. The sampling distribution is normally distributed when the underlying population is normally distributed, or when the sample size is large $(n >= 30)$, as follows from the central limit theorem. 
 
-Under the *t* test method, the measured mean $\bar{x}$ approximates the population mean $\mu$. The sample standard deviation, $s$, estimates the (always) unknown $\sigma$. The resulting sampling distribution has a t-distribution centered at $\mu$ with standard error $se_\bar{x} = \frac{s}{\sqrt{n}}$. Define a $(1 - \alpha)\%$ confidence interval as $\bar{x} \pm t_{(1 - \alpha){/}2} se_\bar{x}$, or test $H_0: \mu = \mu_0$ with test statistic $T = \frac{\bar{x} - \mu_0}{se_\bar{x}}$.
+Under the *t* test method, the measured mean, $\bar{x}$, approximates the population mean, $\mu$. The sample standard deviation, $s$, estimates the unknown population standard deviation, $\sigma$. The resulting sampling distribution has a *t* distribution centered at $\mu$ with standard error $se_\bar{x} = \frac{s}{\sqrt{n}}$. Define a $(1 - \alpha)\%$ confidence interval as $\bar{x} \pm t_{(1 - \alpha){/}2} se_\bar{x}$ and/or test $H_0: \mu = \mu_0$ with test statistic $T = \frac{\bar{x} - \mu_0}{se_\bar{x}}$.
 
 ```{r include=FALSE}
 dep <- foreign::read.spss("./input/one-sample-t-test.sav", to.data.frame = TRUE)
 
+n <- nrow(dep)
 mu_0 <- 4.0
 x_bar <- mean(dep$dep_score)
 s <- sd(dep$dep_score)
 ```
 
-Here is a case study. A researcher recruits a random sample of 40 participants to take part in the study about depression intervention. The researcher measures the participants' depression levels prior to the study and compares it to the "normal" level - 4.0. The null hypothesis is that the sample is representative of the overall population. Mean depression score (`r format(x_bar, digits = 2, nsmall = 2)` $\pm$ `r format(s, digits = 2, nsmall = 2)`) was lower than the population 'normal' depression score of (`r format(mu_0, digits = 2, nsmall = 2)`.
+Here is a case study. A researcher recruits a random sample of *n* = `r n` people to participate in a study about depression intervention. The researcher measures the participants' depression level prior to the study. The mean depression score (`r format(x_bar, digits = 2, nsmall = 2)` $\pm$ `r format(s, digits = 2, nsmall = 2)`) was lower than the population 'normal' depression score of `r format(mu_0, digits = 2, nsmall = 1)`. The null hypothesis is that the sample is representative of the overall population. Should you reject $H_0$?
 
 ```{r}
 dep %>% gtsummary::tbl_summary(statistic = list(all_continuous() ~ "{mean} ({sd})"))
@@ -113,14 +114,14 @@ dep %>% gtsummary::tbl_summary(statistic = list(all_continuous() ~ "{mean} ({sd}
 
 #### Conditions {-}
 
-The one-sample *t* test applies when the dependent variable is continuous and the observations are independent. Additionally, there are two conditions related to the data distribution. If any condition does not hold, and the suggested work-arounds do not work switch to the non-parametric [Wilcoxon 1-Sample Median Test for Numeric Var].
+The one-sample *t* test applies when the variable is continuous and the observations are independent. Additionally, there are two conditions related to the data distribution. If either condition fails, try the suggested work-arounds or use the non-parametric [Wilcoxon 1-Sample Median Test for Numeric Var] instead.
 
-1. **No outliers**. There should be no significant outliers in the groups. Outliers exert a large influence on the mean and standard deviation. Test with a box plot. If there are outliers, you might be able to drop them or transform the data.
-2. **Normality**.  Each group's values should be *nearly* normally distributed ("nearly" because ANOVA is considered robust to the normality assumption). This condition is especially important with small sample sizes. Test with the Q-Q plots or the Shapiro-Wilk test for normality. If the data is very non-normal, you might be able to transform your response variable.
+1. **Outliers**. There should be no significant outliers. Outliers exert a large influence on the mean and standard deviation. Test with a box plot. If there are outliers, you might be able to drop them or transform the data.
+2. **Normality**.  Values should be *nearly* normally distributed ("nearly" because the *t*-test is robust to the normality assumption). This condition is especially important with small sample sizes. Test with Q-Q plots or the Shapiro-Wilk test for normality. If the data is very non-normal, you might be able to transform the data.
 
 ##### Outliers {-}
 
-Assess outliers with a box plot. Box plot whiskers extend up to 1.5\*IQR from the upper and lower hinges and outliers (beyond the whiskers) are are plotted individually. Our example includes an outlier in fertilizer group *F2*.
+Assess outliers with a box plot. Box plot whiskers extend up to 1.5\*IQR from the upper and lower hinges and outliers (beyond the whiskers) are are plotted individually. The boxplot shows no outliers.
 
 ```{r echo=FALSE, fig.height=2.5}
 dep %>%
@@ -132,18 +133,16 @@ dep %>%
        y = "Score", x = NULL)
 ```
 
-> There were no outliers in the data, as assessed by inspection of a boxplot.
+If the outliers might are data entry errors or measurement errors, fix them or discard them. If the outliers are genuine, you have a couple options before reverting to Wilcoxon.
 
-Outliers might occur from data entry errors or measurement errors, so investigate and fix or throw them out. However, if the outlier is a genuine extreme value, you still have a couple options before reverting to Wilcoxon.
-
-* Transform the dependent variable. Don't do this unless the data is also non-normal. It also has the downside of making interpretation more difficult.
+* Transform the variable. Don't do this unless the variable is also non-normal. Transformation also has the downside of making interpretation more difficult.
 * Leave it in if it doesn't affect the conclusion (compared to taking it out).
 
 ##### Normality {-}
 
-You can assume the populations are normally distributed if $n_j >= 30$. Otherwise, try the Q-Q plot, or skewness and kurtosis values, or histograms. If you still don't feel confident about normality, run a [Shapiro-Wilk Test] or Kolmogorov-Smirnov Test. If $n_j >= 50$, stick with graphical methods because at larger sample sizes Shapiro-Wilk flags even minor deviations from normality.
+Assume the population is normally distributed if *n* $\ge$ 30. Otherwise, asses a Q-Q plot, skewness and kurtosis values, or a histogram. If you still don't feel confident about normality, run a [Shapiro-Wilk Test].
 
-The QQ plot below appears to be approximately normal.
+The data set has *n* = 40 observations, so you can assume normality. Here is a QQ plot anyway. The QQ plot indicates normality.
 
 ```{r fig.height=2.5}
 dep %>%
@@ -154,90 +153,71 @@ dep %>%
   labs(title = "Normal Q-Q Plot")
 ```
 
-The Shapiro-Wilk test corroborates this conclusion - it fails to reject the null hypothesis of normally distributed populations.
+Here is the Shapiro-Wilk normality test. It fails to reject the null hypothesis of a normally distributed population.
 
 ```{r}
-shapiro.test(dep$dep_score) %>% 
-  tidy() %>%
-  flextable() %>% 
-  set_table_properties(width = 0.6, layout = "autofit") %>%
-  set_caption("Shapiro-Wilk Normality Test")
+shapiro.test(dep$dep_score)
 ```
-
-> Depression scores were normally distributed, as assessed by Shapiro-Wilk's test (p > .05).
 
 If the data is not normally distributed, you still have a couple options before reverting to Wilcoxon.
 
 * Transform the dependent variable.
-* Carry on regardless. One-sample *t* tests are fairly robust to deviations from normality.
+* Carry on regardless - the one-sample *t*-test is fairly robust to deviations from normality.
 
 #### Results {-}
 
-Conduct the t-test. The p-value is less than .05, so reject $H_0$. To get the 95% CI around the *difference*, run the test using the difference, $\mu_0 - \bar{x}$.
+Conduct the *t*-test. To get a 95% CI around the *difference* (instead of around the estimate), run the test using the difference, $\mu_0 - \bar{x}$, and leave `mu` at its default of 0.
 
 ```{r}
 (dep_95ci <- t.test(x = mu_0 - dep$dep_score, alternative = "two.sided", conf.level = .95))
 ```
 
-Depression score was statistically significantly lower by `r format(dep_95ci$estimate, digits = 2, nsmall = 2)` (95% CI, `r format(dep_95ci$conf.int[1], digits = 1, nsmall = 2)` to `r format(dep_95ci$conf.int[2], digits = 1, nsmall = 2)`) than a normal depression score of `r format(mu_0, digits = 1, nsmall = 1)`, t(`r dep_95ci$parameter`) = `r format(dep_95ci$statistic, digits = 1, nsmall = 3)`, *p* = `r format(dep_95ci$p.value, digits = 1, nsmall = 3)`.
+The difference is statistically different from 0 at the *p* = .05 level. The effect size, called Cohen's *d*, is defined as $d = |M_D| / s$, where $|M_D| = \bar{x} - \mu_0$, and $s$ is the sample standard deviation. $d <.2$ is considered trivial, $.2 \le d < .5$ small, and $.5 \le d < .8$ large.
 
-```{r message=FALSE, warning=FALSE}
-# lrr = mu_0 + qt(p = alpha, df = n - 1, lower.tail = TRUE) * se
-# urr = mu_0 + qt(p = alpha, df = n - 1, lower.tail = FALSE) * se
-# data.frame(mu = 1000:1250 / 10) %>%
-#   mutate(t = (mu - mu_0) / se) %>%
-#   mutate(prob = dt(x = t, df = n - 1)) %>%
-#   mutate(rr = ifelse(mu < lrr | mu > urr, prob, 0)) %>%
-# ggplot() +
-#   geom_line(aes(x = mu, y = prob)) +
-#   geom_area(aes(x = mu, y = rr), fill = "red", alpha = 0.3) +
-#   geom_vline(aes(xintercept = mu_0), color = "black") +
-#   geom_vline(aes(xintercept = x_bar), color = "blue") +
-#   labs(title ="Two-Tail Hypothesis Test",
-#        subtitle = bquote("mu_0=" ~ .(mu_0) ~ 
-#                            ", x_bar =" ~ .(round(x_bar, 1)) ~ 
-#                            ", p-value =" ~ .(round(t.test.result$p.value, 4))),
-#        x = "mu",
-#        y = "Probability") +
-#   theme(legend.position="none",
-#         axis.text.y = element_blank(), 
-#         axis.ticks.y = element_blank()) 
+```{r}
+(d <- rstatix::cohens_d(dep, dep_score ~ 1, mu = 4) %>% pull(effsize) %>% abs())
 ```
 
+Cohen's *d* is `r d %>% format(digits = 2, nsmall = 2)`, a small effect. 
 
-#### Calculating Sample Size
-Determine the sample size required for a maximum error $\epsilon$ in the estimate by solving the confidence interval equation for $n=\frac{{t_{\alpha/2,n-1}^2se^2}}{{\epsilon^2}}$ .  Unfortunately, $t_{\alpha/2,n-1}^2$ is dependent on $n$, so replace it with $z_{\alpha/2}^2$.  What about $s^2$?  Estimate it from the literature, a pilot study, or using the empirical rule of $95%$ of range falling within two standard deviations, $s=\frac{{range}}{{4}}$.
+Make a habit of constructing a plot, just to make sure your head is on straight.
 
-##### Example
-*If the maximum tolerable error is* $\epsilon=3$*, and the sample variance is* $s^2 = 10^2$*, what sample size provides an* $\alpha=0.05$ *conidence level?*
-```{r message=FALSE, warning=FALSE}
-alpha = 0.05
-s = 10
-epsilon = 3
-z_crit = qnorm(p = 1 - alpha / 2, 
-               mean = 0, 
-               sd = 1, 
-               lower.tail = TRUE)
-(n = ceiling(z_crit^2 * s^2 / epsilon^2))
+```{r echo=FALSE, warning=FALSE, fig.height=3.5, fig.width=6.5}
+se <- s / sqrt(n)
+lrr = mu_0 + qt(p = .05, df = n - 1, lower.tail = TRUE) * se
+urr = mu_0 + qt(p = .05, df = n - 1, lower.tail = FALSE) * se
+data.frame(mu = seq(3.5, 4.5, by = .01)) %>%
+  mutate(t = (mu - mu_0) / se,
+         prob = dt(x = t, df = n - 1),
+         lrr = if_else(mu < lrr, prob, NA_real_),
+         urr = if_else(mu > urr, prob, NA_real_)) %>%
+  ggplot() +
+  geom_line(aes(x = mu, y = prob)) +
+  geom_area(aes(x = mu, y = lrr), fill = "firebrick", alpha = 0.6) +
+  geom_area(aes(x = mu, y = urr), fill = "firebrick", alpha = 0.6) +
+  geom_vline(aes(xintercept = mu_0), size = 1) +
+  geom_vline(aes(xintercept = x_bar), color = "goldenrod", size = 1, linetype = 2) +
+  theme_minimal() +
+  theme(legend.position="none",
+        axis.text.y = element_blank()) +
+  labs(title = bquote("Two-Tailed t Test"),
+       x = "mu",
+       y = "Probability")
 ```
 
-$n$ varies with confidence level and maximum error.
-```{r, warning=FALSE}
-library(tidyr)  # for spread
+Now you are ready to report the results.
 
-alpha <- c(.10, .10, .10, .05, .05, .05, .01, .01, .01)
-epsilon <- c(1, 3, 5, 1, 3, 5, 1, 3, 5)
-dataframe <- data.frame(alpha, epsilon)
-dataframe <- dataframe %>% 
-  mutate(z_crit = qnorm(p = 1 - alpha / 2, mean = 0, sd = 1, 
-                        lower.tail = TRUE),
-         n = ceiling(z_crit^2 * s^2 / epsilon^2))
-dataframe$z_crit <- NULL
-spread(dataframe, key = epsilon, n) %>%
-  knitr::kable()
+> A one-sample *t*-test was run to determine whether depression score in recruited subjects was different from normal, as defined as a depression score of 4.0. Depression scores were normally distributed, as assessed by Shapiro-Wilk's test (*p* > .05) and there were no outliers in the data, as assessed by inspection of a boxplot. Data are mean $\pm$ standard deviation, unless otherwise stated. Mean depression score (`r format(x_bar, digits = 2, nsmall = 2)` $\pm$ `r format(s, digits = 2, nsmall = 2)`) was lower than the population "normal" depression score of `r format(mu_0, digits = 2, nsmall = 2)`, a statistically significant difference of `r format(dep_95ci$estimate, digits = 2, nsmall = 2)` (95% CI, `r format(dep_95ci$conf.int[1], digits = 1, nsmall = 2)` to `r format(dep_95ci$conf.int[2], digits = 1, nsmall = 2)`), t(`r dep_95ci$parameter`) = `r format(dep_95ci$statistic, digits = 1, nsmall = 2)`, *p* = `r format(dep_95ci$p.value, digits = 1, nsmall = 3)`, *d* = `r d %>% format(digits = 2, nsmall = 2)`.
+
+#### Appendix: Deciding Sample Size {-}
+
+Determine the sample size required for a maximum error $\epsilon$ in the estimate by solving the confidence interval equation, $\bar{x} \pm t_{(1 - \alpha){/}2} \frac{s}{\sqrt{n}}$ for $n=\frac{{t_{\alpha/2,n-1}^2se^2}}{{\epsilon^2}}$ . Unfortunately, $t_{\alpha/2,n-1}^2$ is dependent on $n$, so replace it with $z_{\alpha/2}^2$. What about $s^2$?  Estimate it from the literature, a pilot study, or using the empirical rule that 95% of the range falls within two standard deviations, $s=range / 4$.
+
+For example, if the maximum tolerable error is* $\epsilon$ = 3, and $s$ is approximately 10, what sample size produces an $\alpha$ =0.05 confidence level?
+
+```{r}
+ceiling(qnorm(.975)^2 * 10^2 / 3^2)
 ```
-
-
 
 ### Wilcoxon 1-Sample Median Test for Numeric Var
 
