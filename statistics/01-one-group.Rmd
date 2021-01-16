@@ -221,7 +221,41 @@ ceiling(qnorm(.975)^2 * 10^2 / 3^2)
 
 ### Wilcoxon 1-Sample Median Test for Numeric Var
 
-This test applies when the variable is not normally distributed.
+The Wilcoxon one-sample median test (aka Wilcoxon signed rank test) is a non-parametric alternative to the *t*-test for cases when the the sampling distribution of the population mean is *not* normally distributed, but is at least symmetric.
+
+Under the Wilcoxon test, the measured median, $\eta_x$, approximates the population median, $\eta$. The method calculates the difference between each value and the hypothesized median, $\eta_0$, ranks the difference magnitudes, then sums the ranks for the negative and the positive differences, $W+$ and $W-$. The test compares the smaller of the two sums to a table of critical values.
+
+```{r include=FALSE}
+wait <- c(3.8, 4.3, 3.5, 4.5, 7.2, 4.1)
+
+eta <- median(wait)
+eta_0 <- 4.0
+```
+
+Here is a case study. A store claims their checkout wait times are $\le$ 4 minutes. You challenge the claim by sampling 6 checkout experiences. The mean wait time was `r mean(wait) %>% scales::comma(accuracy = 0.1)`, but the data may violate normality.
+
+```{r fig.height=2.5}
+data.frame(wait = wait) %>%
+  ggplot(aes(sample = wait)) +
+  stat_qq() +
+  stat_qq_line(col = "goldenrod") +
+  theme_minimal() +
+  labs(title = "Normal Q-Q Plot")
+```
+
+Shapiro-Wilk rejects the null hypothesis of a normally distributed population.
+
+```{r}
+shapiro.test(wait)
+```
+
+Use the Wilcoxon test instead.
+
+```{r}
+(wt <- wilcox.test(wait, mu = 4, alternative = "greater"))
+```
+
+> A Wilcoxon Signed-Ranks Test indicated that wait times were *not* statistically significantly higher than the 4-minute claim, *z* = `r wt$statistic`, *p* = `r scales::comma(wt$p.value, accuracy = 0.001)`. 
 
 ## One-Group Inference with Categorical Variable
 
