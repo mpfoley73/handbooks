@@ -9,19 +9,19 @@ library(flextable)
 
 *One-sample* tests are used to either describe a variable in terms of frequency or measures of central tendency and spread, or compare a variable to a known or hypothesized population or value.
 
-If the data generating process produces continuous outcomes (either interval or ratio), and the outcomes are symmetrically distributed, then you can treat the sample mean, $\bar{x}$, as a normally distributed random variable centered at the population mean, $\mu$. You can then use the distribution to estimate an 95% confidence interval (CI) around $\mu$, or test the likelihood that $\bar{x}$ is contained within an 95% CI of an hypothesized population mean, $\mu_0$. If you (somehow) know the population variance, or the Central Limit Theorem (CLT) conditions hold, you can use the *z*-test, otherwise you have to use the *t*-test. The *t*-test returns nearly the same result as the *z*-test when the CLT holds, so in practice no one bothers with the *z*-test except as an aid to teach the *t*-test. If the outcome is continuous, but *not* symmetric, then you must use a non-parametric test like the Wilcoxon median test.
+If the data generating process produces continuous outcomes (either interval or ratio), and the outcomes are symmetrically distributed, then you can treat the sample mean, $\bar{x}$, as a random variable centered at the population mean, $\mu$. You can then use the distribution to estimate an 95% confidence interval (CI) around $\mu$, or test the likelihood that $\bar{x}$ is contained within an 95% CI of an hypothesized population mean, $\mu_0$. If you (somehow) know the population variance, or the Central Limit Theorem (CLT) conditions hold, you can assume the random variable is normally distributed and use the *z*-test, otherwise you assume the random variable has student t distribution and use the *t*-test.^[The *t*-test returns nearly the same result as the *z*-test when the CLT holds, so in practice no one bothers with the *z*-test except as an aid to teach the *t*-test.] If the outcome is continuous but *not* symmetrically distributed, then you use a non-parametric test like the Wilcoxon median test.
 
-If the data generating process produces discrete outcomes (counts), then you can treat the sample count, $x$, as a random variable from a Poisson, binomial, normal, or multinomial distribution.
+If the data generating process produces discrete outcomes (counts), then you can treat the sample count, $x$, as a random variable from a Poisson, binomial, normal, or multinomial distribution, or as a random variable from a theoretical outcome.
 
-* For counts over a fixed time or space, then treat the count as a random variable from a Poisson distribution with expected value $\lambda$ and variance $\lambda$.
+* For counts over a fixed time or space, treat the count as a random variable from a Poisson distribution with expected value $\lambda$ and variance $\lambda$.
 
-* For counts within a fixed total that are then classified into two levels (usually yes/no), then treat the count as a random variable from a binomial distribution with expected value $n\pi$ and variance $n\pi(1-\pi)$ where $\pi = x / n$.
+* For counts within a fixed total that are then classified into two levels (usually yes/no), then treat the count as a random variable from a binomial distribution with expected value $n\pi$ and variance $n\pi(1-\pi)$.
 
-* For binomial cases where $n\ge30$ and the number of occurrences of each of the two levels is $\ge$ 5, then treat the count as a random variable from the normal distribution with expected valued $\pi$ and variance $\frac{\pi(1-\pi)}{n}$.
+* For binomial distributions where $n\ge30$ and the frequency counts of both levels is $\ge$ 5, treat the *proportion* as a random variable from the normal distribution with expected valued $\pi$ and variance $\frac{\pi(1-\pi)}{n}$.
 
-* For counts withing a fixed total that are then classified into three or more levels, then treat the count as a random variable from the multinomial distribution with expected value $n\pi_j$ and variance $n\pi_j(1-\pi_j)$.
+* For counts within a fixed total that are then classified into three or more levels, treat the count as a random variable from the multinomial distribution with expected value $n\pi_j$ and variance $n\pi_j(1-\pi_j)$.
 
-The above cases can be generalized into a single class of tests, the *chi-squared goodness-of-fit* test. All of these discrete variable tests are discussed in [PSU STATS 504](https://online.stat.psu.edu/stat504).
+Whatever the source of the expected values, you use either the *chi-squared goodness-of-fit* test or *G* test to test whether the observed values fit the expected values from the distribution. In the special case of binary outcomes with small (*n* < 1,000), you can use Fisher's exact test instead. The discrete variable tests are discussed in [PSU STATS 504](https://online.stat.psu.edu/stat504).
 
 ## One-Sample Mean z Test
 
@@ -265,7 +265,10 @@ Use the Wilcoxon test instead.
 
 ## Chi-Squared Goodness-of-Fit Test
 
-Use the chi-squared goodness-of-fit test to test whether the observed frequency counts, $O_j$, of the $J$ levels of a categorical variable differ from the expected frequency counts, $E_j$. $H_0$ is $O_j = E_j$. The test applies when the variable is dichotomous, nominal, or ordinal; and the observations are independent. There must also be an expected frequency of at least 5 in each group.
+Use the chi-squared goodness-of-fit test to test whether the observed frequency counts, $O_j$, of the $J$ levels of a categorical variable differ from the expected frequency counts, $E_j$. $H_0$ is $O_j = E_j$. You can use this test for dichotomous, nominal, or ordinal variables. There are only two conditions to use this test:
+
+* the observations are independent, meaning either random assignment or random sampling without replacement from <10% of the population, and 
+* the *expected* frequency in each group is >=5.
 
 The Pearson goodness-of-fit test statistic is
 
@@ -275,7 +278,7 @@ where $O_j = p_j n$ and $E_j = \pi_j n$. The sampling distribution of $X^2$ appr
 
 $$X^2 = \sum \frac{(O_j - E_j - 0.5)^2}{E_j}$$
 
-$X^2 \rightarrow 0$ as the saturated model (the observed data represent the fit of the saturated model, the most complex model possible with the data) proportions approach the expected proportions, $p_j \rightarrow \pi_j$. The chi-squared test calculates the probability of the occurrence of $X^2$ at least as extreme given that it is a chi-squared random variable with degrees of freedom equal to the number of levels of the variable minus one, $J-1$. The test is valid when the data are independent (a random sample, or a randomized experiment), and the expected counts in each cell are $\ge$ 5.
+$X^2 \rightarrow 0$ as the saturated model (the observed data represent the fit of the saturated model, the most complex model possible with the data) proportions approach the expected proportions, $p_j \rightarrow \pi_j$. The chi-squared test calculates the probability of the occurrence of $X^2$ at least as extreme given that it is a chi-squared random variable with degrees of freedom equal to the number of levels of the variable minus one, $J-1$. 
 
 #### Example with Theoretical Values {-}
 
@@ -471,7 +474,29 @@ DescTools::GTest(pheno_obs, p = pheno_pi)
 According to the function documentation, the G-test is not usually used for 2x2 tables.
 
 
-## Exact Tests
+
+
+
+## pairwise.prop.test
+```{r}
+library(tidyverse)
+M <- 3573
+F <- 4177
+dat <- tribble(
+  ~gender, ~src, ~Y, ~N,
+  "Male", "Indeed", 1699, M-1699,
+  "Male", "LinkedIn", 1755, M-1755,
+  "Male", "Google", 1578, M-1578,
+  "Female", "Indeed", 2554, F-2554,
+  "Female", "LinkedIn", 1914, F-1914,
+  "Female", "Google", 1694, F-1694
+)
+prop.test(x = dat$Y, n = dat$Y + dat$N)
+pairwise.prop.test(x = dat$Y, n = dat$Y + dat$N)
+```
+
+
+## Other Discrete Tests
 
 If you are confident that your variable can be described by a particular distribution, then you can run a so-called "exact" test comparing your measured value to a hypothesized value, or defining a 95% CI around the measured value.
 
@@ -631,20 +656,55 @@ How well does the Poisson distribution fit the 2002 World Cup data?
 
 It fits the data pretty good!
 
-### One-Sample Binomial Test
+## One-Sample Binomial Test
 
-For a frequency variable you usually use the sample proportion of successes of group $i$, $p_i$, as an estimate of the population proportion, $\pi_i$.
+The Clopper-Pearson exact binomial test is precise, but theoretically complicated in that it inverts two single-tailed binomial tests. *No theoretical knowledge here - I just rely on the software.* Use the exact binomial test when small sample sizes and/or extreme success probabilities invalidate the chi-square and *G* tests. The exact binomial test has two conditions: 
 
-Use the one-sample *z*-test to evaluate the sample proportion of successes of group $i$ of a binary or multinomial variable. This test is also called the normal approximation method, and the Wald method.
+* independence, and 
+* at least $n\pi \ge 5$ successes *or* $n(1−\pi)\ge 5$ failures. 
+
+You can use this test for multinomial variables too, but the test only compares a single level's proportion to a hypothesized value.
+
+Suppose a pharmaceutical company claims its drug reduces fever in >60% of cases. In a random sample of *n* = 40 cases the drug reduces fever in 20 cases. Do you reject the claim?
+
+#### Conditions {-}
+
+You are testing $P(x \le 20)$ in *n* = 40 trials when *p* = 60%, a one-tail test. The sample is a random assignment experiment with 20 successes and 20 failures, so it meets the conditions for the exact binomial test.
+
+#### Results {-}
+```{r}
+pbinom(q = 20, size = 40, p = 0.6, lower.tail = TRUE)
+```
+
+```{r}
+binom.test(20, 40, p = 0.6, alternative = "less")
+```
+The exact binomial test uses the "method of small *p*-values", in which the probability of observing a proportion $p$ as far or further from $\pi_0$ is the sum of all $P(X=p_i)$ where $p_i <= p$.
+
+```{r}
+map_dbl(dbinom(0:20, 40, 0.6), ~if_else(. <= 0.5, ., 0)) %>% sum()
+```
+
+You could have used the chi-squared goodness-of-fit test, however, it is not performing a one-tail test.
+
+```{r}
+chisq.test(x = c(20, 20), p = c(0.6, 0.4), correct = FALSE)
+```
+
+The *p*-value of 0.01289 is pretty close to that of the 0.01236 from the one-proportion *Z*-test.
+
+You should study the construction of the confidence interval on [Wikipedia](https://en.wikipedia.org/wiki/Binomial_proportion_confidence_interval) and explain it here.
+
+## One-Sample Proportion z Test
 
 The *z*-test uses the sample proportion of group $j$, $p_j$, as an estimate of the population proportion $\pi_j$ to evaluate an hypothesized population proportion $\pi_{0j}$ and/or construct a $(1−\alpha)\%$ confidence interval around $p_j$ to estimate $\pi_j$ within a margin of error $\epsilon$.
 
 The *z*-test is intuitive to learn, but it only applies when the central limit theorem conditions hold:
 
-* the sample is independently drawn, meaning random assignment (experiments) or random sampling without replacement from $n < 10\%$ of the population (observational studies),
-* there are at least $n\pi \ge 5$ successes and $n(1 − \pi) \ge 5$ failures,
-* the sample size is $n \ge 30$, and
-* the probability of success is not extreme, $0.2 < \pi < 0.8$.
+* the sample is independently drawn, meaning random assignment (experiments), or random sampling without replacement from <10% of the population (observational studies),
+* there are at least 5 successes and 5 failures,
+* the sample size is >=30, and
+* the expected probability of success is not extreme, between 0.2 and 0.8.
 
 If these conditions hold, the sampling distribution of $\pi$ is normally distributed around $p$ with standard error $se_p = \frac{s_p}{\sqrt{n}} = \frac{\sqrt{p(1−p)}}{\sqrt{n}}$. The measured values $p$ and $s_p$ approximate the population values $\pi$ and $\sigma_\pi$. You can define a $(1 − \alpha)\%$ confidence interval as $p \pm z_{\alpha / 2}se_p$. Test the hypothesis of $\pi = \pi_0$ with test statistic $z = \frac{p − \pi_0}{se_{\pi_0}}$ where $se_{\pi_0} = \frac{s_{\pi_0}}{\sqrt{n}} = \frac{\sqrt{{\pi_0}(1−{\pi_0})}}{\sqrt{n}}$.
 
@@ -721,143 +781,6 @@ data.frame(pi = seq(from = 0.5, to = 0.6, by = .001)) %>%
 ```
 
 Incidentally, if you have a margin of error requirement, you can back into the required sample size to achieve it. Just solve the margin of error equation $\epsilon  = z_{\alpha/2}^2 = \sqrt{\frac{\pi_0(1-\pi_0)}{n}}$ for $n = \frac{z_{\alpha/2}^2 \pi_0(1-\pi_0)}{\epsilon^2}.$
-
-
-
-  
-
-
-
-### Fisher's Exact Test
-
-The one-sample *t* test applies when the sampling distribution of the population mean is normally distributed and there are no significant outliers. Unlike the *z* test, the population variance can be unknown. The sampling distribution is normally distributed when the underlying population is normally distributed, or when the sample size is large $(n >= 30)$, as follows from the central limit theorem. 
-
-Under the *t* test method, the measured mean, $\bar{x}$, approximates the population mean, $\mu$. The sample standard deviation, $s$, estimates the unknown population standard deviation, $\sigma$. The resulting sampling distribution has a *t* distribution centered at $\mu$ with standard error $se_\bar{x} = \frac{s}{\sqrt{n}}$. Define a $(1 - \alpha)\%$ confidence interval as $\bar{x} \pm t_{(1 - \alpha){/}2} se_\bar{x}$ and/or test $H_0: \mu = \mu_0$ with test statistic $T = \frac{\bar{x} - \mu_0}{se_\bar{x}}$.
-
-```{r include=FALSE}
-dep <- foreign::read.spss("./input/one-sample-t-test.sav", to.data.frame = TRUE)
-
-n <- nrow(dep)
-mu_0 <- 4.0
-x_bar <- mean(dep$dep_score)
-s <- sd(dep$dep_score)
-```
-
-Here is a case study. A researcher recruits a random sample of *n* = `r n` people to participate in a study about depression intervention. The researcher measures the participants' depression level prior to the study. The mean depression score (`r format(x_bar, digits = 2, nsmall = 2)` $\pm$ `r format(s, digits = 2, nsmall = 2)`) was lower than the population 'normal' depression score of `r format(mu_0, digits = 2, nsmall = 1)`. The null hypothesis is that the sample is representative of the overall population. Should you reject $H_0$?
-
-```{r}
-dep %>% gtsummary::tbl_summary(statistic = list(all_continuous() ~ "{mean} ({sd})"))
-```
-
-#### Conditions {-}
-
-The one-sample *t* test applies when the variable is continuous and the observations are independent. Additionally, there are two conditions related to the data distribution. If either condition fails, try the suggested work-arounds or use the non-parametric [Wilcoxon 1-Sample Median Test for Numeric Var] instead.
-
-1. **Outliers**. There should be no significant outliers. Outliers exert a large influence on the mean and standard deviation. Test with a box plot. If there are outliers, you might be able to drop them or transform the data.
-2. **Normality**.  Values should be *nearly* normally distributed ("nearly" because the *t*-test is robust to the normality assumption). This condition is especially important with small sample sizes. Test with Q-Q plots or the Shapiro-Wilk test for normality. If the data is very non-normal, you might be able to transform the data.
-
-##### Outliers {-}
-
-Assess outliers with a box plot. Box plot whiskers extend up to 1.5\*IQR from the upper and lower hinges and outliers (beyond the whiskers) are are plotted individually. The boxplot shows no outliers.
-
-```{r echo=FALSE, fig.height=2.5}
-dep %>%
-  ggplot(aes(x = "dep_score", y = dep_score)) +
-  geom_boxplot(fill = "snow3", color = "snow4", alpha = 0.6, width = 0.5, 
-               outlier.color = "goldenrod", outlier.size = 2) +
-  theme_minimal() +
-  labs(title = "Boxplot of Depression Score",
-       y = "Score", x = NULL)
-```
-
-If the outliers might are data entry errors or measurement errors, fix them or discard them. If the outliers are genuine, you have a couple options before reverting to Wilcoxon.
-
-* Transform the variable. Don't do this unless the variable is also non-normal. Transformation also has the downside of making interpretation more difficult.
-* Leave it in if it doesn't affect the conclusion (compared to taking it out).
-
-##### Normality {-}
-
-Assume the population is normally distributed if *n* $\ge$ 30. Otherwise, asses a Q-Q plot, skewness and kurtosis values, or a histogram. If you still don't feel confident about normality, run a [Shapiro-Wilk Test].
-
-The data set has *n* = 40 observations, so you can assume normality. Here is a QQ plot anyway. The QQ plot indicates normality.
-
-```{r fig.height=2.5}
-dep %>%
-  ggplot(aes(sample = dep_score)) +
-  stat_qq() +
-  stat_qq_line(col = "goldenrod") +
-  theme_minimal() +
-  labs(title = "Normal Q-Q Plot")
-```
-
-Here is the Shapiro-Wilk normality test. It fails to reject the null hypothesis of a normally distributed population.
-
-```{r}
-shapiro.test(dep$dep_score)
-```
-
-If the data is not normally distributed, you still have a couple options before reverting to Wilcoxon.
-
-* Transform the dependent variable.
-* Carry on regardless - the one-sample *t*-test is fairly robust to deviations from normality.
-
-#### Results {-}
-
-Conduct the *t*-test. To get a 95% CI around the *difference* (instead of around the estimate), run the test using the difference, $\mu_0 - \bar{x}$, and leave `mu` at its default of 0.
-
-```{r}
-(dep_95ci <- t.test(x = mu_0 - dep$dep_score, alternative = "two.sided", conf.level = .95))
-```
-
-The difference is statistically different from 0 at the *p* = .05 level. The effect size, called Cohen's *d*, is defined as $d = |M_D| / s$, where $|M_D| = \bar{x} - \mu_0$, and $s$ is the sample standard deviation. $d <.2$ is considered trivial, $.2 \le d < .5$ small, and $.5 \le d < .8$ large.
-
-```{r}
-(d <- rstatix::cohens_d(dep, dep_score ~ 1, mu = 4) %>% pull(effsize) %>% abs())
-```
-
-Cohen's *d* is `r d %>% format(digits = 2, nsmall = 2)`, a small effect. 
-
-Make a habit of constructing a plot, just to make sure your head is on straight.
-
-```{r echo=FALSE, warning=FALSE, fig.height=3.5, fig.width=6.5}
-se <- s / sqrt(n)
-lrr = mu_0 + qt(p = .05, df = n - 1, lower.tail = TRUE) * se
-urr = mu_0 + qt(p = .05, df = n - 1, lower.tail = FALSE) * se
-data.frame(mu = seq(3.5, 4.5, by = .01)) %>%
-  mutate(t = (mu - mu_0) / se,
-         prob = dt(x = t, df = n - 1),
-         lrr = if_else(mu < lrr, prob, NA_real_),
-         urr = if_else(mu > urr, prob, NA_real_)) %>%
-  ggplot() +
-  geom_line(aes(x = mu, y = prob)) +
-  geom_area(aes(x = mu, y = lrr), fill = "firebrick", alpha = 0.6) +
-  geom_area(aes(x = mu, y = urr), fill = "firebrick", alpha = 0.6) +
-  geom_vline(aes(xintercept = mu_0), size = 1) +
-  geom_vline(aes(xintercept = x_bar), color = "goldenrod", size = 1, linetype = 2) +
-  theme_minimal() +
-  theme(legend.position="none",
-        axis.text.y = element_blank()) +
-  labs(title = bquote("Two-Tailed t Test"),
-       x = "mu",
-       y = "Probability")
-```
-
-Now you are ready to report the results.
-
-> A one-sample *t*-test was run to determine whether depression score in recruited subjects was different from normal, as defined as a depression score of 4.0. Depression scores were normally distributed, as assessed by Shapiro-Wilk's test (*p* > .05) and there were no outliers in the data, as assessed by inspection of a boxplot. Data are mean $\pm$ standard deviation, unless otherwise stated. Mean depression score (`r format(x_bar, digits = 2, nsmall = 2)` $\pm$ `r format(s, digits = 2, nsmall = 2)`) was lower than the population "normal" depression score of `r format(mu_0, digits = 2, nsmall = 2)`, a statistically significant difference of `r format(dep_95ci$estimate, digits = 2, nsmall = 2)` (95% CI, `r format(dep_95ci$conf.int[1], digits = 1, nsmall = 2)` to `r format(dep_95ci$conf.int[2], digits = 1, nsmall = 2)`), t(`r dep_95ci$parameter`) = `r format(dep_95ci$statistic, digits = 1, nsmall = 2)`, *p* = `r format(dep_95ci$p.value, digits = 1, nsmall = 3)`, *d* = `r d %>% format(digits = 2, nsmall = 2)`.
-
-#### Appendix: Deciding Sample Size {-}
-
-Determine the sample size required for a maximum error $\epsilon$ in the estimate by solving the confidence interval equation, $\bar{x} \pm t_{(1 - \alpha){/}2} \frac{s}{\sqrt{n}}$ for $n=\frac{{t_{\alpha/2,n-1}^2se^2}}{{\epsilon^2}}$ . Unfortunately, $t_{\alpha/2,n-1}^2$ is dependent on $n$, so replace it with $z_{\alpha/2}^2$. What about $s^2$?  Estimate it from the literature, a pilot study, or using the empirical rule that 95% of the range falls within two standard deviations, $s=range / 4$.
-
-For example, if the maximum tolerable error is* $\epsilon$ = 3, and $s$ is approximately 10, what sample size produces an $\alpha$ =0.05 confidence level?
-
-```{r}
-ceiling(qnorm(.975)^2 * 10^2 / 3^2)
-```
-### 1 Sample z Test for Categorical Var
-
-This test applies when you know the population variance.
 
 ### 1 sample t Test for Categorical Var
 

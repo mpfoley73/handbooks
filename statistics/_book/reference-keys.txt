@@ -91,3 +91,4 @@ one-sample-binomial-test
 fishers-exact-test
 example-3
 example-4
+pairwise.prop.test
