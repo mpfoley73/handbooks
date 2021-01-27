@@ -630,3 +630,20 @@ anova(lm_oxy)
 ## Kruskal–Wallis Test
 
 
+## pairwise.prop.test
+```{r}
+library(tidyverse)
+M <- 3573
+F <- 4177
+dat <- tribble(
+  ~gender, ~src, ~Y, ~N,
+  "Male", "Indeed", 1699, M-1699,
+  "Male", "LinkedIn", 1755, M-1755,
+  "Male", "Google", 1578, M-1578,
+  "Female", "Indeed", 2554, F-2554,
+  "Female", "LinkedIn", 1914, F-1914,
+  "Female", "Google", 1694, F-1694
+)
+prop.test(x = dat$Y, n = dat$Y + dat$N)
+pairwise.prop.test(x = dat$Y, n = dat$Y + dat$N)
+```

@@ -52,3 +52,17 @@ This test applies when the variable distributions are non-normally distributed a
 
 ### Spearman's Ranked Correlation for Categorical Vars
 
+### Fisher's Exact Test
+
+Use Fisher's Exact Test to test whether the observed frequencies of a single discrete dichotomous variable are equal. Suppose you have a treatment and control, and a binary outcome with two levels, *sick* and *cured*. The 
+
+observed frequency counts, $O_j$, of the $J$ levels of a categorical variable differ from the expected frequency counts, $E_j$. $H_0$ is $O_j = E_j$. The *p*-value from the test is computed as if the margins of the table are fixed. This leads under a null hypothesis of independence to a hypergeometric distribution of the numbers in the cells of the table
+
+The test is applicable in situations where
+
+* the row totals $n_{i+}$ and the column totals $n_+j$ are fixed by study design (rarely applies), and
+* the expected values of >20% of cells (at least 1 cell in a 2x2 table) have expected cell counts >5, and no expected cell count is <1.
+
+In practice, it appears that researchers use Fisher's exact test for 2x2 tables with small (*n* < 1,000) sample sizes. It is more accurate than the chi-square and *G* tests.
+
+ ([Wikipedial(https://en.wikipedia.org/wiki/Fisher%27s_exact_test)). Fisher's exact test is useful for small *n*-size samples where the chi-squared distribution assumption of the chi-squared and G-test tests fails. Fisher's exact test is overly conservative (p values too high) for large *n*-sizes.

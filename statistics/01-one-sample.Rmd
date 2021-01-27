@@ -7,11 +7,11 @@ library(gtsummary)
 library(flextable)
 ```
 
-*One-sample* tests are used to either describe a variable in terms of frequency or measures of central tendency and spread, or compare a variable to a known or hypothesized population or value.
+Use *one-sample* tests to either *describe* a single variable's frequency or central tendency, or to *compare* the frequency or central tendency to a hypothesized distribution or value.
 
-If the data generating process produces continuous outcomes (either interval or ratio), and the outcomes are symmetrically distributed, then you can treat the sample mean, $\bar{x}$, as a random variable centered at the population mean, $\mu$. You can then use the distribution to estimate an 95% confidence interval (CI) around $\mu$, or test the likelihood that $\bar{x}$ is contained within an 95% CI of an hypothesized population mean, $\mu_0$. If you (somehow) know the population variance, or the Central Limit Theorem (CLT) conditions hold, you can assume the random variable is normally distributed and use the *z*-test, otherwise you assume the random variable has student t distribution and use the *t*-test.^[The *t*-test returns nearly the same result as the *z*-test when the CLT holds, so in practice no one bothers with the *z*-test except as an aid to teach the *t*-test.] If the outcome is continuous but *not* symmetrically distributed, then you use a non-parametric test like the Wilcoxon median test.
+If the data generating process produces continuous outcomes (interval or ratio), and the outcomes are symmetrically distributed, the sample mean, $\bar{x}$, is a random variable centered at the population mean, $\mu$. You can then use a theoretical distribution (normal or student t) to estimate a 95% confidence interval (CI) around $\mu$, or compare $\bar{x}$ to an hypothesized population mean, $\mu_0$. If you (somehow) know the population variance, or the Central Limit Theorem (CLT) conditions hold, you can assume the random variable is normally distributed and use the *z*-test, otherwise assume the random variable has student t distribution and use the *t*-test.^[The *t*-test returns nearly the same result as the *z*-test when the CLT holds, so in practice no one bothers with the *z*-test except as an aid to teach the *t*-test.] If the data generating process produces continuous outcomes that are *not* symmetrically distributed, use a non-parametric test like the Wilcoxon median test.
 
-If the data generating process produces discrete outcomes (counts), then you can treat the sample count, $x$, as a random variable from a Poisson, binomial, normal, or multinomial distribution, or as a random variable from a theoretical outcome.
+If the data generating process produces discrete outcomes (counts), the sample count, $x$, as a random variable from a Poisson, binomial, normal, or multinomial distribution, or as a random variable from a theoretical outcome.
 
 * For counts over a fixed time or space, treat the count as a random variable from a Poisson distribution with expected value $\lambda$ and variance $\lambda$.
 
@@ -362,7 +362,7 @@ pheno_chisq_test$residuals^2 / pheno_chisq_test$statistic
 
 The two "tall" cells contributed over 95% of the $X^2$ test statistic, with the tall potato-leaf accounting for 67%. This aligns with what you'd expect from the bar plot.
 
-#### Example with Distribution {-}
+#### Example with Theoretical Distribution {-}
 
 You need to reduce the degrees of freedom (df) in the chi-squared goodness-of-fit test by 1 if you test whether the data conform to a particular distribution instead of a set of theoretical values. 
 
@@ -474,33 +474,16 @@ DescTools::GTest(pheno_obs, p = pheno_pi)
 According to the function documentation, the G-test is not usually used for 2x2 tables.
 
 
-
-
-
-## pairwise.prop.test
 ```{r}
-library(tidyverse)
-M <- 3573
-F <- 4177
-dat <- tribble(
-  ~gender, ~src, ~Y, ~N,
-  "Male", "Indeed", 1699, M-1699,
-  "Male", "LinkedIn", 1755, M-1755,
-  "Male", "Google", 1578, M-1578,
-  "Female", "Indeed", 2554, F-2554,
-  "Female", "LinkedIn", 1914, F-1914,
-  "Female", "Google", 1694, F-1694
-)
-prop.test(x = dat$Y, n = dat$Y + dat$N)
-pairwise.prop.test(x = dat$Y, n = dat$Y + dat$N)
+EMT::multinomial.test(o, f, useChisq = TRUE)
+```
+
+```{r}
+chisq.test(o, e)
 ```
 
 
-## Other Discrete Tests
-
-If you are confident that your variable can be described by a particular distribution, then you can run a so-called "exact" test comparing your measured value to a hypothesized value, or defining a 95% CI around the measured value.
-
-### One-Sample Poisson Test
+## One-Sample Poisson Test
 
 If $X$ is the number of successes in $n$ (many) trials when the probability of success $\lambda / n$ is small, then $X$ is a random variable with a Poisson distribution, 
 
@@ -522,8 +505,6 @@ $$\hat{\lambda} = \sum_{i=1}^N x_i / n.$$
 
 Thus, for a Poisson random variable, the maximum likelihood estimator (MLE) for $\lambda$ is just the sample mean.
 
-Poisson sampling is used to model counts of events that occur randomly over a *fixed period of time*. 
-
 ```{r include=FALSE}
 dat_pois <- data.frame(
   goals = c(0, 1, 2, 3, 4, 5, 6, 7, 8),
@@ -531,16 +512,17 @@ dat_pois <- data.frame(
 )
 ```
 
-Here is a simple analysis of data from a Poisson process.  Data set `dat` contains frequencies of goal counts during the first round matches of the 2002 World Cup.
+#### Example {-}
+Poisson sampling is used to model counts of events that occur randomly over a *fixed period of time*. Here is a case study. A researcher is analyzing World Cup play using a sample consisting of the `r sum(dat_pois$freq)` matches in the first round of the 2002 World Cup. The average match produced a mean/sd of `r weighted.mean(x = dat_pois$goals, w = dat_pois$freq) %>% scales::comma(accuracy = .01)` $\pm$ `r radiant.data::weighted.sd(x = dat_pois$goals, w = dat_pois$freq) %>% scales::comma(accuracy = .01)` goals, lower than the 1.5 historical average during World Cup play. Should you reject the null hypothesis that the sample is representative of the overall population?
 
-Here is a case study. A researcher is analyzing World Cup play using a sample consisting of the `r sum(dat_pois$freq)` matches in the first round of the 2002 World Cup. The average match produced `r weighted.mean(x = dat_pois$goals, w = dat_pois$freq) %>% scales::comma(accuracy = .01)` $\pm$ `r radiant.data::weighted.sd(x = dat_pois$goals, w = dat_pois$freq) %>% scales::comma(accuracy = .01)` goals, lower than the 1.5 historical average during World Cup play. The null hypothesis is that the sample is representative of the overall population. Should you reject $H_0$?
+#### Conditions {-}
 
-### Conditions {-}
+* The events must be independent of each other. In this case, the goal-count in one match has no effect on goal-counts in other matches.
+* The expected value of each event must be the same (homogeneity). In this case, the expected goal-count of each match is the same regardless of which teams are playing. This assumption is often dubious, causing the distribution variance to be larger than the mean, a conditional called *over-dispersion*.
 
-* The events must be independent of each other. E.g., if you are counting goals scored during the first round of the World Cup, you must assume the goals scored in one game do not affect the number of goals scored in another game.
-* The expected value of each data-generator must be the same (homogeneity). E.g., you must assume their is no relationship between points scored and which teams are playing. In practice, this assumption is often not met. E.g., some teams are better than others, the weather can affect scoring, etc. When the homogeneity condition fails, the distribution variance tends to be larger than the mean, a conditional called *overdispersion*.
+You might also check whether the data is consistent with a Poisson model.
 
-### Results {-}
+#### Results {-}
 
 Conduct the exact Poisson test. To get a 95% CI around the *difference* (instead of around the estimate), run the test using the difference, $\lambda_0 - \lambda$, and leave r at its default of 1.
 
