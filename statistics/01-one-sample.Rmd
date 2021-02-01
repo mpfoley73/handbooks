@@ -485,25 +485,17 @@ chisq.test(o, e)
 
 ## One-Sample Poisson Test
 
-If $X$ is the number of successes in $n$ (many) trials when the probability of success $\lambda / n$ is small, then $X$ is a random variable with a Poisson distribution, 
+If $X$ is the number of successes in $n$ (many) trials when the probability of success $\lambda / n$ is small, then $X$ is a random variable with a Poisson distribution, and the probability of observing $X = x$ successes is 
 
 $$f(x;\lambda) = \frac{e^{-\lambda} \lambda^x}{x!} \hspace{1cm} x \in (0, 1, ...), \hspace{2mm} \lambda > 0$$
 
-with $E(X)=\lambda$ and $Var(X) = \lambda$.  
-
-The Poisson likelihood function is
-
-$$L(\lambda; x) = \prod_{i=1}^N f(x_i; \lambda) = \prod_{i=1}^N \frac{e^{-\lambda} \lambda^x_i}{x_i !} = \frac{e^{-n \lambda} \lambda^{\sum x_i}}{\prod x_i}.$$
-
-Its log-likelihood function is
-
-$$l(\lambda; x) = \sum_{i=1}^N x_i \log \lambda - n \lambda.$$
-
-The log-likelihood function is maximized at 
+with $E(X)=\lambda$ and $Var(X) = \lambda$ where $\lambda$ is estimated by the sample $\hat{\lambda}$,
 
 $$\hat{\lambda} = \sum_{i=1}^N x_i / n.$$
 
-Thus, for a Poisson random variable, the maximum likelihood estimator (MLE) for $\lambda$ is just the sample mean.
+Poisson sampling is used to model counts of events that occur randomly over a fixed period of time. You can use the Poisson distribution to perform an exact test on a Poisson random variable.
+
+#### Example {-}
 
 ```{r include=FALSE}
 dat_pois <- data.frame(
@@ -512,28 +504,81 @@ dat_pois <- data.frame(
 )
 ```
 
-#### Example {-}
-Poisson sampling is used to model counts of events that occur randomly over a *fixed period of time*. Here is a case study. A researcher is analyzing World Cup play using a sample consisting of the `r sum(dat_pois$freq)` matches in the first round of the 2002 World Cup. The average match produced a mean/sd of `r weighted.mean(x = dat_pois$goals, w = dat_pois$freq) %>% scales::comma(accuracy = .01)` $\pm$ `r radiant.data::weighted.sd(x = dat_pois$goals, w = dat_pois$freq) %>% scales::comma(accuracy = .01)` goals, lower than the 1.5 historical average during World Cup play. Should you reject the null hypothesis that the sample is representative of the overall population?
+You are analyzing goal totals from a sample consisting of the `r sum(dat_pois$freq)` matches in the first round of the 2002 World Cup. The average match produced a mean/sd of `r weighted.mean(x = dat_pois$goals, w = dat_pois$freq) %>% scales::comma(accuracy = .01)` $\pm$ `r radiant.data::weighted.sd(x = dat_pois$goals, w = dat_pois$freq) %>% scales::comma(accuracy = .01)` goals, lower than the 1.5 historical average. Should you reject the null hypothesis that the sample is representative of typical values?
 
 #### Conditions {-}
 
 * The events must be independent of each other. In this case, the goal-count in one match has no effect on goal-counts in other matches.
 * The expected value of each event must be the same (homogeneity). In this case, the expected goal-count of each match is the same regardless of which teams are playing. This assumption is often dubious, causing the distribution variance to be larger than the mean, a conditional called *over-dispersion*.
 
-You might also check whether the data is consistent with a Poisson model.
+```{r include=FALSE}
+o <- dat_pois$freq
+j <- dat_pois$goals
+lambda <- weighted.mean(j, o)
+f <- exp(-lambda) * lambda^j / factorial(j)
+e <- f * sum(o)
+```
+
+You might also check whether the data is consistent with a Poisson model. This is random sampling, but the data violates the $\ge$ 5 rule because the minimum expected frequency was `r floor(min(e))`. To comply with the minimum frequency rule, lump the last six categories into "3-8".
+
+```{r, echo=FALSE, fig.height=2.5, fig.width=6.5}
+o <- c(o[0:3], sum(o[4:9]))
+e <- c(e[0:3], sum(e[4:9]))
+j <- c(j[0:3], paste(j[4], j[9], sep = "-"))
+
+data.frame(goals = j, Observed = o, Expected = e) %>%
+  pivot_longer(cols = c(Observed, Expected)) %>%
+  ggplot(aes(x = fct_inorder(as.character(goals)), y = value, color = fct_rev(name), fill = fct_rev(name))) +
+  geom_col(alpha = 0.6, width = 0.5, position = position_dodge2(padding = 0.1)) +
+  scale_color_grey(start = 0.6, end = 0.8) +
+  scale_fill_grey(start = 0.6, end = 0.8) +
+  theme_minimal() +
+  theme(axis.title = element_text(size = 9)) +
+  labs(title = "Counts of 2002 World Cup Round 1 Match Goals",
+       subtitle = "Expected Poisson distribution",
+       x = "Goals in Match", y = "Count of Matches", color = NULL, fill = NULL)
+```
+
+The minimum expected frequency was `r floor(min(e))`, so now the chi-squared test of independence is valid. Compare the expected values to the observed values with the chi-squared goodness of fit test, but in this case $df = 4 - 1 - 1$ because the estimated parameter $\lambda$ reduces the df by 1. You cannot set df in `chisq.test()`, so perform the test manually.
+
+```{r collapse=TRUE}
+(X2 <- sum((o - e)^2 / e))
+(p.value <- pchisq(q = X2, df = length(j) - 1 - 1, lower.tail = FALSE))
+```
+
+```{r warning=FALSE, message=FALSE, fig.height=2.5, fig.width=5, echo=FALSE, fig.align="center"}
+data.frame(chi2 = seq(from = 0, to = 10, by = .1)) %>%
+  mutate(density = dchisq(chi2, df = length(j) - 1 - 1)) %>%
+  mutate(
+    q025 = if_else(chi2 < qchisq(p = .025, df = length(j) - 1 - 1), density, NA_real_),
+    q975 = if_else(chi2 > qchisq(p = .975, df = length(j) - 1 - 1), density, NA_real_)) %>%
+  ggplot() +
+  geom_area(aes(x = chi2, y = q025), fill = "firebrick", alpha = 0.6) +
+  geom_area(aes(x = chi2, y = q975), fill = "firebrick", alpha = 0.6) +
+  geom_line(aes(x = chi2, y = density)) +
+  geom_vline(aes(xintercept = X2), color = "goldenrod", size = 1, linetype = 2) +
+  labs(title = "Chi-Square Goodness-of-Fit Test",
+       subtitle = expression(paste(X^2, "(2) = 0.86, (p = .650)")),
+       x = expression(chi^2), y = "Density") +
+  theme_minimal() +
+  theme(legend.position="none")
+```
+
+> Of the `r sum(o) %>% scales::comma()` World Cup matches, `r o[1]` had no goals, `r o[2]` had one goal, `r o[3]` had two goals, and `r o[4]` had 3-8 goals. A chi-square goodness-of-fit test was conducted to determine whether the observed goal counts follow a Poisson distribution. The minimum expected frequency was `r min(o) %>% scales::comma()`. The chi-square goodness-of-fit test indicated that the number of goals scored was not statistically significantly different from the frequencies expected from a Poisson distribution ($X^2$(`r length(o) - 1 - 1`) = `r scales::comma(X2, accuracy = 0.001)`, *p* = `r scales::comma(p.value, accuracy = 0.001)`).
 
 #### Results {-}
 
-Conduct the exact Poisson test. To get a 95% CI around the *difference* (instead of around the estimate), run the test using the difference, $\lambda_0 - \lambda$, and leave r at its default of 1.
+The conditions for the exact Poisson test were met, so go ahead and run the test.
 
 ```{r}
-(pois_val <- poisson.test(x = sum(dat_pois$goals * dat_pois$freq), 
-                          T = sum(dat_pois$freq), r = 1.5))
+(pois_val <- poisson.test(
+  x = sum(dat_pois$goals * dat_pois$freq), 
+  T = sum(dat_pois$freq), 
+  r = 1.5)
+)
 ```
 
-The difference is *not* statistically different from 0 at the *p* = .05 level. 
-
-Construct a plot showing the 95% CI around the hypothesized value. *I'm not sure if you should build it around the hypothesized value to show that the estimate is not within its confidence interval, or around the measured value to show that the confidence interval does not contain the hypothesized value.* For a Poisson distribution, I built the distribution around the expected value, $n\lambda$, not the rate, $\lambda$.
+Construct a plot showing the 95% CI around the hypothesized value. For a Poisson distribution, I built the distribution around the expected value, $n\lambda$, not the rate, $\lambda$.
 
 ```{r echo=FALSE, warning=FALSE, fig.height=3.5, fig.width=6.5}
 lrr = qpois(.025, 1.5 * sum(dat_pois$freq), lower.tail = TRUE)
@@ -552,91 +597,14 @@ data.frame(tot_goals = seq(50, 200, by = 1)) %>%
   theme_minimal() +
   theme(legend.position="none",
         axis.text.y = element_blank()) +
-  labs(title = bquote("Two-Tailed t Test"),
-       x = "n lambda",
+  labs(title = bquote("Two-Tailed Poisson Test"),
+       x = expression(paste("n", lambda)),
        y = "Probability")
 ```
 
 I think you could report these results like this.
 
-> A one-sample exact Poisson test was run to determine whether the number of goals scored in the first round of the 2002 World Cup was different from past World Cups, 1.5. Depression scores were normally distributed, as assessed by Shapiro-Wilk's test (*p* > .05) and there were no outliers in the data, as assessed by inspection of a boxplot. Data are mean $\pm$ standard deviation, unless otherwise stated. Mean depression score (`r format(x_bar, digits = 2, nsmall = 2)` $\pm$ `r format(s, digits = 2, nsmall = 2)`) was lower than the population "normal" depression score of `r format(mu_0, digits = 2, nsmall = 2)`, a statistically significant difference of `r format(dep_95ci$estimate, digits = 2, nsmall = 2)` (95% CI, `r format(dep_95ci$conf.int[1], digits = 1, nsmall = 2)` to `r format(dep_95ci$conf.int[2], digits = 1, nsmall = 2)`), t(`r dep_95ci$parameter`) = `r format(dep_95ci$statistic, digits = 1, nsmall = 2)`, *p* = `r format(dep_95ci$p.value, digits = 1, nsmall = 3)`, *d* = `r d %>% format(digits = 2, nsmall = 2)`.
-
-
-
-
-The 0.95 CI is $\lambda \pm z_{.05/2} \sqrt{\lambda / n}$
-
-```{r}
-# n <- sum(dat$freq)
-# z <- qnorm(0.975)
-# se <- sqrt(lambda / n)
-# paste0("[", round(lambda - z*se, 2), ", ", round(lambda + z*se, 2),"]")
-```
-
-The expected probability of scoring 2 goals in a match is $\frac{e^{-1.38} 1.38^2}{2!} = 0.239$.
-
-```{r}
-dpois(x = 2, lambda = lambda)
-```
-
-```{r fig.height=3.5}
-events <- 0:10
-density <- dpois(x = events, lambda = 3)
-prob <- ppois(q = events, lambda = 3, lower.tail = TRUE)
-df <- data.frame(events, density, prob)
-ggplot(df, aes(x = factor(events), y = density)) +
-  geom_col() +
-  geom_text(
-    aes(label = round(density, 3), y = density + 0.01),
-    position = position_dodge(0.9),
-    size = 3,
-    vjust = 0
-  ) +
-  geom_line(
-    data = df, 
-    aes(x = events, y = prob/4), 
-    size = 1) +
-  scale_y_continuous(sec.axis = sec_axis(~.*4, name = "Cum Prob")) +
-#  theme_mf() +
-#  scale_fill_mf() +
-  labs(title = "PMF and CDF of Poisson Distribution",
-       subtitle = "Poisson(3).",
-       x = "Events (x)",
-       y = "Density")
-```
-
-The expected probability of scoring 2 to 4 goals in a match is
-
-```{r}
-sum(dpois(x = c(2:4), lambda = lambda))
-```
-
-Or, using the cumulative probability distribution,
-
-```{r}
-ppois(q = 4, lambda = lambda) - ppois(q = 1, lambda = lambda)
-```
-
-How well does the Poisson distribution fit the 2002 World Cup data?
-
-```{r fig.height=3, message=FALSE}
-# dat_pois %>%
-#   mutate(pred = n * dpois(x = goals, lambda = lambda)) %>%
-#   rename(obs = freq) %>%
-#   pivot_longer(cols = -goals) %>%
-#   ggplot(aes(x = goals, y = value, color = name)) +
-#   geom_point() +
-# #  theme_mf() +
-# #  scale_color_mf() +
-#   geom_smooth(se = FALSE) +
-#   labs(
-#     title = "Poisson Dist: Observed vs Expected",
-#     color = "",
-#     y = "frequencey"
-#   )
-```
-
-It fits the data pretty good!
+> A one-sample exact Poisson test was run to determine whether the number of goals scored in the first round of the 2002 World Cup was different from past World Cups, 1.5. A chi-square goodness-of-fit test indicated that the number of goals was not statistically significantly different from the counts expected in the Poisson distribution ($X^2$(`r length(o) - 1 - 1`) = `r scales::comma(X2, accuracy = 0.001)`, *p* = `r scales::comma(p.value, accuracy = 0.001)`). Data are mean $\pm$ standard deviation, unless otherwise stated. Mean goals scored (`r format(lambda, digits = 2, nsmall = 2)` $\pm$ `r radiant.data::weighted.sd(x = dat_pois$goals, w = dat_pois$freq) %>% scales::comma(accuracy = .01)`) was lower than the historical mean of `r format(1.5, digits = 2, nsmall = 2)`, but was not statistically significantly different (95% CI, `r format(pois_val$conf.int[1], digits = 1, nsmall = 2)` to `r format(pois_val$conf.int[2], digits = 1, nsmall = 2)`), *p* = `r format(pois_val$p.value, digits = 1, nsmall = 3)`.
 
 ## One-Sample Binomial Test
 
