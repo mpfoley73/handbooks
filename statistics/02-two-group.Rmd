@@ -1,58 +1,250 @@
 # Two-Group Comparison Tests
 
-## Two-Group Comparison Tests for Numeric Vars
+```{r include=FALSE}
+library(tidyverse)
+library(gtsummary)
+```
 
-### 2 Sample Independent t Test for Numeric Vars
+Use *independent samples* tests to either *describe* a variable's frequency or central tendency difference between two independent groups, or to *compare* the difference to a hypothesized value.
 
-This test applies when you know the population variance.
+If the data generating process produces continuous outcomes (interval or ratio) and the outcomes are symmetrically distributed, the difference in the sample means, $\hat{d} = \bar{x} - \bar{y}$, is a random variable centered at the population difference, $d = \mu_X - \mu_Y$. You can use a theoretical distribution (normal or student t) to estimate a 95% confidence interval (CI) around $d$, or compare $\hat{d}$ to an hypothesized population difference, $d_0$. If you (somehow) know the sampling distribution variances $\sigma^2_X$ and $\sigma^2_Y$, or the Central Limit Theorem (CLT) conditions hold, you can assume the random variable is normally distributed and use the *z*-test, otherwise assume the random variable has a student t distribution and use the *t*-test.^[The *t*-test returns nearly the same result as the *z*-test when the CLT holds, so in practice no one bothers with the *z*-test except as an aid to teach the *t*-test.] If the data generating process produces continuous outcomes that are *not* symmetrically distributed, use a non-parametric test like the Mann-Whitney U test.
 
-### 2 Sample Welch's t Test for Numeric Vars
+If the data generating process produces discrete outcomes (counts), the sample count, $x$, is a random variable from a Poisson, binomial, normal, or multinomial distribution, or a random variable from a theoretical outcome. For two independent samples, the data can be organized into a two-way table - a frequency table for two categorical variables. If you have a single categorical predictor variable, you can test whether the joint frequency counts differ from the expected frequency counts in the saturated model. You analyze a two-way table one of two ways.
+
+* If you only care about comparing two levels (like when the response variable is binary), conduct a proportion difference *z*-test or a Fisher exact test.
+
+* If you want to compare the joint frequency counts to *expected* frequency counts under the *independence model* (the model of independent explanatory variables), conduct a Pearson's chi-squared independence test, or a *G*-test.
+
+## Independent Samples t-Test
+
+If a population measure *X* is normally distributed with mean $\mu_X$ and variance $\sigma_X^2$, and population measure *Y* is normally distributed with mean $\mu_Y$ and variance $\sigma_Y^2$, then their difference is normally distributed with mean $d = \mu_X - \mu_Y$ and variance $\sigma_{XY}^2 = \sigma_X^2 + \sigma_Y^2$. By the CLT, as the sample sizes grow, non-normally distributed *X* and *Y* will approach normality, and so will their difference.
+
+The **independent samples t-test** uses the difference in sample means $\hat{d} = \bar{x} - \bar{y}$ as an estimate of $d$ to evaluate an hypothesized difference, $d_0$. The null hypothesis is $d = d_0$.  Alternatively, you can construct a $(1 - \alpha)\%$ confidence interval around $\hat{d}$ to estimate $d$ within a margin of error, $\epsilon$.
+
+In principal, you can test the difference between independent means with either a z test or a t test.  Both require independent samples and approximately normal sampling distributions. The sampling distributions are normal if the underlying populations are normally distributed, or if the sample sizes are large ($n_X$ and $n_Y$ $\ge$ 30). However, the *z*-test additionally requires known sampling distribution variances $\sigma^2_X$ and $\sigma^2_Y$.  These variances are never known, so always use the *t*-test.
+
+The *z*-test assumes $d$ has a normal distribution centered at $\hat{d} = d$ with standard error $se = \sqrt{\frac{\sigma_X^2}{n_X} + \frac{\sigma_Y^2}{n_Y}}.$ Test $H_0: d = d_0$ with test statistic $Z = \frac{\hat{d} - d_0}{se}$ or define a $(1 - \alpha)\%$ confidence interval as $d = \hat{d} \pm z_{(1 - \alpha {/} 2)} se$.  
+
+The *t*-test assumes $d$ has a *t* distribution centered at $\hat{d} = d$ with standard error $se = \sqrt{\frac{s_X^2}{n_X} + \frac{s_Y^2}{n_Y}}.$ Test $H_0: d = d_0$ with test statistic $T = \frac{\hat{d} - d_0}{se}$, or define a $(1 - \alpha)\%$ confidence interval as $d = \hat{d} \pm t_{(1 - \alpha / 2), (n_X + n_Y - 2)} se$.
+
+However, there is an issue with the *t* test degrees of freedom. If the sample sizes are small, and the standard deviations from each population are similar (the ratios of $s_X$ and $s_Y$ are <2), you can pool the variances $s_p^2 = \frac{(n_X - 1) s_X^2 + (n_Y-1) s_Y^2}{n_X + n_Y-2}$ so that $se = s_p \sqrt{\frac{1}{n_X} + \frac{1}{n_Y}}$ and $df = n_X + n_Y -2$. This is call the **pooled variances t-test**. Otherwise, $se = \sqrt{\frac{s_X^2}{n_X} + \frac{s_Y^2}{n_Y}}$, but you must reduce the degrees of freedom using the Welch-Satterthwaite correction, $df = \frac{\left(\frac{s_X^2}{n_X} + \frac{s_Y^2}{n_Y}\right)^2}{\frac{s_X^4}{n_X^2\left(N_X-1\right)} + \frac{s_Y^4}{n_Y^2\left(N_Y-1\right)}}.$ This is called the **separate variance t-test**, or **Welch's t-test**. 
+
+There is a third way to perform a t test, the *paired two-sample test*. It uses the mean of sampled paired differences $\bar{d} = \sum_{i = 1}^n (x_i - y_i) {/} n$ as an estimate of the mean of the population paired differences $\delta$ to evaluate the hypothesized mean of population paired differences $\delta_0$.  Test $H_0: \delta = \delta_0$ with test statistic $T = \frac{\bar{d} - \delta_0}{se}$, or define a $(1 - \alpha)\%$ confidence interval as $\delta = \bar{d} \pm t_{1 - \alpha / 2, n - 1} se$.  *The paired t-test is really just a single mean t-test operating on variable that is defined as the difference between two variables*.
+
+#### Example{-}
+
+```{r include=FALSE}
+engage <- foreign::read.spss("./input/independent-samples-t-test.sav", 
+                             to.data.frame = TRUE)
+
+engage_report <- list()
+engage_report$n <- by(engage$engagement, engage$gender, length)
+engage_report$mean <- by(engage$engagement, engage$gender, mean)
+engage_report$sd <- by(engage$engagement, engage$gender, sd)
+```
+
+A company shows an advertisement to $n_M$ = `r engage_report$n["Male"]` males and $n_F$ = `r engage_report$n["Female"]` females, then measures their engagement with a survey. Do the mean engagement scores differ between the groups?
+
+```{r}
+engage %>% gtsummary::tbl_summary(by = gender, statistic = list(all_continuous() ~ "{mean} ({sd})"))
+```
+
+
+You can report the following initially.
+
+> There were `r engage_report$n["Male"]` male and `r engage_report$n["Female"]` female participants. The advertisement was more engaging to male viewers (M = `r scales::number(engage_report$mean["Male"], accuracy = .01)`, SD = `r scales::number(engage_report$sd["Male"], accuracy = .01)`) than female viewers (M = `r scales::number(engage_report$mean["Female"], accuracy = .01)`, SD = `r scales::number(engage_report$sd["Female"], accuracy = .01)`).
+
+#### Conditions
+
+The independent samples *t* test applies when the variable is continuous, partitioned into two independent samples, and the observations are independent. Additionally, there are three conditions related to the data distribution. If either condition fails, try the suggested work-arounds or use the non-parametric [Mann-Whitney U Test for Numeric Vars] instead.
+
+1. **Outliers**. There should be no significant outliers in either group. Outliers exert a large influence on the mean and standard deviation. Test with a box plot. If there are outliers, you might be able to drop them or transform the data.
+2. **Normality**.  Values should be *nearly* normally distributed ("nearly" because the *t*-test is robust to the normality assumption). This condition is especially important with small sample sizes. Test with Q-Q plots or the Shapiro-Wilk test for normality. If the data is very non-normal, you might be able to transform the data.
+3. **Homogeneous Variances**. If variances are homogenous, you can use the pooled-variances method; otherwise you use the separate variance method. Test with Levene's test of equality of variances.
+
+##### Outliers {-}
+
+Assess outliers with a box plot. Box plot whiskers extend up to 1.5\*IQR from the upper and lower hinges and outliers (beyond the whiskers) are are plotted individually. There were no outliers plotted here. Report this as *There were no outliers in the data, as assessed by inspection of a boxplot.*
+
+```{r echo=FALSE, fig.height=2.5}
+engage %>%
+  ggplot(aes(x = gender, y = engagement)) +
+  geom_boxplot(fill = "snow3", color = "snow4", alpha = 0.6, width = 0.5, 
+               outlier.color = "goldenrod", outlier.size = 2) +
+  theme_minimal() +
+  labs(title = "Boxplot of Engagement Score",
+       y = "Score", x = NULL)
+```
+
+If the outliers are data entry errors or measurement errors, fix or discard them. If the outliers are genuine, you have a couple options before reverting to the Mann-Whitney U test.
+
+* Leave it in if it doesn't affect the conclusion (compared to taking it out).
+* Transform the variable. Don't do this unless the variable is also non-normal. Transformation also has the downside of making interpretation more difficult.
+
+##### Normality {-}
+
+Assume the population is normally distributed if *n* $\ge$ 30. Otherwise, asses a Q-Q plot, skewness and kurtosis values, or a histogram. If you still don't feel confident about normality, run a Mann-Whitney U Test.
+
+The data set has $n_M$ = `r sum(engage$gender == "Male")` male and $n_F$ = `r sum(engage$gender == "Female")` female observations, so you cannot assume normality. Here is a QQ plot. The QQ plot indicates normality.
+
+```{r fig.height=3.5}
+engage %>%
+  ggplot(aes(sample = engagement, group = gender, color = fct_rev(gender))) +
+  stat_qq() +
+  stat_qq_line(col = "goldenrod") +
+  theme_minimal() + theme(legend.position = "top") +
+  labs(title = "Normal Q-Q Plot", color = NULL)
+```
+
+Here is the Shapiro-Wilk normality test. Both tests (of males and females) fail to reject the normality assumption. Report this as *Engagement scores for each level of gender were normally distributed, as assessed by Shapiro-Wilk's test (p > .05).*
+
+```{r}
+split(engage, engage$gender) %>% 
+  map(~shapiro.test(.$engagement))
+```
+
+If the data is not normally distributed, you still have a couple options before reverting to the Mann-Whitney U test.
+
+* Transform the dependent variable.
+* Carry on regardless - the independent samples *t*-test is fairly robust to deviations from normality.
+
+##### Homogenous Variances {-}
+
+If variances are homogenous, you use the pooled-variances method; otherwise you use the separate variance method. 
+
+As a rule of thumb, homogenous variances have a ratio of standard deviations between 0.5 and 2.0. The data satisfies the rule of thumb:
+
+```{r}
+sd(engage %>% filter(gender == "Male") %>% pull(engagement)) /
+  sd(engage %>% filter(gender == "Female") %>% pull(engagement))
+```
+
+You can also use the *F* test to compare the ratio of the sample variances $\hat{r} = s_X^2 / s_Y^2$ to an hypothesized ratio of population variances $r_0 = \sigma_X^2 / \sigma_Y^2$, usually $1$.
+
+```{r}
+var.test(engage %>% filter(gender == "Female") %>% pull(engagement), 
+         engage %>% filter(gender == "Male") %>% pull(engagement))
+```
+
+Bartlett's test is a second option.
+
+```{r}
+bartlett.test(engage$engagement, engage$gender)
+```
+
+Compared to Bartlett's test, Levene's is less sensitive to departures from normality.
+
+```{r}
+engage_report$levene <- with(engage, car::leveneTest(engagement, gender, center = "mean"))
+```
+
+Report these results as
+
+> There was homogeneity of variances for engagement scores for males and females, as assessed by Levene's test for equality of variances (*p* = `r scales::number(engage_report$levene$"Pr(>F)"[1], accuracy = 0.001)`).
+
+#### Results {-}
+
+Conduct the *t*-test. To get a 95% CI around the *difference* (instead of around the estimate), run the test using the difference, $\mu_0 - \bar{x}$, and leave `mu` at its default of 0.
+
+```{r}
+(engage_95ci <- t.test(
+  x = engage %>% filter(gender == "Male") %>% pull(engagement), 
+  y = engage %>% filter(gender == "Female") %>% pull(engagement), 
+  alternative = "two.sided", 
+  mu = 0, 
+  paired = FALSE, 
+  var.equal = TRUE, 
+  conf.level = 0.95)
+)
+```
+
+Report this as:
+
+> There was a statistically significant difference in mean engagement score between males and females, with males scoring higher than females, `r scales::number(engage_95ci$estimate[1] - engage_95ci$estimate[2] %>% as.numeric(), accuracy = 0.01)` (95% CI, `r engage_95ci$conf.int[1] %>% scales::number(accuracy = 0.01)` to `r engage_95ci$conf.int[2] %>% scales::number(accuracy = 0.01)`), t(`r engage_95ci$parameter`) = `r engage_95ci$statistic %>% scales::number(accuracy = 0.001)`, *p* = `r engage_95ci$p.value %>% scales::number(accuracy = 0.001)`.
+
+The effect size, called Cohen's *d*, is defined as $d = |M_D| / s$, where $|M_D| = \bar{x} - \bar{y}$, and $s$ is the pooled sample standard deviation, $s_p = \sqrt{\frac{(n_X - 1) s_X^2 + (n_Y-1) s_Y^2}{n_X + n_Y-2}}$. $d <.2$ is considered trivial, $.2 \le d < .5$ small, and $.5 \le d < .8$ large.
+
+```{r}
+# (d <- rstatix::cohens_d(dep, dep_score ~ 1, mu = 4) %>% pull(effsize) %>% abs())
+#<!-- Cohen's *d* is `r d %>% format(digits = 2, nsmall = 2)`, a small effect. -->
+```
+
+
+Make a habit of constructing a plot, just to make sure your head is on straight.
+
+```{r echo=FALSE, warning=FALSE, fig.height=3.5, fig.width=6.5}
+# se <- s / sqrt(n)
+# lrr = mu_0 + qt(p = .05, df = n - 1, lower.tail = TRUE) * se
+# urr = mu_0 + qt(p = .05, df = n - 1, lower.tail = FALSE) * se
+# data.frame(mu = seq(3.5, 4.5, by = .01)) %>%
+#   mutate(t = (mu - mu_0) / se,
+#          prob = dt(x = t, df = n - 1),
+#          lrr = if_else(mu < lrr, prob, NA_real_),
+#          urr = if_else(mu > urr, prob, NA_real_)) %>%
+#   ggplot() +
+#   geom_line(aes(x = mu, y = prob)) +
+#   geom_area(aes(x = mu, y = lrr), fill = "firebrick", alpha = 0.6) +
+#   geom_area(aes(x = mu, y = urr), fill = "firebrick", alpha = 0.6) +
+#   geom_vline(aes(xintercept = mu_0), size = 1) +
+#   geom_vline(aes(xintercept = x_bar), color = "goldenrod", size = 1, linetype = 2) +
+#   theme_minimal() +
+#   theme(legend.position="none",
+#         axis.text.y = element_blank()) +
+#   labs(title = bquote("Two-Tailed t Test"),
+#        x = "mu",
+#        y = "Probability")
+# engage_report$levene$"Pr(>F)"[1]
+```
+
+Now you are ready to report the results.
+
+> Data are mean $\pm$ standard deviation, unless otherwise stated. There were `r engage_report$n[["Male"]]` male and `r engage_report$n[["Female"]]` female participants. An independent-samples t-test was run to determine if there were differences in engagement to an advertisement between males and females. There were no outliers in the data, as assessed by inspection of a boxplot. Engagement scores for each level of gender were normally distributed, as assessed by Shapiro-Wilk's test (*p* > .05), and there was homogeneity of variances, as assessed by Levene's test for equality of variances (*p* = `r engage_report$levene$"Pr(>F)"[1] %>% scales::number(accuracy = 0.001)`). There were `r engage_report$n["Male"]` male and `r engage_report$n["Female"]` female participants. The advertisement was more engaging to male viewers (`r scales::number(engage_report$mean["Male"], accuracy = .01)` $\pm$ = `r scales::number(engage_report$sd["Male"], accuracy = .01)`) than female viewers (`r scales::number(engage_report$mean["Female"], accuracy = .01)` $\pm$ = `r scales::number(engage_report$sd["Female"], accuracy = .01)`), a statistically significant difference of `r scales::number(engage_95ci$estimate[1] - engage_95ci$estimate[2] %>% as.numeric(), accuracy = 0.01)` (95% CI, `r engage_95ci$conf.int[1] %>% scales::number(accuracy = 0.01)` to `r engage_95ci$conf.int[2] %>% scales::number(accuracy = 0.01)`), t(`r engage_95ci$parameter`) = `r engage_95ci$statistic %>% scales::number(accuracy = 0.001)`, *p* = `r engage_95ci$p.value %>% scales::number(accuracy = 0.001)`.
+
+## 2 Sample Welch's t Test for Numeric Vars
 
 This test applies when the variable variances are unequal.
 
-### Paired Sample t Test for Numeric Vars
+## Paired Sample t Test for Numeric Vars
 
 This test applies when you have paired samples.
 
-### Mann-Whitney U Test for Numeric Vars
+## Mann-Whitney U Test for Numeric Vars
 
 This test applies when the variable distributions are non-normally.
 
-### Wilcoxon Paired-Sample Test for Numeric Vars
+## Wilcoxon Paired-Sample Test for Numeric Vars
 
 This test applies when the variable distributions are non-normally distributed and samples are paired.
 
-### Pearson's Correlation for Numeric Vars
+## Pearson's Correlation for Numeric Vars
 
-### Spearman's Ranked Correlation for Numeric Vars
+## Spearman's Ranked Correlation for Numeric Vars
 
-## Two-Group Comparison Tests for Categorical Vars
-
-### 2 Sample Independent t Test for Categorical Vars
+## 2 Sample Independent t Test for Categorical Vars
 
 This test applies when you know the population variance.
 
-### 2 Sample Welch's t Test for Categorical Vars
+## 2 Sample Welch's t Test for Categorical Vars
 
 This test applies when the variable variances are unequal.
 
-### Paired Sample t Test for Categorical Vars
+## Paired Sample t Test for Categorical Vars
 
 This test applies when you have paired samples.
 
-### Mann-Whitney U Test for Categorical Vars
+## Mann-Whitney U Test for Categorical Vars
 
 This test applies when the variable distributions are non-normally.
 
-### Wilcoxon Paired-Sample Test for Categorical Vars
+## Wilcoxon Paired-Sample Test for Categorical Vars
 
 This test applies when the variable distributions are non-normally distributed and samples are paired.
 
-### Pearson's Correlation for Categorical Vars
+## Pearson's Correlation for Categorical Vars
 
-### Spearman's Ranked Correlation for Categorical Vars
+## Spearman's Ranked Correlation for Categorical Vars
 
-### Fisher's Exact Test
+## Fisher's Exact Test
 
 Use Fisher's Exact Test to test whether the observed frequencies of a single discrete dichotomous variable are equal. Suppose you have a treatment and control, and a binary outcome with two levels, *sick* and *cured*. The 
 

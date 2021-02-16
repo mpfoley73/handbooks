@@ -11,7 +11,7 @@ Use *one-sample* tests to either *describe* a single variable's frequency or cen
 
 If the data generating process produces continuous outcomes (interval or ratio), and the outcomes are symmetrically distributed, the sample mean, $\bar{x}$, is a random variable centered at the population mean, $\mu$. You can then use a theoretical distribution (normal or student t) to estimate a 95% confidence interval (CI) around $\mu$, or compare $\bar{x}$ to an hypothesized population mean, $\mu_0$. If you (somehow) know the population variance, or the Central Limit Theorem (CLT) conditions hold, you can assume the random variable is normally distributed and use the *z*-test, otherwise assume the random variable has student t distribution and use the *t*-test.^[The *t*-test returns nearly the same result as the *z*-test when the CLT holds, so in practice no one bothers with the *z*-test except as an aid to teach the *t*-test.] If the data generating process produces continuous outcomes that are *not* symmetrically distributed, use a non-parametric test like the Wilcoxon median test.
 
-If the data generating process produces discrete outcomes (counts), the sample count, $x$, as a random variable from a Poisson, binomial, normal, or multinomial distribution, or as a random variable from a theoretical outcome.
+If the data generating process produces discrete outcomes (counts), the sample count, $x$, is a random variable from a Poisson, binomial, normal, or multinomial distribution, or a random variable from a theoretical outcome.
 
 * For counts over a fixed time or space, treat the count as a random variable from a Poisson distribution with expected value $\lambda$ and variance $\lambda$.
 
@@ -101,6 +101,8 @@ The one-sample *t* test applies when the sampling distribution of the population
 
 Under the *t* test method, the measured mean, $\bar{x}$, approximates the population mean, $\mu$. The sample standard deviation, $s$, estimates the unknown population standard deviation, $\sigma$. The resulting sampling distribution has a *t* distribution centered at $\mu$ with standard error $se_\bar{x} = \frac{s}{\sqrt{n}}$. Define a $(1 - \alpha)\%$ confidence interval as $\bar{x} \pm t_{(1 - \alpha){/}2} se_\bar{x}$ and/or test $H_0: \mu = \mu_0$ with test statistic $T = \frac{\bar{x} - \mu_0}{se_\bar{x}}$.
 
+#### Example{-}
+
 ```{r include=FALSE}
 dep <- foreign::read.spss("./input/one-sample-t-test.sav", to.data.frame = TRUE)
 
@@ -109,8 +111,6 @@ mu_0 <- 4.0
 x_bar <- mean(dep$dep_score)
 s <- sd(dep$dep_score)
 ```
-
-#### Example{-}
 
 A researcher recruits a random sample of *n* = `r n` people to participate in a study about depression intervention. The researcher measures the participants' depression level prior to the study. The mean depression score (`r format(x_bar, digits = 2, nsmall = 2)` $\pm$ `r format(s, digits = 2, nsmall = 2)`) was lower than the population 'normal' depression score of `r format(mu_0, digits = 2, nsmall = 1)`. The null hypothesis is that the sample is representative of the overall population. Should you reject $H_0$?
 
@@ -615,7 +615,9 @@ The Clopper-Pearson exact binomial test is precise, but theoretically complicate
 
 You can use this test for multinomial variables too, but the test only compares a single level's proportion to a hypothesized value.
 
-Suppose a pharmaceutical company claims its drug reduces fever in >60% of cases. In a random sample of *n* = 40 cases the drug reduces fever in 20 cases. Do you reject the claim?
+#### Example {-}
+
+A pharmaceutical company claims its drug reduces fever in >60% of cases. In a random sample of *n* = 40 cases the drug reduces fever in 20 cases. Do you reject the claim?
 
 #### Conditions {-}
 
@@ -641,8 +643,6 @@ You could have used the chi-squared goodness-of-fit test, however, it is not per
 chisq.test(x = c(20, 20), p = c(0.6, 0.4), correct = FALSE)
 ```
 
-The *p*-value of 0.01289 is pretty close to that of the 0.01236 from the one-proportion *Z*-test.
-
 You should study the construction of the confidence interval on [Wikipedia](https://en.wikipedia.org/wiki/Binomial_proportion_confidence_interval) and explain it here.
 
 ## One-Sample Proportion z Test
@@ -658,24 +658,28 @@ The *z*-test is intuitive to learn, but it only applies when the central limit t
 
 If these conditions hold, the sampling distribution of $\pi$ is normally distributed around $p$ with standard error $se_p = \frac{s_p}{\sqrt{n}} = \frac{\sqrt{p(1−p)}}{\sqrt{n}}$. The measured values $p$ and $s_p$ approximate the population values $\pi$ and $\sigma_\pi$. You can define a $(1 − \alpha)\%$ confidence interval as $p \pm z_{\alpha / 2}se_p$. Test the hypothesis of $\pi = \pi_0$ with test statistic $z = \frac{p − \pi_0}{se_{\pi_0}}$ where $se_{\pi_0} = \frac{s_{\pi_0}}{\sqrt{n}} = \frac{\sqrt{{\pi_0}(1−{\pi_0})}}{\sqrt{n}}$.
 
-In the phenotype example above, you might test whether tall cut-leaf tomatoes occurred in the expected proportion, $\pi_0 = 9 / (9 + 3 + 3 + 1) = 0.5625$. The sample is a random assignment experiment with $956 \ge 5$ successes and $1611 - 956 = 655 \ge 5$ failures, sample size $n = 1611 \ge 30$, and probability of success $0.2 < 0.5625 < 0.8$, so the *Z*-test is valid.
+#### Example {-}
+
+A machine is supposed to randomly churn out prizes in 60% of boxes. In a random sample of *n* = 40 boxes there are prizes in 20 boxes. Is the machine flawed?
 
 ```{r}
-prop.test(956, 1611, 0.5625, "two.sided", correct = FALSE)
+prop.test(20, 40, 0.6, "two.sided", correct = FALSE)
 ```
 
 The first thing you'll notice is that `prop.test()` performs a chi-squared goodness-of-fit test, not a one-proportion *Z*-test!
+
 ```{r}
-chisq.test(c(956, 1611-956), p = c(9/(9+3+3+1), 7/(9+3+3+1)), correct = FALSE)
+chisq.test(c(20, 40-20), p = c(.6, .4), correct = FALSE)
 ```
 
 It turns out $P(\chi^2 > X^2)$ equals $2 \cdot P(Z > z).$ Here is the manual calculation of the chi-squared test statistic $X^2$ and resulting *p*-value on 1 dof.
-```{r}
-pi_0 <- 9 / (9+3+3+1)
-p <- 956 / 1611
 
-observed <- c(p, 1-p) * 1611
-expected <- c(pi_0, 1-pi_0) * 1611
+```{r}
+pi_0 <- .6
+p <- 20 / 40
+
+observed <- c(p, 1-p) * 40
+expected <- c(pi_0, 1-pi_0) * 40
 
 X2 <- sum((observed - expected)^2 / expected)
 pchisq(X2, 1, lower.tail = FALSE)
@@ -683,37 +687,39 @@ pchisq(X2, 1, lower.tail = FALSE)
 
 And here is the manual calculation of the *Z*-test statistic $z$ and resulting *p*-value.
 ```{r}
-se <- sqrt(pi_0*(1-pi_0)) / sqrt(1611)
+se <- sqrt(pi_0*(1-pi_0)) / sqrt(40)
 z <- (p - pi_0) / se
-pnorm(z, lower.tail = FALSE) * 2
+pnorm(z, lower.tail = TRUE) * 2
 ```
 
 The 95% CI presented by `prop.test()` is also not the $p \pm z_{\alpha / 2}se_p$ Wald interval; it is the *Wilson* interval!
 
 ```{r}
-DescTools::BinomCI(956, 1611, method = "wilson")
+DescTools::BinomCI(20, 40, method = "wilson")
 ```
 
 There are a lot of methods (*see* `?DescTools::BinomCI`), and *Wilson* is the one Agresti-Coull recommends. If you want *Wald*, use `DescTools::BinomCI()` with `method = "wald"`.
+
 ```{r}
-DescTools::BinomCI(956, 1611, method = "wald")
+DescTools::BinomCI(20, 40, method = "wald")
 ```
 
 This matches the manual calculation below.
 
 ```{r}
 z_crit = qnorm(1 - .05/2)
-se <- sqrt(p*(1-p)) / sqrt(1611)
+se <- sqrt(p*(1-p)) / sqrt(40)
 
 (CI <- c(p - z_crit*se, p + z_crit*se))
 ```
 
-`prop.test()` (and `chissq.test()`) reported a *p*-value of 0.01236, so you can reject the null hypothesis that $\pi = 0.5625$. It's good practice to plot this out to make sure your head is on straight.
+`prop.test()` (and `chissq.test()`) reported a *p*-value of `r prop.test(20, 40, 0.6, "two.sided", correct = FALSE)["p.value"] %>% unlist()`, so you cannot reject the null hypothesis that $\pi = 0.6$. It's good practice to plot this out to make sure your head is on straight.
 
 ```{r warning=FALSE, message=FALSE, fig.height=3, fig.width=5, echo=FALSE, fig.align="center"}
-se_pi_0 <- sqrt(pi_0 * (1 - pi_0) / 1611)
+p_value = prop.test(20, 40, 0.6, "two.sided", correct = FALSE)["p.value"] %>% unlist()
+se_pi_0 <- sqrt(pi_0 * (1 - pi_0) / 40)
 p_value <- pnorm(z, lower.tail = FALSE) * 2
-data.frame(pi = seq(from = 0.5, to = 0.6, by = .001)) %>%
+data.frame(pi = seq(from = 0.2, to = 0.8, by = .001)) %>%
   mutate(density = dnorm(pi, pi_0, se_pi_0),
          q25 = ifelse(pi < qnorm(p = .025, pi_0, se_pi_0), density, as.numeric(NA)),
          q95 = ifelse(pi > qnorm(p = .975, pi_0, se_pi_0), density, as.numeric(NA))) %>%
@@ -724,7 +730,7 @@ data.frame(pi = seq(from = 0.5, to = 0.6, by = .001)) %>%
   geom_vline(aes(xintercept = p), color = "#0C6980", size = 1.0) +
   geom_vline(aes(xintercept = pi_0), color = "#000000", size = 0.5, linetype = 2) +
   labs(title = "One-Proportion Z-Test",
-       subtitle = expression(paste(pi[0], " = 0.5625, p = 0.5934, p-value = .01236")),
+       subtitle = expression(paste(pi[0], " = 0.6, p = 0.5, p-value = 0.197")),
        x = expression(pi), y = "Density") +
   theme_minimal() +
   theme(legend.position="none")
@@ -732,10 +738,10 @@ data.frame(pi = seq(from = 0.5, to = 0.6, by = .001)) %>%
 
 Incidentally, if you have a margin of error requirement, you can back into the required sample size to achieve it. Just solve the margin of error equation $\epsilon  = z_{\alpha/2}^2 = \sqrt{\frac{\pi_0(1-\pi_0)}{n}}$ for $n = \frac{z_{\alpha/2}^2 \pi_0(1-\pi_0)}{\epsilon^2}.$
 
-### 1 sample t Test for Categorical Var
+## 1 sample t Test for Categorical Var
 
 This test applies when you do not know the population variance.
 
-### Wilcoxon 1-Sample Median Test for Categorical Var
+## Wilcoxon 1-Sample Median Test for Categorical Var
 
 This test applies when the variable is not normally distributed.
