@@ -34,7 +34,11 @@ However, there is an issue with the *t* test degrees of freedom. If the sample s
 ```{r include=FALSE}
 engage <- foreign::read.spss("./input/independent-samples-t-test.sav", 
                              to.data.frame = TRUE)
-
+engage2 <- foreign::read.spss("./input/mann-whitney-test.sav",
+                              to.data.frame = TRUE)
+assertthat::are_equal(engage, engage2)
+engage
+engage2
 engage_report <- list()
 engage_report$n <- by(engage$engagement, engage$gender, length)
 engage_report$mean <- by(engage$engagement, engage$gender, mean)
@@ -242,7 +246,7 @@ drink_gt
 
 You can report the following initially.
 
-> There were `r engage_report$n["Male"]` male and `r engage_report$n["Female"]` female participants. Data are mean $\pm$ standard deviation, unless otherwise stated. The advertisement was more engaging to male viewers, `r gtsummary::inline_text(engage_gt, engagement, column = "Male")`, than female viewers, `r gtsummary::inline_text(engage_gt, engagement, column = "Female")`.
+> There were `r drink_report$n` participants. Data are mean $\pm$ standard deviation, unless otherwise stated. Participants ran further after consuming the carbohydrate-protein drink, `r gtsummary::inline_text(drink_gt, carb_protein)` km, than the carbohydrate-only drink, `r gtsummary::inline_text(drink_gt, carb)` km.
 
 #### Conditions {-}
 
@@ -308,9 +312,68 @@ If the data is not normally distributed, you still have a couple options before 
 * Transform the dependent variable.
 * Carry on regardless - the one-sample *t*-test is fairly robust to deviations from normality.
 
-## Mann-Whitney U Test for Numeric Vars
+#### Results {-}
 
-This test applies when the variable distributions are non-normally.
+Conduct the *t*-test. To get a 95% CI around the *difference* (instead of around the estimate), run the test using the difference, $\mu_0 - \bar{x}$, and leave `mu` at its default of 0.
+
+```{r}
+(drink_report$ci <- t.test(
+  x = drink$carb_protein, 
+  y = drink$carb, 
+  alternative = "two.sided", 
+  paired = TRUE,
+  conf.level = .95)
+)
+```
+
+Report this as:
+
+> The carbohydrate-protein drink elicited an increase of `r scales::number(drink_report$ci$estimate %>% as.numeric(), accuracy = 0.001)` (95% CI, `r drink_report$ci$conf.int[1] %>% scales::number(accuracy = 0.001)` to `r drink_report$ci$conf.int[2] %>% scales::number(accuracy = 0.001)`) km in the distance run in two hours compared to a carbohydrate-only drink.
+
+The effect size, called Cohen's *d*, is defined as $d = |M_D| / s$, where $|M_D| = \bar{x} - \mu_0$, and $s$ is the sample standard deviation. $d <.2$ is considered trivial, $.2 \le d < .5$ small, and $.5 \le d < .8$ large.
+
+```{r}
+(drink_report$d <- effectsize::cohens_d(drink$difference))
+```
+
+Cohen's *d* is `r drink_report$d$Cohens_d %>% format(digits = 2, nsmall = 2)`, a large effect. 
+
+Construct a plot.
+
+```{r echo=FALSE, warning=FALSE, fig.height=3.5, fig.width=6.5}
+se <- drink_report$sd / sqrt(drink_report$n)
+d_bar <- drink_report$mean
+d_0 <- 0
+lrr = 0 + qt(p = .025, df = drink_report$n - 1, lower.tail = TRUE) * se
+urr = 0 + qt(p = .025, df = drink_report$n - 1, lower.tail = FALSE) * se
+data.frame(d = seq(-0.2, 0.2, by = .01)) %>%
+  mutate(t = (d - d_0) / se,
+         prob = dt(x = t, df = drink_report$n - 1),
+         lrr = if_else(d < lrr, prob, NA_real_),
+         urr = if_else(d > urr, prob, NA_real_)) %>%
+  ggplot() +
+  geom_line(aes(x = d, y = prob)) +
+  geom_area(aes(x = d, y = lrr), fill = "firebrick", alpha = 0.6) +
+  geom_area(aes(x = d, y = urr), fill = "firebrick", alpha = 0.6) +
+  geom_vline(aes(xintercept = d_0), size = 1) +
+  geom_vline(aes(xintercept = d_bar), color = "goldenrod", size = 1, linetype = 2) +
+  theme_minimal() +
+  theme(legend.position="none",
+        axis.text.y = element_blank()) +
+  labs(title = bquote("Two-Tailed t Test"),
+       x = "mu",
+       y = "Probability")
+```
+
+Now you are ready to report the results.
+
+> A paired-samples t-test was used to determine whether there was a statistically significant mean difference between the distance ran when participants drank a carbohydrate-protein drink compared to a carbohydrate-only drink. Data are mean $\pm$ standard deviation, unless otherwise stated. Two outliers were detected that were more than 1.5 box-lengths from the edge of the box in a boxplot. Inspection of their values did not reveal them to be extreme and they were kept in the analysis. The assumption of normality was not violated, as assessed by Shapiro-Wilk's test (*p* = `r drink_report$shapiro$p.value %>% scales::number(accuracy = 0.001)`). Participants ran further after consuming the carbohydrate-protein drink, `r gtsummary::inline_text(drink_gt, carb_protein)` km, than the carbohydrate-only drink, `r gtsummary::inline_text(drink_gt, carb)` km, a statistically significant increase of `r scales::number(drink_report$ci$estimate %>% as.numeric(), accuracy = 0.001)` (95% CI, `r drink_report$ci$conf.int[1] %>% scales::number(accuracy = 0.001)` to `r drink_report$ci$conf.int[2] %>% scales::number(accuracy = 0.001)`) km, *t*(`r drink_report$ci$parameter`) = `r drink_report$ci$statistic %>% scales::number(accuracy = 0.001)`, *p* = `r drink_report$ci$p.value %>% scales::number(accuracy = .0001)`, *d* = `r drink_report$d$Cohens_d %>% scales::number(accuracy = .01)`.
+
+## Mann-Whitney U Test
+
+The Mann-Whitney U test is the nonparametric alternative to the independent-samples t-test for cases in which the samples are non-normally distributed or are ordinal rather than continuous.
+
+If the two distributions have a *different* shape, the Mann-Whitney U test determines whether there are differences in the **distributions**. It does this by ranking all the values and comparing the mean ranks between the two groups. From this you can decide whether the dependent variable differs (lt, gt, or ne) between the groups. If the two distributions are the *same* shape, the Mann-Whitney U test determine whether there are differences in the **medians**. This is a more specific description of the difference.
 
 ## Wilcoxon Paired-Sample Test for Numeric Vars
 
