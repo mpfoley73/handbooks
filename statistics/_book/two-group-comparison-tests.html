@@ -24,7 +24,7 @@
 <meta name="author" content="Michael Foley" />
 
 
-<meta name="date" content="2021-02-26" />
+<meta name="date" content="2021-03-05" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -53,6 +53,8 @@
 <script src="libs/accessible-code-block-0.0.1/empty-anchor.js"></script>
 <link href="libs/anchor-sections-1.0/anchor-sections.css" rel="stylesheet" />
 <script src="libs/anchor-sections-1.0/anchor-sections.js"></script>
+<link href="libs/tabwid-1.0.0/tabwid.css" rel="stylesheet" />
+<script src="libs/tabwid-1.0.0/tabwid.js"></script>
 
 
 <style type="text/css">
@@ -150,20 +152,19 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <li class="chapter" data-level="1.10" data-path="one-sample-inference-tests.html"><a href="one-sample-inference-tests.html#wilcoxon-1-sample-median-test-for-categorical-var"><i class="fa fa-check"></i><b>1.10</b> Wilcoxon 1-Sample Median Test for Categorical Var</a></li>
 </ul></li>
 <li class="chapter" data-level="2" data-path="two-group-comparison-tests.html"><a href="two-group-comparison-tests.html"><i class="fa fa-check"></i><b>2</b> Two-Group Comparison Tests</a><ul>
-<li class="chapter" data-level="2.1" data-path="two-group-comparison-tests.html"><a href="two-group-comparison-tests.html#independent-samples-t-test"><i class="fa fa-check"></i><b>2.1</b> Independent Samples t Test</a></li>
+<li class="chapter" data-level="2.1" data-path="two-group-comparison-tests.html"><a href="two-group-comparison-tests.html#independent-samples"><i class="fa fa-check"></i><b>2.1</b> Independent Samples</a></li>
 <li class="chapter" data-level="2.2" data-path="two-group-comparison-tests.html"><a href="two-group-comparison-tests.html#paired-samples-t-test"><i class="fa fa-check"></i><b>2.2</b> Paired Samples t Test</a></li>
-<li class="chapter" data-level="2.3" data-path="two-group-comparison-tests.html"><a href="two-group-comparison-tests.html#mann-whitney-u-test-for-numeric-vars"><i class="fa fa-check"></i><b>2.3</b> Mann-Whitney U Test for Numeric Vars</a></li>
-<li class="chapter" data-level="2.4" data-path="two-group-comparison-tests.html"><a href="two-group-comparison-tests.html#wilcoxon-paired-sample-test-for-numeric-vars"><i class="fa fa-check"></i><b>2.4</b> Wilcoxon Paired-Sample Test for Numeric Vars</a></li>
-<li class="chapter" data-level="2.5" data-path="two-group-comparison-tests.html"><a href="two-group-comparison-tests.html#pearsons-correlation-for-numeric-vars"><i class="fa fa-check"></i><b>2.5</b> Pearson’s Correlation for Numeric Vars</a></li>
-<li class="chapter" data-level="2.6" data-path="two-group-comparison-tests.html"><a href="two-group-comparison-tests.html#spearmans-ranked-correlation-for-numeric-vars"><i class="fa fa-check"></i><b>2.6</b> Spearman’s Ranked Correlation for Numeric Vars</a></li>
-<li class="chapter" data-level="2.7" data-path="two-group-comparison-tests.html"><a href="two-group-comparison-tests.html#sample-independent-t-test-for-categorical-vars"><i class="fa fa-check"></i><b>2.7</b> 2 Sample Independent t Test for Categorical Vars</a></li>
-<li class="chapter" data-level="2.8" data-path="two-group-comparison-tests.html"><a href="two-group-comparison-tests.html#sample-welchs-t-test-for-categorical-vars"><i class="fa fa-check"></i><b>2.8</b> 2 Sample Welch’s t Test for Categorical Vars</a></li>
-<li class="chapter" data-level="2.9" data-path="two-group-comparison-tests.html"><a href="two-group-comparison-tests.html#paired-sample-t-test-for-categorical-vars"><i class="fa fa-check"></i><b>2.9</b> Paired Sample t Test for Categorical Vars</a></li>
-<li class="chapter" data-level="2.10" data-path="two-group-comparison-tests.html"><a href="two-group-comparison-tests.html#mann-whitney-u-test-for-categorical-vars"><i class="fa fa-check"></i><b>2.10</b> Mann-Whitney U Test for Categorical Vars</a></li>
-<li class="chapter" data-level="2.11" data-path="two-group-comparison-tests.html"><a href="two-group-comparison-tests.html#wilcoxon-paired-sample-test-for-categorical-vars"><i class="fa fa-check"></i><b>2.11</b> Wilcoxon Paired-Sample Test for Categorical Vars</a></li>
-<li class="chapter" data-level="2.12" data-path="two-group-comparison-tests.html"><a href="two-group-comparison-tests.html#pearsons-correlation-for-categorical-vars"><i class="fa fa-check"></i><b>2.12</b> Pearson’s Correlation for Categorical Vars</a></li>
-<li class="chapter" data-level="2.13" data-path="two-group-comparison-tests.html"><a href="two-group-comparison-tests.html#spearmans-ranked-correlation-for-categorical-vars"><i class="fa fa-check"></i><b>2.13</b> Spearman’s Ranked Correlation for Categorical Vars</a></li>
-<li class="chapter" data-level="2.14" data-path="two-group-comparison-tests.html"><a href="two-group-comparison-tests.html#fishers-exact-test"><i class="fa fa-check"></i><b>2.14</b> Fisher’s Exact Test</a></li>
+<li class="chapter" data-level="2.3" data-path="two-group-comparison-tests.html"><a href="two-group-comparison-tests.html#wilcoxon-paired-sample-test-for-numeric-vars"><i class="fa fa-check"></i><b>2.3</b> Wilcoxon Paired-Sample Test for Numeric Vars</a></li>
+<li class="chapter" data-level="2.4" data-path="two-group-comparison-tests.html"><a href="two-group-comparison-tests.html#pearsons-correlation-for-numeric-vars"><i class="fa fa-check"></i><b>2.4</b> Pearson’s Correlation for Numeric Vars</a></li>
+<li class="chapter" data-level="2.5" data-path="two-group-comparison-tests.html"><a href="two-group-comparison-tests.html#spearmans-ranked-correlation-for-numeric-vars"><i class="fa fa-check"></i><b>2.5</b> Spearman’s Ranked Correlation for Numeric Vars</a></li>
+<li class="chapter" data-level="2.6" data-path="two-group-comparison-tests.html"><a href="two-group-comparison-tests.html#sample-independent-t-test-for-categorical-vars"><i class="fa fa-check"></i><b>2.6</b> 2 Sample Independent t Test for Categorical Vars</a></li>
+<li class="chapter" data-level="2.7" data-path="two-group-comparison-tests.html"><a href="two-group-comparison-tests.html#sample-welchs-t-test-for-categorical-vars"><i class="fa fa-check"></i><b>2.7</b> 2 Sample Welch’s t Test for Categorical Vars</a></li>
+<li class="chapter" data-level="2.8" data-path="two-group-comparison-tests.html"><a href="two-group-comparison-tests.html#paired-sample-t-test-for-categorical-vars"><i class="fa fa-check"></i><b>2.8</b> Paired Sample t Test for Categorical Vars</a></li>
+<li class="chapter" data-level="2.9" data-path="two-group-comparison-tests.html"><a href="two-group-comparison-tests.html#mann-whitney-u-test-for-categorical-vars"><i class="fa fa-check"></i><b>2.9</b> Mann-Whitney U Test for Categorical Vars</a></li>
+<li class="chapter" data-level="2.10" data-path="two-group-comparison-tests.html"><a href="two-group-comparison-tests.html#wilcoxon-paired-sample-test-for-categorical-vars"><i class="fa fa-check"></i><b>2.10</b> Wilcoxon Paired-Sample Test for Categorical Vars</a></li>
+<li class="chapter" data-level="2.11" data-path="two-group-comparison-tests.html"><a href="two-group-comparison-tests.html#pearsons-correlation-for-categorical-vars"><i class="fa fa-check"></i><b>2.11</b> Pearson’s Correlation for Categorical Vars</a></li>
+<li class="chapter" data-level="2.12" data-path="two-group-comparison-tests.html"><a href="two-group-comparison-tests.html#spearmans-ranked-correlation-for-categorical-vars"><i class="fa fa-check"></i><b>2.12</b> Spearman’s Ranked Correlation for Categorical Vars</a></li>
+<li class="chapter" data-level="2.13" data-path="two-group-comparison-tests.html"><a href="two-group-comparison-tests.html#fishers-exact-test"><i class="fa fa-check"></i><b>2.13</b> Fisher’s Exact Test</a></li>
 </ul></li>
 <li class="chapter" data-level="3" data-path="multi-group-comparison-tests.html"><a href="multi-group-comparison-tests.html"><i class="fa fa-check"></i><b>3</b> Multi-Group Comparison Tests</a><ul>
 <li class="chapter" data-level="3.1" data-path="multi-group-comparison-tests.html"><a href="multi-group-comparison-tests.html#independent-t-test"><i class="fa fa-check"></i><b>3.1</b> Independent t-Test</a></li>
@@ -234,27 +235,37 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <li><p>If you only care about comparing two levels (like when the response variable is binary), conduct a proportion difference <em>z</em>-test or a Fisher exact test.</p></li>
 <li><p>If you want to compare the joint frequency counts to <em>expected</em> frequency counts under the <em>independence model</em> (the model of independent explanatory variables), conduct a Pearson’s chi-squared independence test, or a <em>G</em>-test.</p></li>
 </ul>
-<div id="independent-samples-t-test" class="section level2">
-<h2><span class="header-section-number">2.1</span> Independent Samples t Test</h2>
+<div id="independent-samples" class="section level2">
+<h2><span class="header-section-number">2.1</span> Independent Samples</h2>
+<div id="independent-samples-t-test" class="section level4 unnumbered">
+<h4>Independent Samples t-Test</h4>
 <p>If a population measure <em>X</em> is normally distributed with mean <span class="math inline">\(\mu_X\)</span> and variance <span class="math inline">\(\sigma_X^2\)</span>, and population measure <em>Y</em> is normally distributed with mean <span class="math inline">\(\mu_Y\)</span> and variance <span class="math inline">\(\sigma_Y^2\)</span>, then their difference is normally distributed with mean <span class="math inline">\(d = \mu_X - \mu_Y\)</span> and variance <span class="math inline">\(\sigma_{XY}^2 = \sigma_X^2 + \sigma_Y^2\)</span>. By the CLT, as the sample sizes grow, non-normally distributed <em>X</em> and <em>Y</em> will approach normality, and so will their difference.</p>
 <p>The <strong>independent samples t-test</strong> uses the difference in sample means <span class="math inline">\(\hat{d} = \bar{x} - \bar{y}\)</span> as an estimate of <span class="math inline">\(d\)</span> to evaluate an hypothesized difference, <span class="math inline">\(d_0\)</span>. The null hypothesis is <span class="math inline">\(d = d_0\)</span>. Alternatively, you can construct a <span class="math inline">\((1 - \alpha)\%\)</span> confidence interval around <span class="math inline">\(\hat{d}\)</span> to estimate <span class="math inline">\(d\)</span> within a margin of error, <span class="math inline">\(\epsilon\)</span>.</p>
 <p>In principal, you can test the difference between independent means with either a z test or a t test. Both require independent samples and approximately normal sampling distributions. The sampling distributions are normal if the underlying populations are normally distributed, or if the sample sizes are large (<span class="math inline">\(n_X\)</span> and <span class="math inline">\(n_Y\)</span> <span class="math inline">\(\ge\)</span> 30). However, the <em>z</em>-test additionally requires known sampling distribution variances <span class="math inline">\(\sigma^2_X\)</span> and <span class="math inline">\(\sigma^2_Y\)</span>. These variances are never known, so always use the <em>t</em>-test.</p>
 <p>The <em>z</em>-test assumes <span class="math inline">\(d\)</span> has a normal distribution centered at <span class="math inline">\(\hat{d} = d\)</span> with standard error <span class="math inline">\(se = \sqrt{\frac{\sigma_X^2}{n_X} + \frac{\sigma_Y^2}{n_Y}}.\)</span> Test <span class="math inline">\(H_0: d = d_0\)</span> with test statistic <span class="math inline">\(Z = \frac{\hat{d} - d_0}{se}\)</span> or define a <span class="math inline">\((1 - \alpha)\%\)</span> confidence interval as <span class="math inline">\(d = \hat{d} \pm z_{(1 - \alpha {/} 2)} se\)</span>.</p>
 <p>The <em>t</em>-test assumes <span class="math inline">\(d\)</span> has a <em>t</em> distribution centered at <span class="math inline">\(\hat{d} = d\)</span> with standard error <span class="math inline">\(se = \sqrt{\frac{s_X^2}{n_X} + \frac{s_Y^2}{n_Y}}.\)</span> Test <span class="math inline">\(H_0: d = d_0\)</span> with test statistic <span class="math inline">\(T = \frac{\hat{d} - d_0}{se}\)</span>, or define a <span class="math inline">\((1 - \alpha)\%\)</span> confidence interval as <span class="math inline">\(d = \hat{d} \pm t_{(1 - \alpha / 2), (n_X + n_Y - 2)} se\)</span>.</p>
 <p>However, there is an issue with the <em>t</em> test degrees of freedom. If the sample sizes are small, and the standard deviations from each population are similar (the ratios of <span class="math inline">\(s_X\)</span> and <span class="math inline">\(s_Y\)</span> are &lt;2), you can pool the variances <span class="math inline">\(s_p^2 = \frac{(n_X - 1) s_X^2 + (n_Y-1) s_Y^2}{n_X + n_Y-2}\)</span> so that <span class="math inline">\(se = s_p \sqrt{\frac{1}{n_X} + \frac{1}{n_Y}}\)</span> and <span class="math inline">\(df = n_X + n_Y -2\)</span>. This is call the <strong>pooled variances t-test</strong>. Otherwise, <span class="math inline">\(se = \sqrt{\frac{s_X^2}{n_X} + \frac{s_Y^2}{n_Y}}\)</span>, but you must reduce the degrees of freedom using the Welch-Satterthwaite correction, <span class="math inline">\(df = \frac{\left(\frac{s_X^2}{n_X} + \frac{s_Y^2}{n_Y}\right)^2}{\frac{s_X^4}{n_X^2\left(N_X-1\right)} + \frac{s_Y^4}{n_Y^2\left(N_Y-1\right)}}.\)</span> This is called the <strong>separate variance t-test</strong>, or <strong>Welch’s t-test</strong>.</p>
+</div>
+<div id="mann-whitney-u-test" class="section level4 unnumbered">
+<h4>Mann-Whitney U Test</h4>
+<p>The <strong>Mann-Whitney U test</strong> is a nonparametric alternative to the independent-samples t-test for cases in which the samples are non-normally distributed or are ordinal rather than continuous.</p>
+<p>If the two distributions have a <em>different</em> shape, the Mann-Whitney U test determines whether there are differences in the <strong>distributions</strong>. It does this by ranking all the values and comparing the mean ranks between the two groups. From this you can decide whether the dependent variable differs (lt, gt, or ne) between the groups. If the two distributions are the <em>same</em> shape, the Mann-Whitney U test determine whether there are differences in the <strong>medians</strong>. This is a more specific description of the difference.</p>
+<p>The test statistic is the minimum of <span class="math inline">\(U_1\)</span> and <span class="math inline">\(U_2\)</span> where <span class="math inline">\(U_1 = n_1 n_2 \frac{(n_1 (n_1 + 1))}{2} - R_1\)</span> and <span class="math inline">\(U_2 = n_1 n_2 \frac{(n_2 (n_2 + 1))}{2} - R_2\)</span> and <span class="math inline">\(R_1\)</span> and <span class="math inline">\(R_2\)</span> are the respective rank sums. <span class="math inline">\(U = 0\)</span> if there is complete separation between the groups, and <span class="math inline">\(U = n_1 n_2\)</span> if there is complete overlap, so you reject <span class="math inline">\(H_0\)</span> of equal populations for small values of <span class="math inline">\(U\)</span>.</p>
+</div>
 <div id="example-5" class="section level4 unnumbered">
 <h4>Example</h4>
 <p>A company shows an advertisement to <span class="math inline">\(n_M\)</span> = 20 males and <span class="math inline">\(n_F\)</span> = 20 females, then measures their engagement with a survey. Do the mean engagement scores differ between the groups?</p>
-<p><img src="statistics_files/figure-html/unnamed-chunk-3-1.png" width="624" /></p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="two-group-comparison-tests.html#cb1-1"></a>engage_gt &lt;-<span class="st"> </span>engage <span class="op">%&gt;%</span><span class="st"> </span></span>
-<span id="cb1-2"><a href="two-group-comparison-tests.html#cb1-2"></a><span class="st">  </span>gtsummary<span class="op">::</span><span class="kw">tbl_summary</span>(<span class="dt">by =</span> gender, </span>
-<span id="cb1-3"><a href="two-group-comparison-tests.html#cb1-3"></a>                         <span class="dt">statistic =</span> <span class="kw">list</span>(<span class="kw">all_continuous</span>() <span class="op">~</span><span class="st"> &quot;{mean} ({sd})&quot;</span>))</span>
-<span id="cb1-4"><a href="two-group-comparison-tests.html#cb1-4"></a>engage_gt</span></code></pre></div>
+<p><a href="https://statistics.laerd.com/">Laerd</a> has two data sets for this example. One meets the conditions for a t-test, and the other fails the normality test, forcing us to use Mann-Whitney.</p>
+<p><img src="statistics_files/figure-html/unnamed-chunk-3-1.png" width="720" /></p>
+<p>The t-test data set has the following summary statistics.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="two-group-comparison-tests.html#cb1-1"></a>(ind_num<span class="op">$</span>t_gt &lt;-<span class="st"> </span>ind_num<span class="op">$</span>t_dat <span class="op">%&gt;%</span><span class="st"> </span></span>
+<span id="cb1-2"><a href="two-group-comparison-tests.html#cb1-2"></a><span class="st">  </span>gtsummary<span class="op">::</span><span class="kw">tbl_summary</span>(<span class="dt">by =</span> <span class="kw">c</span>(gender), </span>
+<span id="cb1-3"><a href="two-group-comparison-tests.html#cb1-3"></a>                         <span class="dt">statistic =</span> <span class="kw">list</span>(<span class="kw">all_continuous</span>() <span class="op">~</span><span class="st"> &quot;{mean} ({sd})&quot;</span>)))</span></code></pre></div>
 <style>html {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Helvetica Neue', 'Fira Sans', 'Droid Sans', Arial, sans-serif;
 }
 
-#gquqjaazhq .gt_table {
+#lhsbssnuiy .gt_table {
   display: table;
   border-collapse: collapse;
   margin-left: auto;
@@ -279,7 +290,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
   border-left-color: #D3D3D3;
 }
 
-#gquqjaazhq .gt_heading {
+#lhsbssnuiy .gt_heading {
   background-color: #FFFFFF;
   text-align: center;
   border-bottom-color: #FFFFFF;
@@ -291,7 +302,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
   border-right-color: #D3D3D3;
 }
 
-#gquqjaazhq .gt_title {
+#lhsbssnuiy .gt_title {
   color: #333333;
   font-size: 125%;
   font-weight: initial;
@@ -301,7 +312,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
   border-bottom-width: 0;
 }
 
-#gquqjaazhq .gt_subtitle {
+#lhsbssnuiy .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
@@ -311,13 +322,13 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
   border-top-width: 0;
 }
 
-#gquqjaazhq .gt_bottom_border {
+#lhsbssnuiy .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-#gquqjaazhq .gt_col_headings {
+#lhsbssnuiy .gt_col_headings {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -332,7 +343,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
   border-right-color: #D3D3D3;
 }
 
-#gquqjaazhq .gt_col_heading {
+#lhsbssnuiy .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -352,7 +363,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
   overflow-x: hidden;
 }
 
-#gquqjaazhq .gt_column_spanner_outer {
+#lhsbssnuiy .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -364,15 +375,15 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
   padding-right: 4px;
 }
 
-#gquqjaazhq .gt_column_spanner_outer:first-child {
+#lhsbssnuiy .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#gquqjaazhq .gt_column_spanner_outer:last-child {
+#lhsbssnuiy .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#gquqjaazhq .gt_column_spanner {
+#lhsbssnuiy .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
@@ -384,7 +395,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
   width: 100%;
 }
 
-#gquqjaazhq .gt_group_heading {
+#lhsbssnuiy .gt_group_heading {
   padding: 8px;
   color: #333333;
   background-color: #FFFFFF;
@@ -406,7 +417,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
   vertical-align: middle;
 }
 
-#gquqjaazhq .gt_empty_group_heading {
+#lhsbssnuiy .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -421,15 +432,15 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
   vertical-align: middle;
 }
 
-#gquqjaazhq .gt_from_md > :first-child {
+#lhsbssnuiy .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#gquqjaazhq .gt_from_md > :last-child {
+#lhsbssnuiy .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#gquqjaazhq .gt_row {
+#lhsbssnuiy .gt_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -448,7 +459,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
   overflow-x: hidden;
 }
 
-#gquqjaazhq .gt_stub {
+#lhsbssnuiy .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -460,7 +471,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
   padding-left: 12px;
 }
 
-#gquqjaazhq .gt_summary_row {
+#lhsbssnuiy .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -470,7 +481,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
   padding-right: 5px;
 }
 
-#gquqjaazhq .gt_first_summary_row {
+#lhsbssnuiy .gt_first_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -480,7 +491,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
   border-top-color: #D3D3D3;
 }
 
-#gquqjaazhq .gt_grand_summary_row {
+#lhsbssnuiy .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -490,7 +501,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
   padding-right: 5px;
 }
 
-#gquqjaazhq .gt_first_grand_summary_row {
+#lhsbssnuiy .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -500,11 +511,11 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
   border-top-color: #D3D3D3;
 }
 
-#gquqjaazhq .gt_striped {
+#lhsbssnuiy .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-#gquqjaazhq .gt_table_body {
+#lhsbssnuiy .gt_table_body {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -513,7 +524,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
   border-bottom-color: #D3D3D3;
 }
 
-#gquqjaazhq .gt_footnotes {
+#lhsbssnuiy .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -527,13 +538,13 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
   border-right-color: #D3D3D3;
 }
 
-#gquqjaazhq .gt_footnote {
+#lhsbssnuiy .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding: 4px;
 }
 
-#gquqjaazhq .gt_sourcenotes {
+#lhsbssnuiy .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -547,46 +558,46 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
   border-right-color: #D3D3D3;
 }
 
-#gquqjaazhq .gt_sourcenote {
+#lhsbssnuiy .gt_sourcenote {
   font-size: 90%;
   padding: 4px;
 }
 
-#gquqjaazhq .gt_left {
+#lhsbssnuiy .gt_left {
   text-align: left;
 }
 
-#gquqjaazhq .gt_center {
+#lhsbssnuiy .gt_center {
   text-align: center;
 }
 
-#gquqjaazhq .gt_right {
+#lhsbssnuiy .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#gquqjaazhq .gt_font_normal {
+#lhsbssnuiy .gt_font_normal {
   font-weight: normal;
 }
 
-#gquqjaazhq .gt_font_bold {
+#lhsbssnuiy .gt_font_bold {
   font-weight: bold;
 }
 
-#gquqjaazhq .gt_font_italic {
+#lhsbssnuiy .gt_font_italic {
   font-style: italic;
 }
 
-#gquqjaazhq .gt_super {
+#lhsbssnuiy .gt_super {
   font-size: 65%;
 }
 
-#gquqjaazhq .gt_footnote_marks {
+#lhsbssnuiy .gt_footnote_marks {
   font-style: italic;
   font-size: 65%;
 }
 </style>
-<div id="gquqjaazhq" style="overflow-x:auto;overflow-y:auto;width:auto;height:auto;"><table class="gt_table">
+<div id="lhsbssnuiy" style="overflow-x:auto;overflow-y:auto;width:auto;height:auto;"><table class="gt_table">
   
   <thead class="gt_col_headings">
     <tr>
@@ -618,26 +629,412 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
     </tr>
   </tfoot>
 </table></div>
-<p>You can report the following initially.</p>
 <blockquote>
 <p>There were 20 male and 20 female participants. Data are mean <span class="math inline">\(\pm\)</span> standard deviation, unless otherwise stated. The advertisement was more engaging to male viewers, 5.56 (0.29), than female viewers, 5.30 (0.39).</p>
+</blockquote>
+<p>The Mann-Whitney data set has the following summary statistics.</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="two-group-comparison-tests.html#cb2-1"></a>(ind_num<span class="op">$</span>mw_gt &lt;-<span class="st"> </span>ind_num<span class="op">$</span>mw_dat <span class="op">%&gt;%</span><span class="st"> </span></span>
+<span id="cb2-2"><a href="two-group-comparison-tests.html#cb2-2"></a><span class="st">  </span>gtsummary<span class="op">::</span><span class="kw">tbl_summary</span>(<span class="dt">by =</span> <span class="kw">c</span>(gender), </span>
+<span id="cb2-3"><a href="two-group-comparison-tests.html#cb2-3"></a>                         <span class="dt">statistic =</span> <span class="kw">list</span>(<span class="kw">all_continuous</span>() <span class="op">~</span><span class="st"> &quot;{mean} ({sd})&quot;</span>)))</span></code></pre></div>
+<style>html {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Helvetica Neue', 'Fira Sans', 'Droid Sans', Arial, sans-serif;
+}
+
+#mrciqflany .gt_table {
+  display: table;
+  border-collapse: collapse;
+  margin-left: auto;
+  margin-right: auto;
+  color: #333333;
+  font-size: 16px;
+  font-weight: normal;
+  font-style: normal;
+  background-color: #FFFFFF;
+  width: auto;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #A8A8A8;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #A8A8A8;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+}
+
+#mrciqflany .gt_heading {
+  background-color: #FFFFFF;
+  text-align: center;
+  border-bottom-color: #FFFFFF;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#mrciqflany .gt_title {
+  color: #333333;
+  font-size: 125%;
+  font-weight: initial;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  border-bottom-color: #FFFFFF;
+  border-bottom-width: 0;
+}
+
+#mrciqflany .gt_subtitle {
+  color: #333333;
+  font-size: 85%;
+  font-weight: initial;
+  padding-top: 0;
+  padding-bottom: 4px;
+  border-top-color: #FFFFFF;
+  border-top-width: 0;
+}
+
+#mrciqflany .gt_bottom_border {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#mrciqflany .gt_col_headings {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#mrciqflany .gt_col_heading {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 6px;
+  padding-left: 5px;
+  padding-right: 5px;
+  overflow-x: hidden;
+}
+
+#mrciqflany .gt_column_spanner_outer {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  padding-top: 0;
+  padding-bottom: 0;
+  padding-left: 4px;
+  padding-right: 4px;
+}
+
+#mrciqflany .gt_column_spanner_outer:first-child {
+  padding-left: 0;
+}
+
+#mrciqflany .gt_column_spanner_outer:last-child {
+  padding-right: 0;
+}
+
+#mrciqflany .gt_column_spanner {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 6px;
+  overflow-x: hidden;
+  display: inline-block;
+  width: 100%;
+}
+
+#mrciqflany .gt_group_heading {
+  padding: 8px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+}
+
+#mrciqflany .gt_empty_group_heading {
+  padding: 0.5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: middle;
+}
+
+#mrciqflany .gt_from_md > :first-child {
+  margin-top: 0;
+}
+
+#mrciqflany .gt_from_md > :last-child {
+  margin-bottom: 0;
+}
+
+#mrciqflany .gt_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  margin: 10px;
+  border-top-style: solid;
+  border-top-width: 1px;
+  border-top-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  overflow-x: hidden;
+}
+
+#mrciqflany .gt_stub {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 12px;
+}
+
+#mrciqflany .gt_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#mrciqflany .gt_first_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+}
+
+#mrciqflany .gt_grand_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#mrciqflany .gt_first_grand_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-style: double;
+  border-top-width: 6px;
+  border-top-color: #D3D3D3;
+}
+
+#mrciqflany .gt_striped {
+  background-color: rgba(128, 128, 128, 0.05);
+}
+
+#mrciqflany .gt_table_body {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#mrciqflany .gt_footnotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#mrciqflany .gt_footnote {
+  margin: 0px;
+  font-size: 90%;
+  padding: 4px;
+}
+
+#mrciqflany .gt_sourcenotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#mrciqflany .gt_sourcenote {
+  font-size: 90%;
+  padding: 4px;
+}
+
+#mrciqflany .gt_left {
+  text-align: left;
+}
+
+#mrciqflany .gt_center {
+  text-align: center;
+}
+
+#mrciqflany .gt_right {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+#mrciqflany .gt_font_normal {
+  font-weight: normal;
+}
+
+#mrciqflany .gt_font_bold {
+  font-weight: bold;
+}
+
+#mrciqflany .gt_font_italic {
+  font-style: italic;
+}
+
+#mrciqflany .gt_super {
+  font-size: 65%;
+}
+
+#mrciqflany .gt_footnote_marks {
+  font-style: italic;
+  font-size: 65%;
+}
+</style>
+<div id="mrciqflany" style="overflow-x:auto;overflow-y:auto;width:auto;height:auto;"><table class="gt_table">
+  
+  <thead class="gt_col_headings">
+    <tr>
+      <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1"><strong>Characteristic</strong></th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1"><strong>Male</strong>, N = 20<sup class="gt_footnote_marks">1</sup></th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1"><strong>Female</strong>, N = 20<sup class="gt_footnote_marks">1</sup></th>
+    </tr>
+  </thead>
+  <tbody class="gt_table_body">
+    <tr>
+      <td class="gt_row gt_left">engagement</td>
+      <td class="gt_row gt_center">5.56 (0.35)</td>
+      <td class="gt_row gt_center">5.43 (0.53)</td>
+    </tr>
+  </tbody>
+  
+  <tfoot>
+    <tr class="gt_footnotes">
+      <td colspan="3">
+        <p class="gt_footnote">
+          <sup class="gt_footnote_marks">
+            <em>1</em>
+          </sup>
+           
+          Statistics presented: Mean (SD)
+          <br />
+        </p>
+      </td>
+    </tr>
+  </tfoot>
+</table></div>
+<blockquote>
+<p>There were 20 male and 20 female participants. Data are mean <span class="math inline">\(\pm\)</span> standard deviation, unless otherwise stated. The advertisement was more engaging to male viewers, 5.56 (0.35), than female viewers, 5.43 (0.53).</p>
 </blockquote>
 </div>
 <div id="conditions-5" class="section level4 unnumbered">
 <h4>Conditions</h4>
-<p>The independent samples <em>t</em> test applies when the variable is continuous, partitioned into two independent samples, and the observations are independent. Additionally, there are three conditions related to the data distribution. If any condition fails, try the suggested work-around or use the non-parametric Mann-Whitney U Test instead.</p>
+<p>The independent samples <em>t</em> test and Mann-Whitney U test apply when 1) the response variable is continuous, 2) the independent variable is binomial, and 3) the observations are independent. The decision between the <em>t</em> test and Mann-Whitney stems from two additional conditions related to the data distribution - if both conditions hold, use the <em>t</em> test; otherwise use Mann-Whitney.</p>
 <ol style="list-style-type: decimal">
-<li><strong>Outliers</strong>. There should be no outliers in either group because they exert a large influence on the mean and standard deviation. Test with a box plot. If there are outliers, you might be able to drop them or transform the data.</li>
-<li><strong>Normality</strong>. Values should be <em>nearly</em> normally distributed (“nearly” because the <em>t</em>-test is robust to the normality assumption). This condition is especially important with small sample sizes. Test with Q-Q plots or the Shapiro-Wilk test for normality. If the data is very non-normal, you might be able to transform the data.</li>
-<li><strong>Homogeneous Variances</strong>. If variances are homogenous, you can use the pooled-variances method; otherwise you use the separate variance method. Test with Levene’s test of equality of variances.</li>
+<li><strong>Outliers</strong>. There should be no outliers in either group. Outliers exert a large influence on the mean and standard deviation. Test with a box plot. If there are outliers, you might be able to drop them or transform the data.</li>
+<li><strong>Normality</strong>. Values should be <em>nearly</em> normally distributed. The <em>t</em>-test is robust to normality, but this condition is important with small sample sizes. Test with Q-Q plots or the Shapiro-Wilk test for normality. If the data is very non-normal, you might be able to transform the data.</li>
+</ol>
+<p>If the data passes the two conditions, use the <em>t</em> test, but now you need to check a third condition related to the variances to determine which flavor of the <em>t</em> test to use.</p>
+<ol start="3" style="list-style-type: decimal">
+<li><strong>Homogeneous Variances</strong>. Use <em>pooled-variances</em> if the variances are homogeneous; otherwise use the <em>separate variances</em> method. Test with Levene’s test of equality of variances.</li>
+</ol>
+<p>If the data does not pass the two conditions, use Mann-Whitney, but now you need to check a third condition here as well. The condition does not affect how to perform the test, but rather how to interpret the results.</p>
+<ol start="3" style="list-style-type: decimal">
+<li><strong>Distribution shape</strong>. If the distributions have the same shape, interpret the Mann-Whitney result as a comparison of the <em>medians</em>; otherwise interpret the result as a comparison of the <em>mean ranks</em>.</li>
 </ol>
 <div id="outliers-1" class="section level5 unnumbered">
 <h5>Outliers</h5>
-<p>Assess outliers with a box plot. Box plot whiskers extend up to 1.5*IQR from the upper and lower hinges and outliers (beyond the whiskers) are are plotted individually. There are no outliers is this plot. Report this as</p>
+<p>Assess outliers with a box plot. Box plot whiskers extend up to 1.5*IQR from the upper and lower hinges and outliers (beyond the whiskers) are are plotted individually.</p>
+<p><img src="statistics_files/figure-html/unnamed-chunk-6-1.png" width="720" /></p>
+<p>For the <em>t</em> test data set,</p>
 <blockquote>
 <p>There were no outliers in the data, as assessed by inspection of a boxplot.</p>
 </blockquote>
-<p><img src="statistics_files/figure-html/unnamed-chunk-5-1.png" width="672" /></p>
+<p>and for the Mann-Whitney data set,</p>
+<blockquote>
+<p>There was one outlier in the data, as assessed by inspection of a boxplot.</p>
+</blockquote>
 <p>If the outliers are data entry errors or measurement errors, fix or discard them. If the outliers are genuine, you have a couple options before reverting to the Mann-Whitney U test.</p>
 <ul>
 <li>Leave it in if it doesn’t affect the conclusion (compared to taking it out).</li>
@@ -646,21 +1043,24 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 </div>
 <div id="normality-1" class="section level5 unnumbered">
 <h5>Normality</h5>
-<p>Assume the population is normally distributed if <em>n</em> <span class="math inline">\(\ge\)</span> 30. Otherwise, asses a Q-Q plot, skewness and kurtosis values, or a histogram. If you still don’t feel confident about normality, run a Mann-Whitney U Test.</p>
-<p>The data set has <span class="math inline">\(n_M\)</span> = 20 male and <span class="math inline">\(n_F\)</span> = 20 female observations, so you need to test normality. The QQ plot indicates normality.</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="two-group-comparison-tests.html#cb2-1"></a>engage <span class="op">%&gt;%</span></span>
-<span id="cb2-2"><a href="two-group-comparison-tests.html#cb2-2"></a><span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(<span class="dt">sample =</span> engagement, <span class="dt">group =</span> gender, <span class="dt">color =</span> <span class="kw">fct_rev</span>(gender))) <span class="op">+</span></span>
-<span id="cb2-3"><a href="two-group-comparison-tests.html#cb2-3"></a><span class="st">  </span><span class="kw">stat_qq</span>() <span class="op">+</span></span>
-<span id="cb2-4"><a href="two-group-comparison-tests.html#cb2-4"></a><span class="st">  </span><span class="kw">stat_qq_line</span>(<span class="dt">col =</span> <span class="st">&quot;goldenrod&quot;</span>) <span class="op">+</span></span>
-<span id="cb2-5"><a href="two-group-comparison-tests.html#cb2-5"></a><span class="st">  </span><span class="kw">theme_minimal</span>() <span class="op">+</span><span class="st"> </span><span class="kw">theme</span>(<span class="dt">legend.position =</span> <span class="st">&quot;top&quot;</span>) <span class="op">+</span></span>
-<span id="cb2-6"><a href="two-group-comparison-tests.html#cb2-6"></a><span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;Normal Q-Q Plot&quot;</span>, <span class="dt">color =</span> <span class="ot">NULL</span>)</span></code></pre></div>
-<p><img src="statistics_files/figure-html/unnamed-chunk-6-1.png" width="672" /></p>
-<p>Both Shapiro-Wilk normality tests (males and females) fail to reject the normality assumption. Report this as</p>
-<blockquote>
-<p>Engagement scores for each level of gender were normally distributed, as assessed by Shapiro-Wilk’s test (p &gt; .05).</p>
-</blockquote>
-<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="two-group-comparison-tests.html#cb3-1"></a><span class="kw">split</span>(engage, engage<span class="op">$</span>gender) <span class="op">%&gt;%</span><span class="st"> </span></span>
-<span id="cb3-2"><a href="two-group-comparison-tests.html#cb3-2"></a><span class="st">  </span><span class="kw">map</span>(<span class="op">~</span><span class="kw">shapiro.test</span>(.<span class="op">$</span>engagement))</span></code></pre></div>
+<p>Assume the population is normally distributed if <em>n</em> <span class="math inline">\(\ge\)</span> 30. Otherwise, assess a Q-Q plot, skewness and kurtosis values, or a histogram. If you still don’t feel confident about normality, run a Shapiro-Wilk test.</p>
+<p>There are only <span class="math inline">\(n_M\)</span> = 20 male and <span class="math inline">\(n_F\)</span> = 20 female observations, so you need to test normality. The QQ plot indicates normality in the t-test data set, but not in the Mann-Whitney data set.</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="two-group-comparison-tests.html#cb3-1"></a><span class="kw">bind_rows</span>(</span>
+<span id="cb3-2"><a href="two-group-comparison-tests.html#cb3-2"></a>  <span class="st">`</span><span class="dt">t-test</span><span class="st">`</span> =<span class="st"> </span>ind_num<span class="op">$</span>t_dat,</span>
+<span id="cb3-3"><a href="two-group-comparison-tests.html#cb3-3"></a>  <span class="st">`</span><span class="dt">Mann-Whitney</span><span class="st">`</span> =<span class="st"> </span>ind_num<span class="op">$</span>mw_dat,</span>
+<span id="cb3-4"><a href="two-group-comparison-tests.html#cb3-4"></a>  <span class="dt">.id =</span> <span class="st">&quot;set&quot;</span></span>
+<span id="cb3-5"><a href="two-group-comparison-tests.html#cb3-5"></a>) <span class="op">%&gt;%</span></span>
+<span id="cb3-6"><a href="two-group-comparison-tests.html#cb3-6"></a><span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(<span class="dt">sample =</span> engagement, <span class="dt">group =</span> gender, <span class="dt">color =</span> <span class="kw">fct_rev</span>(gender))) <span class="op">+</span></span>
+<span id="cb3-7"><a href="two-group-comparison-tests.html#cb3-7"></a><span class="st">  </span><span class="kw">stat_qq</span>() <span class="op">+</span></span>
+<span id="cb3-8"><a href="two-group-comparison-tests.html#cb3-8"></a><span class="st">  </span><span class="kw">stat_qq_line</span>(<span class="dt">col =</span> <span class="st">&quot;goldenrod&quot;</span>) <span class="op">+</span></span>
+<span id="cb3-9"><a href="two-group-comparison-tests.html#cb3-9"></a><span class="st">  </span><span class="kw">theme_minimal</span>() <span class="op">+</span><span class="st"> </span><span class="kw">theme</span>(<span class="dt">legend.position =</span> <span class="st">&quot;top&quot;</span>) <span class="op">+</span></span>
+<span id="cb3-10"><a href="two-group-comparison-tests.html#cb3-10"></a><span class="st">  </span><span class="kw">facet_wrap</span>(<span class="op">~</span><span class="kw">fct_rev</span>(set)) <span class="op">+</span></span>
+<span id="cb3-11"><a href="two-group-comparison-tests.html#cb3-11"></a><span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;Normal Q-Q Plot&quot;</span>, <span class="dt">color =</span> <span class="ot">NULL</span>)</span></code></pre></div>
+<p><img src="statistics_files/figure-html/unnamed-chunk-7-1.png" width="720" /></p>
+<p>Run Shapiro-Wilk separately for the males and for the females. Since we are looking at two data sets in tandem, there are four tests below. For the t-test data set,</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="two-group-comparison-tests.html#cb4-1"></a>(ind_num<span class="op">$</span>t_shapiro &lt;-<span class="st"> </span><span class="kw">split</span>(ind_num<span class="op">$</span>t_dat, ind_num<span class="op">$</span>t_dat<span class="op">$</span>gender) <span class="op">%&gt;%</span><span class="st"> </span></span>
+<span id="cb4-2"><a href="two-group-comparison-tests.html#cb4-2"></a><span class="st">  </span><span class="kw">map</span>(<span class="op">~</span><span class="kw">shapiro.test</span>(.<span class="op">$</span>engagement))</span>
+<span id="cb4-3"><a href="two-group-comparison-tests.html#cb4-3"></a>)</span></code></pre></div>
 <pre><code>## $Male
 ## 
 ##  Shapiro-Wilk normality test
@@ -675,6 +1075,30 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 ## 
 ## data:  .$engagement
 ## W = 0.96078, p-value = 0.5595</code></pre>
+<blockquote>
+<p>Engagement scores for each level of gender were normally distributed, as assessed by Shapiro-Wilk’s test (<em>p</em> &gt; .05).</p>
+</blockquote>
+<p>For the Mann-Whitney data set,</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="two-group-comparison-tests.html#cb6-1"></a>(ind_num<span class="op">$</span>mw_shapiro &lt;-<span class="st"> </span><span class="kw">split</span>(ind_num<span class="op">$</span>mw_dat, ind_num<span class="op">$</span>mw_dat<span class="op">$</span>gender) <span class="op">%&gt;%</span><span class="st"> </span></span>
+<span id="cb6-2"><a href="two-group-comparison-tests.html#cb6-2"></a><span class="st">  </span><span class="kw">map</span>(<span class="op">~</span><span class="kw">shapiro.test</span>(.<span class="op">$</span>engagement))</span>
+<span id="cb6-3"><a href="two-group-comparison-tests.html#cb6-3"></a>)</span></code></pre></div>
+<pre><code>## $Male
+## 
+##  Shapiro-Wilk normality test
+## 
+## data:  .$engagement
+## W = 0.98807, p-value = 0.9946
+## 
+## 
+## $Female
+## 
+##  Shapiro-Wilk normality test
+## 
+## data:  .$engagement
+## W = 0.8354, p-value = 0.003064</code></pre>
+<blockquote>
+<p>Engagement scores for each level of gender were not normally distributed for the Female sample, as assessed by Shapiro-Wilk’s test (<em>p</em> = 0.003).</p>
+</blockquote>
 <p>If the data is not normally distributed, you still have a couple options before reverting to the Mann-Whitney U test.</p>
 <ul>
 <li>Transform the dependent variable.</li>
@@ -683,17 +1107,17 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 </div>
 <div id="homogenous-variances" class="section level5 unnumbered">
 <h5>Homogenous Variances</h5>
-<p>Use the pooled-variances method if variances are homogeneous; otherwise use the separate variance method. A rule of thumb is that homogeneous variances have a ratio of standard deviations between 0.5 and 2.0:</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="two-group-comparison-tests.html#cb5-1"></a><span class="kw">sd</span>(engage <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">filter</span>(gender <span class="op">==</span><span class="st"> &quot;Male&quot;</span>) <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">pull</span>(engagement)) <span class="op">/</span></span>
-<span id="cb5-2"><a href="two-group-comparison-tests.html#cb5-2"></a><span class="st">  </span><span class="kw">sd</span>(engage <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">filter</span>(gender <span class="op">==</span><span class="st"> &quot;Female&quot;</span>) <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">pull</span>(engagement))</span></code></pre></div>
+<p>If the data passed the outliers and normality tests, you will use the t-test, so now you need to test the variances to see which version (<em>pooled-variances</em> method if variances are homogeneous; <em>separate variances</em> method otherwise). A rule of thumb is that homogeneous variances have a ratio of standard deviations between 0.5 and 2.0:</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="two-group-comparison-tests.html#cb8-1"></a><span class="kw">sd</span>(ind_num<span class="op">$</span>t_dat <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">filter</span>(gender <span class="op">==</span><span class="st"> &quot;Male&quot;</span>) <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">pull</span>(engagement)) <span class="op">/</span></span>
+<span id="cb8-2"><a href="two-group-comparison-tests.html#cb8-2"></a><span class="st">  </span><span class="kw">sd</span>(ind_num<span class="op">$</span>t_dat <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">filter</span>(gender <span class="op">==</span><span class="st"> &quot;Female&quot;</span>) <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">pull</span>(engagement))</span></code></pre></div>
 <pre><code>## [1] 0.7419967</code></pre>
 <p>You can also use the <em>F</em> test to compare the ratio of the sample variances <span class="math inline">\(\hat{r} = s_X^2 / s_Y^2\)</span> to an hypothesized ratio of population variances <span class="math inline">\(r_0 = \sigma_X^2 / \sigma_Y^2 = 1.\)</span></p>
-<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="two-group-comparison-tests.html#cb7-1"></a><span class="kw">var.test</span>(engage <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">filter</span>(gender <span class="op">==</span><span class="st"> &quot;Female&quot;</span>) <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">pull</span>(engagement), </span>
-<span id="cb7-2"><a href="two-group-comparison-tests.html#cb7-2"></a>         engage <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">filter</span>(gender <span class="op">==</span><span class="st"> &quot;Male&quot;</span>) <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">pull</span>(engagement))</span></code></pre></div>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="two-group-comparison-tests.html#cb10-1"></a><span class="kw">var.test</span>(ind_num<span class="op">$</span>t_dat <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">filter</span>(gender <span class="op">==</span><span class="st"> &quot;Female&quot;</span>) <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">pull</span>(engagement), </span>
+<span id="cb10-2"><a href="two-group-comparison-tests.html#cb10-2"></a>         ind_num<span class="op">$</span>t_dat <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">filter</span>(gender <span class="op">==</span><span class="st"> &quot;Male&quot;</span>) <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">pull</span>(engagement))</span></code></pre></div>
 <pre><code>## 
 ##  F test to compare two variances
 ## 
-## data:  engage %&gt;% filter(gender == &quot;Female&quot;) %&gt;% pull(engagement) and engage %&gt;% filter(gender == &quot;Male&quot;) %&gt;% pull(engagement)
+## data:  ind_num$t_dat %&gt;% filter(gender == &quot;Female&quot;) %&gt;% pull(engagement) and ind_num$t_dat %&gt;% filter(gender == &quot;Male&quot;) %&gt;% pull(engagement)
 ## F = 1.8163, num df = 19, denom df = 19, p-value = 0.2025
 ## alternative hypothesis: true ratio of variances is not equal to 1
 ## 95 percent confidence interval:
@@ -702,29 +1126,37 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 ## ratio of variances 
 ##           1.816336</code></pre>
 <p>Bartlett’s test is a second option.</p>
-<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="two-group-comparison-tests.html#cb9-1"></a><span class="kw">bartlett.test</span>(engage<span class="op">$</span>engagement, engage<span class="op">$</span>gender)</span></code></pre></div>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="two-group-comparison-tests.html#cb12-1"></a><span class="kw">bartlett.test</span>(ind_num<span class="op">$</span>t_dat<span class="op">$</span>engagement, ind_num<span class="op">$</span>t_dat<span class="op">$</span>gender)</span></code></pre></div>
 <pre><code>## 
 ##  Bartlett test of homogeneity of variances
 ## 
-## data:  engage$engagement and engage$gender
+## data:  ind_num$t_dat$engagement and ind_num$t_dat$gender
 ## Bartlett&#39;s K-squared = 1.6246, df = 1, p-value = 0.2024</code></pre>
 <p>Levene’s test is a third option. Levene’s is less sensitive to departures from normality than Bartlett.</p>
-<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="two-group-comparison-tests.html#cb11-1"></a>engage_report<span class="op">$</span>levene &lt;-<span class="st"> </span><span class="kw">with</span>(engage, car<span class="op">::</span><span class="kw">leveneTest</span>(engagement, gender, <span class="dt">center =</span> <span class="st">&quot;mean&quot;</span>))</span>
-<span id="cb11-2"><a href="two-group-comparison-tests.html#cb11-2"></a>engage_report<span class="op">$</span>levene</span></code></pre></div>
+<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="two-group-comparison-tests.html#cb14-1"></a>(ind_num<span class="op">$</span>levene &lt;-<span class="st"> </span><span class="kw">with</span>(ind_num<span class="op">$</span>t_dat, </span>
+<span id="cb14-2"><a href="two-group-comparison-tests.html#cb14-2"></a>                        car<span class="op">::</span><span class="kw">leveneTest</span>(engagement, gender, <span class="dt">center =</span> <span class="st">&quot;mean&quot;</span>))</span>
+<span id="cb14-3"><a href="two-group-comparison-tests.html#cb14-3"></a>)</span></code></pre></div>
 <pre><code>## Levene&#39;s Test for Homogeneity of Variance (center = &quot;mean&quot;)
 ##       Df F value Pr(&gt;F)
 ## group  1   1.922 0.1737
 ##       38</code></pre>
-<p>Report these results as</p>
 <blockquote>
 <p>There was homogeneity of variances for engagement scores for males and females, as assessed by Levene’s test for equality of variances (<em>p</em> = 0.174).</p>
+</blockquote>
+</div>
+<div id="similar-distributions" class="section level5 unnumbered">
+<h5>Similar Distributions</h5>
+<p>If the data passed the outliers and normality tests, you use the Mann-Whitney test, so now you need to test the distributions to determine how you can interpret its results. If the distributions are similarly shaped, you can interpret the Mann-Whitney U test as inferences about differences in medians between the two groups. If the distributions look dissimilar, interpret the test as inferences about the distributions, lower/higher scores and/or mean ranks.</p>
+<p><img src="statistics_files/figure-html/unnamed-chunk-14-1.png" width="720" /></p>
+<blockquote>
+<p>Distributions of the engagement scores for males and females were similar, as assessed by visual inspection.</p>
 </blockquote>
 </div>
 </div>
 <div id="results-5" class="section level4 unnumbered">
 <h4>Results</h4>
-<p>Conduct the <em>t</em>-test. To get a 95% CI around the <em>difference</em> (instead of around the estimate), run the test using the difference, <span class="math inline">\(\mu_0 - \bar{x}\)</span>, and leave <code>mu</code> at its default of 0.</p>
-<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="two-group-comparison-tests.html#cb13-1"></a>(engage_95ci &lt;-<span class="st"> </span><span class="kw">t.test</span>(engagement <span class="op">~</span><span class="st"> </span>gender, <span class="dt">data =</span> engage, <span class="dt">var.equal =</span> <span class="ot">TRUE</span>))</span></code></pre></div>
+<p>Conduct the <em>t</em>-test or the Mann-Whitney U test.</p>
+<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="two-group-comparison-tests.html#cb16-1"></a>(ind_num<span class="op">$</span>t_test &lt;-<span class="st"> </span><span class="kw">t.test</span>(engagement <span class="op">~</span><span class="st"> </span>gender, <span class="dt">data =</span> ind_num<span class="op">$</span>t_dat, <span class="dt">var.equal =</span> <span class="ot">TRUE</span>))</span></code></pre></div>
 <pre><code>## 
 ##  Two Sample t-test
 ## 
@@ -736,390 +1168,60 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 ## sample estimates:
 ##   mean in group Male mean in group Female 
 ##             5.558875             5.299875</code></pre>
-<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="two-group-comparison-tests.html#cb15-1"></a>engage_gt</span></code></pre></div>
-<style>html {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Helvetica Neue', 'Fira Sans', 'Droid Sans', Arial, sans-serif;
-}
-
-#mgkimlbiaj .gt_table {
-  display: table;
-  border-collapse: collapse;
-  margin-left: auto;
-  margin-right: auto;
-  color: #333333;
-  font-size: 16px;
-  font-weight: normal;
-  font-style: normal;
-  background-color: #FFFFFF;
-  width: auto;
-  border-top-style: solid;
-  border-top-width: 2px;
-  border-top-color: #A8A8A8;
-  border-right-style: none;
-  border-right-width: 2px;
-  border-right-color: #D3D3D3;
-  border-bottom-style: solid;
-  border-bottom-width: 2px;
-  border-bottom-color: #A8A8A8;
-  border-left-style: none;
-  border-left-width: 2px;
-  border-left-color: #D3D3D3;
-}
-
-#mgkimlbiaj .gt_heading {
-  background-color: #FFFFFF;
-  text-align: center;
-  border-bottom-color: #FFFFFF;
-  border-left-style: none;
-  border-left-width: 1px;
-  border-left-color: #D3D3D3;
-  border-right-style: none;
-  border-right-width: 1px;
-  border-right-color: #D3D3D3;
-}
-
-#mgkimlbiaj .gt_title {
-  color: #333333;
-  font-size: 125%;
-  font-weight: initial;
-  padding-top: 4px;
-  padding-bottom: 4px;
-  border-bottom-color: #FFFFFF;
-  border-bottom-width: 0;
-}
-
-#mgkimlbiaj .gt_subtitle {
-  color: #333333;
-  font-size: 85%;
-  font-weight: initial;
-  padding-top: 0;
-  padding-bottom: 4px;
-  border-top-color: #FFFFFF;
-  border-top-width: 0;
-}
-
-#mgkimlbiaj .gt_bottom_border {
-  border-bottom-style: solid;
-  border-bottom-width: 2px;
-  border-bottom-color: #D3D3D3;
-}
-
-#mgkimlbiaj .gt_col_headings {
-  border-top-style: solid;
-  border-top-width: 2px;
-  border-top-color: #D3D3D3;
-  border-bottom-style: solid;
-  border-bottom-width: 2px;
-  border-bottom-color: #D3D3D3;
-  border-left-style: none;
-  border-left-width: 1px;
-  border-left-color: #D3D3D3;
-  border-right-style: none;
-  border-right-width: 1px;
-  border-right-color: #D3D3D3;
-}
-
-#mgkimlbiaj .gt_col_heading {
-  color: #333333;
-  background-color: #FFFFFF;
-  font-size: 100%;
-  font-weight: normal;
-  text-transform: inherit;
-  border-left-style: none;
-  border-left-width: 1px;
-  border-left-color: #D3D3D3;
-  border-right-style: none;
-  border-right-width: 1px;
-  border-right-color: #D3D3D3;
-  vertical-align: bottom;
-  padding-top: 5px;
-  padding-bottom: 6px;
-  padding-left: 5px;
-  padding-right: 5px;
-  overflow-x: hidden;
-}
-
-#mgkimlbiaj .gt_column_spanner_outer {
-  color: #333333;
-  background-color: #FFFFFF;
-  font-size: 100%;
-  font-weight: normal;
-  text-transform: inherit;
-  padding-top: 0;
-  padding-bottom: 0;
-  padding-left: 4px;
-  padding-right: 4px;
-}
-
-#mgkimlbiaj .gt_column_spanner_outer:first-child {
-  padding-left: 0;
-}
-
-#mgkimlbiaj .gt_column_spanner_outer:last-child {
-  padding-right: 0;
-}
-
-#mgkimlbiaj .gt_column_spanner {
-  border-bottom-style: solid;
-  border-bottom-width: 2px;
-  border-bottom-color: #D3D3D3;
-  vertical-align: bottom;
-  padding-top: 5px;
-  padding-bottom: 6px;
-  overflow-x: hidden;
-  display: inline-block;
-  width: 100%;
-}
-
-#mgkimlbiaj .gt_group_heading {
-  padding: 8px;
-  color: #333333;
-  background-color: #FFFFFF;
-  font-size: 100%;
-  font-weight: initial;
-  text-transform: inherit;
-  border-top-style: solid;
-  border-top-width: 2px;
-  border-top-color: #D3D3D3;
-  border-bottom-style: solid;
-  border-bottom-width: 2px;
-  border-bottom-color: #D3D3D3;
-  border-left-style: none;
-  border-left-width: 1px;
-  border-left-color: #D3D3D3;
-  border-right-style: none;
-  border-right-width: 1px;
-  border-right-color: #D3D3D3;
-  vertical-align: middle;
-}
-
-#mgkimlbiaj .gt_empty_group_heading {
-  padding: 0.5px;
-  color: #333333;
-  background-color: #FFFFFF;
-  font-size: 100%;
-  font-weight: initial;
-  border-top-style: solid;
-  border-top-width: 2px;
-  border-top-color: #D3D3D3;
-  border-bottom-style: solid;
-  border-bottom-width: 2px;
-  border-bottom-color: #D3D3D3;
-  vertical-align: middle;
-}
-
-#mgkimlbiaj .gt_from_md > :first-child {
-  margin-top: 0;
-}
-
-#mgkimlbiaj .gt_from_md > :last-child {
-  margin-bottom: 0;
-}
-
-#mgkimlbiaj .gt_row {
-  padding-top: 8px;
-  padding-bottom: 8px;
-  padding-left: 5px;
-  padding-right: 5px;
-  margin: 10px;
-  border-top-style: solid;
-  border-top-width: 1px;
-  border-top-color: #D3D3D3;
-  border-left-style: none;
-  border-left-width: 1px;
-  border-left-color: #D3D3D3;
-  border-right-style: none;
-  border-right-width: 1px;
-  border-right-color: #D3D3D3;
-  vertical-align: middle;
-  overflow-x: hidden;
-}
-
-#mgkimlbiaj .gt_stub {
-  color: #333333;
-  background-color: #FFFFFF;
-  font-size: 100%;
-  font-weight: initial;
-  text-transform: inherit;
-  border-right-style: solid;
-  border-right-width: 2px;
-  border-right-color: #D3D3D3;
-  padding-left: 12px;
-}
-
-#mgkimlbiaj .gt_summary_row {
-  color: #333333;
-  background-color: #FFFFFF;
-  text-transform: inherit;
-  padding-top: 8px;
-  padding-bottom: 8px;
-  padding-left: 5px;
-  padding-right: 5px;
-}
-
-#mgkimlbiaj .gt_first_summary_row {
-  padding-top: 8px;
-  padding-bottom: 8px;
-  padding-left: 5px;
-  padding-right: 5px;
-  border-top-style: solid;
-  border-top-width: 2px;
-  border-top-color: #D3D3D3;
-}
-
-#mgkimlbiaj .gt_grand_summary_row {
-  color: #333333;
-  background-color: #FFFFFF;
-  text-transform: inherit;
-  padding-top: 8px;
-  padding-bottom: 8px;
-  padding-left: 5px;
-  padding-right: 5px;
-}
-
-#mgkimlbiaj .gt_first_grand_summary_row {
-  padding-top: 8px;
-  padding-bottom: 8px;
-  padding-left: 5px;
-  padding-right: 5px;
-  border-top-style: double;
-  border-top-width: 6px;
-  border-top-color: #D3D3D3;
-}
-
-#mgkimlbiaj .gt_striped {
-  background-color: rgba(128, 128, 128, 0.05);
-}
-
-#mgkimlbiaj .gt_table_body {
-  border-top-style: solid;
-  border-top-width: 2px;
-  border-top-color: #D3D3D3;
-  border-bottom-style: solid;
-  border-bottom-width: 2px;
-  border-bottom-color: #D3D3D3;
-}
-
-#mgkimlbiaj .gt_footnotes {
-  color: #333333;
-  background-color: #FFFFFF;
-  border-bottom-style: none;
-  border-bottom-width: 2px;
-  border-bottom-color: #D3D3D3;
-  border-left-style: none;
-  border-left-width: 2px;
-  border-left-color: #D3D3D3;
-  border-right-style: none;
-  border-right-width: 2px;
-  border-right-color: #D3D3D3;
-}
-
-#mgkimlbiaj .gt_footnote {
-  margin: 0px;
-  font-size: 90%;
-  padding: 4px;
-}
-
-#mgkimlbiaj .gt_sourcenotes {
-  color: #333333;
-  background-color: #FFFFFF;
-  border-bottom-style: none;
-  border-bottom-width: 2px;
-  border-bottom-color: #D3D3D3;
-  border-left-style: none;
-  border-left-width: 2px;
-  border-left-color: #D3D3D3;
-  border-right-style: none;
-  border-right-width: 2px;
-  border-right-color: #D3D3D3;
-}
-
-#mgkimlbiaj .gt_sourcenote {
-  font-size: 90%;
-  padding: 4px;
-}
-
-#mgkimlbiaj .gt_left {
-  text-align: left;
-}
-
-#mgkimlbiaj .gt_center {
-  text-align: center;
-}
-
-#mgkimlbiaj .gt_right {
-  text-align: right;
-  font-variant-numeric: tabular-nums;
-}
-
-#mgkimlbiaj .gt_font_normal {
-  font-weight: normal;
-}
-
-#mgkimlbiaj .gt_font_bold {
-  font-weight: bold;
-}
-
-#mgkimlbiaj .gt_font_italic {
-  font-style: italic;
-}
-
-#mgkimlbiaj .gt_super {
-  font-size: 65%;
-}
-
-#mgkimlbiaj .gt_footnote_marks {
-  font-style: italic;
-  font-size: 65%;
-}
-</style>
-<div id="mgkimlbiaj" style="overflow-x:auto;overflow-y:auto;width:auto;height:auto;"><table class="gt_table">
-  
-  <thead class="gt_col_headings">
-    <tr>
-      <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1"><strong>Characteristic</strong></th>
-      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1"><strong>Male</strong>, N = 20<sup class="gt_footnote_marks">1</sup></th>
-      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1"><strong>Female</strong>, N = 20<sup class="gt_footnote_marks">1</sup></th>
-    </tr>
-  </thead>
-  <tbody class="gt_table_body">
-    <tr>
-      <td class="gt_row gt_left">engagement</td>
-      <td class="gt_row gt_center">5.56 (0.29)</td>
-      <td class="gt_row gt_center">5.30 (0.39)</td>
-    </tr>
-  </tbody>
-  
-  <tfoot>
-    <tr class="gt_footnotes">
-      <td colspan="3">
-        <p class="gt_footnote">
-          <sup class="gt_footnote_marks">
-            <em>1</em>
-          </sup>
-           
-          Statistics presented: Mean (SD)
-          <br />
-        </p>
-      </td>
-    </tr>
-  </tfoot>
-</table></div>
-<p>Report this as:</p>
 <blockquote>
 <p>There was a statistically significant difference in mean engagement score between males and females, with males scoring higher than females, 0.26 (95% CI, 0.04 to 0.48), t(38) = 2.365, <em>p</em> = 0.023.</p>
 </blockquote>
-<p>The effect size, called Cohen’s <em>d</em>, is defined as <span class="math inline">\(d = |M_D| / s\)</span>, where <span class="math inline">\(|M_D| = \bar{x} - \bar{y}\)</span>, and <span class="math inline">\(s\)</span> is the pooled sample standard deviation, <span class="math inline">\(s_p = \sqrt{\frac{(n_X - 1) s_X^2 + (n_Y-1) s_Y^2}{n_X + n_Y-2}}\)</span>. <span class="math inline">\(d &lt;.2\)</span> is considered trivial, <span class="math inline">\(.2 \le d &lt; .5\)</span> small, and <span class="math inline">\(.5 \le d &lt; .8\)</span> large.</p>
-<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="two-group-comparison-tests.html#cb16-1"></a>(d &lt;-<span class="st"> </span>effectsize<span class="op">::</span><span class="kw">cohens_d</span>(engagement <span class="op">~</span><span class="st"> </span>gender, <span class="dt">data =</span> engage, <span class="dt">pooled_sd =</span> <span class="ot">TRUE</span>))</span></code></pre></div>
+<p>The effect size, Cohen’s <em>d</em>, is defined as <span class="math inline">\(d = |M_D| / s\)</span>, where <span class="math inline">\(|M_D| = \bar{x} - \bar{y}\)</span>, and <span class="math inline">\(s\)</span> is the pooled sample standard deviation, <span class="math inline">\(s_p = \sqrt{\frac{(n_X - 1) s_X^2 + (n_Y-1) s_Y^2}{n_X + n_Y-2}}\)</span>. <span class="math inline">\(d &lt;.2\)</span> is considered trivial, <span class="math inline">\(.2 \le d &lt; .5\)</span> small, and <span class="math inline">\(.5 \le d &lt; .8\)</span> large.</p>
+<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb18-1"><a href="two-group-comparison-tests.html#cb18-1"></a>(d &lt;-<span class="st"> </span>effectsize<span class="op">::</span><span class="kw">cohens_d</span>(engagement <span class="op">~</span><span class="st"> </span>gender, <span class="dt">data =</span> ind_num<span class="op">$</span>t_dat, <span class="dt">pooled_sd =</span> <span class="ot">TRUE</span>))</span></code></pre></div>
 <pre><code>## Cohen&#39;s d |       95% CI
 ## ------------------------
 ##      0.75 | [0.10, 1.39]
 ##  - Estimate using pooled SD</code></pre>
-<p>Always construct a plot, just to make sure your head is on straight.</p>
-<p><img src="statistics_files/figure-html/unnamed-chunk-15-1.png" width="720" /></p>
-<p>Now you are ready to report the results.</p>
+<p>You are about to reject the null hypothesis. Construct a plot as a sanity check on your reasoning.</p>
+<p><img src="statistics_files/figure-html/unnamed-chunk-17-1.png" width="720" /></p>
+<p>The Mann-Whitney U test is the same as the Wilcoxon test, but for two variables.</p>
+<div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb20-1"><a href="two-group-comparison-tests.html#cb20-1"></a>(ind_num<span class="op">$</span>mw_test &lt;-<span class="st"> </span><span class="kw">wilcox.test</span>(engagement <span class="op">~</span><span class="st"> </span>gender, </span>
+<span id="cb20-2"><a href="two-group-comparison-tests.html#cb20-2"></a>                                <span class="dt">data =</span> ind_num<span class="op">$</span>mw_dat, </span>
+<span id="cb20-3"><a href="two-group-comparison-tests.html#cb20-3"></a>                                <span class="dt">exact =</span> <span class="ot">TRUE</span>, </span>
+<span id="cb20-4"><a href="two-group-comparison-tests.html#cb20-4"></a>                                <span class="dt">correct =</span> <span class="ot">FALSE</span>))</span></code></pre></div>
+<pre><code>## 
+##  Wilcoxon rank sum exact test
+## 
+## data:  engagement by gender
+## W = 255, p-value = 0.1417
+## alternative hypothesis: true location shift is not equal to 0</code></pre>
+<p>Unfortunately, <code>wilcox.test()</code> does not report U or the standardized test statistic <span class="math inline">\(z = \frac{U - m_U}{\sigma_U}\)</span> where <span class="math inline">\(m_U = \frac{n_1 n_2}{2}\)</span> and <span class="math inline">\(\sigma_U = \sqrt{\frac{n_1 n_2(n_1 + n_2 + 1)}{12}}\)</span>, so you have to calculate that yourself.</p>
+<div class="sourceCode" id="cb22"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb22-1"><a href="two-group-comparison-tests.html#cb22-1"></a>ind_num<span class="op">$</span>mw_test_manual &lt;-<span class="st"> </span>ind_num<span class="op">$</span>mw_dat <span class="op">%&gt;%</span><span class="st"> </span></span>
+<span id="cb22-2"><a href="two-group-comparison-tests.html#cb22-2"></a><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">R =</span> <span class="kw">rank</span>(engagement)) <span class="op">%&gt;%</span></span>
+<span id="cb22-3"><a href="two-group-comparison-tests.html#cb22-3"></a><span class="st">  </span><span class="kw">group_by</span>(gender) <span class="op">%&gt;%</span></span>
+<span id="cb22-4"><a href="two-group-comparison-tests.html#cb22-4"></a><span class="st">  </span><span class="kw">summarize</span>(<span class="dt">.groups =</span> <span class="st">&quot;drop&quot;</span>, <span class="dt">n =</span> <span class="kw">n</span>(), <span class="dt">R =</span> <span class="kw">sum</span>(R)) <span class="op">%&gt;%</span></span>
+<span id="cb22-5"><a href="two-group-comparison-tests.html#cb22-5"></a><span class="st">  </span><span class="kw">pivot_wider</span>(<span class="dt">names_from =</span> gender, <span class="dt">values_from =</span> <span class="kw">c</span>(n, R)) <span class="op">%&gt;%</span></span>
+<span id="cb22-6"><a href="two-group-comparison-tests.html#cb22-6"></a><span class="st">  </span><span class="kw">mutate</span>(</span>
+<span id="cb22-7"><a href="two-group-comparison-tests.html#cb22-7"></a>    <span class="dt">U_Male =</span> n_Male <span class="op">*</span><span class="st"> </span>n_Female <span class="op">+</span><span class="st"> </span>n_Male<span class="op">*</span>(n_Male <span class="op">+</span><span class="st"> </span><span class="dv">1</span>)<span class="op">/</span><span class="dv">2</span> <span class="op">-</span><span class="st"> </span>R_Male,</span>
+<span id="cb22-8"><a href="two-group-comparison-tests.html#cb22-8"></a>    <span class="dt">U_Female =</span> n_Male <span class="op">*</span><span class="st"> </span>n_Female <span class="op">+</span><span class="st"> </span>n_Female<span class="op">*</span>(n_Female <span class="op">+</span><span class="st"> </span><span class="dv">1</span>)<span class="op">/</span><span class="dv">2</span> <span class="op">-</span><span class="st"> </span>R_Female,</span>
+<span id="cb22-9"><a href="two-group-comparison-tests.html#cb22-9"></a>    <span class="dt">U =</span> <span class="kw">min</span>(U_Male, U_Female),</span>
+<span id="cb22-10"><a href="two-group-comparison-tests.html#cb22-10"></a>    <span class="dt">m_U =</span> n_Male <span class="op">*</span><span class="st"> </span>n_Female <span class="op">/</span><span class="st"> </span><span class="dv">2</span>,</span>
+<span id="cb22-11"><a href="two-group-comparison-tests.html#cb22-11"></a>    <span class="dt">s_U =</span> <span class="kw">sqrt</span>((n_Male <span class="op">*</span><span class="st"> </span>n_Female <span class="op">*</span><span class="st"> </span>(n_Male <span class="op">+</span><span class="st"> </span>n_Female <span class="op">+</span><span class="st"> </span><span class="dv">1</span>)) <span class="op">/</span><span class="st"> </span><span class="dv">12</span>),</span>
+<span id="cb22-12"><a href="two-group-comparison-tests.html#cb22-12"></a>    <span class="dt">z =</span> (U <span class="op">-</span><span class="st"> </span>m_U) <span class="op">/</span><span class="st"> </span>s_U,</span>
+<span id="cb22-13"><a href="two-group-comparison-tests.html#cb22-13"></a>    <span class="dt">mean_rank_Male =</span> R_Male <span class="op">/</span><span class="st"> </span>n_Male,</span>
+<span id="cb22-14"><a href="two-group-comparison-tests.html#cb22-14"></a>    <span class="dt">mean_rank_Female =</span> R_Female <span class="op">/</span><span class="st"> </span>n_Female,</span>
+<span id="cb22-15"><a href="two-group-comparison-tests.html#cb22-15"></a>  )</span>
+<span id="cb22-16"><a href="two-group-comparison-tests.html#cb22-16"></a>ind_num<span class="op">$</span>mw_test_manual <span class="op">%&gt;%</span><span class="st"> </span>flextable<span class="op">::</span><span class="kw">flextable</span>() <span class="op">%&gt;%</span><span class="st"> </span>flextable<span class="op">::</span><span class="kw">autofit</span>()</span></code></pre></div>
+<div class="tabwid"><style>.cl-47b516fc{font-family:'Arial';font-size:11px;font-weight:normal;font-style:normal;text-decoration:none;color:rgba(17, 17, 17, 1.00);background-color:transparent;}.cl-47b516fd{margin:0;text-align:right;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:2px;padding-top:2px;padding-left:5px;padding-right:5px;line-height: 1.00;background-color:transparent;}.cl-47b5627e{width:44px;background-color:transparent;vertical-align: middle;border-bottom: 2.00px solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-47b5627f{width:118px;background-color:transparent;vertical-align: middle;border-bottom: 2.00px solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-47b56280{width:106px;background-color:transparent;vertical-align: middle;border-bottom: 2.00px solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-47b56281{width:69px;background-color:transparent;vertical-align: middle;border-bottom: 2.00px solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-47b56282{width:57px;background-color:transparent;vertical-align: middle;border-bottom: 2.00px solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-47b56283{width:71px;background-color:transparent;vertical-align: middle;border-bottom: 2.00px solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-47b56284{width:58px;background-color:transparent;vertical-align: middle;border-bottom: 2.00px solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-47b56285{width:66px;background-color:transparent;vertical-align: middle;border-bottom: 2.00px solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-47b56286{width:39px;background-color:transparent;vertical-align: middle;border-bottom: 2.00px solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-47b56287{width:70px;background-color:transparent;vertical-align: middle;border-bottom: 2.00px solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-47b56288{width:44px;background-color:transparent;vertical-align: middle;border-bottom: 2.00px solid rgba(0, 0, 0, 1.00);border-top: 2.00px solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-47b58c86{width:118px;background-color:transparent;vertical-align: middle;border-bottom: 2.00px solid rgba(0, 0, 0, 1.00);border-top: 2.00px solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-47b58c87{width:106px;background-color:transparent;vertical-align: middle;border-bottom: 2.00px solid rgba(0, 0, 0, 1.00);border-top: 2.00px solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-47b58c88{width:69px;background-color:transparent;vertical-align: middle;border-bottom: 2.00px solid rgba(0, 0, 0, 1.00);border-top: 2.00px solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-47b58c89{width:57px;background-color:transparent;vertical-align: middle;border-bottom: 2.00px solid rgba(0, 0, 0, 1.00);border-top: 2.00px solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-47b58c8a{width:71px;background-color:transparent;vertical-align: middle;border-bottom: 2.00px solid rgba(0, 0, 0, 1.00);border-top: 2.00px solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-47b58c8b{width:58px;background-color:transparent;vertical-align: middle;border-bottom: 2.00px solid rgba(0, 0, 0, 1.00);border-top: 2.00px solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-47b58c8c{width:66px;background-color:transparent;vertical-align: middle;border-bottom: 2.00px solid rgba(0, 0, 0, 1.00);border-top: 2.00px solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-47b58c8d{width:39px;background-color:transparent;vertical-align: middle;border-bottom: 2.00px solid rgba(0, 0, 0, 1.00);border-top: 2.00px solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-47b58c8e{width:70px;background-color:transparent;vertical-align: middle;border-bottom: 2.00px solid rgba(0, 0, 0, 1.00);border-top: 2.00px solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}</style><table style='border-collapse:collapse;'><thead><tr style="overflow-wrap:break-word;"><td class="cl-47b58c89"><p class="cl-47b516fd"><span class="cl-47b516fc">n_Male</span></p></td><td class="cl-47b58c88"><p class="cl-47b516fd"><span class="cl-47b516fc">n_Female</span></p></td><td class="cl-47b58c8b"><p class="cl-47b516fd"><span class="cl-47b516fc">R_Male</span></p></td><td class="cl-47b58c8a"><p class="cl-47b516fd"><span class="cl-47b516fc">R_Female</span></p></td><td class="cl-47b58c8b"><p class="cl-47b516fd"><span class="cl-47b516fc">U_Male</span></p></td><td class="cl-47b58c8a"><p class="cl-47b516fd"><span class="cl-47b516fc">U_Female</span></p></td><td class="cl-47b58c8d"><p class="cl-47b516fd"><span class="cl-47b516fc">U</span></p></td><td class="cl-47b56288"><p class="cl-47b516fd"><span class="cl-47b516fc">m_U</span></p></td><td class="cl-47b58c8c"><p class="cl-47b516fd"><span class="cl-47b516fc">s_U</span></p></td><td class="cl-47b58c8e"><p class="cl-47b516fd"><span class="cl-47b516fc">z</span></p></td><td class="cl-47b58c87"><p class="cl-47b516fd"><span class="cl-47b516fc">mean_rank_Male</span></p></td><td class="cl-47b58c86"><p class="cl-47b516fd"><span class="cl-47b516fc">mean_rank_Female</span></p></td></tr></thead><tbody><tr style="overflow-wrap:break-word;"><td class="cl-47b56282"><p class="cl-47b516fd"><span class="cl-47b516fc">20</span></p></td><td class="cl-47b56281"><p class="cl-47b516fd"><span class="cl-47b516fc">20</span></p></td><td class="cl-47b56284"><p class="cl-47b516fd"><span class="cl-47b516fc">465</span></p></td><td class="cl-47b56283"><p class="cl-47b516fd"><span class="cl-47b516fc">355</span></p></td><td class="cl-47b56284"><p class="cl-47b516fd"><span class="cl-47b516fc">145</span></p></td><td class="cl-47b56283"><p class="cl-47b516fd"><span class="cl-47b516fc">255</span></p></td><td class="cl-47b56286"><p class="cl-47b516fd"><span class="cl-47b516fc">145</span></p></td><td class="cl-47b5627e"><p class="cl-47b516fd"><span class="cl-47b516fc">200</span></p></td><td class="cl-47b56285"><p class="cl-47b516fd"><span class="cl-47b516fc">36.96846</span></p></td><td class="cl-47b56287"><p class="cl-47b516fd"><span class="cl-47b516fc">-1.487755</span></p></td><td class="cl-47b56280"><p class="cl-47b516fd"><span class="cl-47b516fc">23.25</span></p></td><td class="cl-47b5627f"><p class="cl-47b516fd"><span class="cl-47b516fc">17.75</span></p></td></tr></tbody></table></div>
 <blockquote>
-<p>Data are mean <span class="math inline">\(\pm\)</span> standard deviation, unless otherwise stated. There were 20 male and 20 female participants. An independent-samples t-test was run to determine if there were differences in engagement to an advertisement between males and females. There were no outliers in the data, as assessed by inspection of a boxplot. Engagement scores for each level of gender were normally distributed, as assessed by Shapiro-Wilk’s test (<em>p</em> &gt; .05), and there was homogeneity of variances, as assessed by Levene’s test for equality of variances (<em>p</em> = 0.174). There were 20 male and 20 female participants. The advertisement was more engaging to male viewers (5.56 <span class="math inline">\(\pm\)</span> = 0.29) than female viewers (5.30 <span class="math inline">\(\pm\)</span> = 0.39), a statistically significant difference of 0.26 (95% CI, 0.04 to 0.48), t(38) = 2.365, <em>p</em> = 0.023, <em>d</em> = 0.75.</p>
+<p>Median engagement score was not statistically significantly different between males and females, <em>U</em> = 145, <em>z</em> = -1.488, <em>p</em> = 0.142, using an exact sampling distribution for <em>U</em>.</p>
+</blockquote>
+<p>Now you are ready to report the results. Here is how you would report the <em>t</em> test.</p>
+<blockquote>
+<p>Data are mean <span class="math inline">\(\pm\)</span> standard deviation, unless otherwise stated. There were 20 male and 20 female participants. An independent-samples t-test was run to determine if there were differences in engagement to an advertisement between males and females. There were no outliers in the data, as assessed by inspection of a boxplot. Engagement scores for each level of gender were normally distributed, as assessed by Shapiro-Wilk’s test (<em>p</em> &gt; .05), and there was homogeneity of variances, as assessed by Levene’s test for equality of variances (<em>p</em> = 0.174). The advertisement was more engaging to male viewers (5.56 <span class="math inline">\(\pm\)</span> = 0.29) than female viewers (5.30 <span class="math inline">\(\pm\)</span> = 0.39), a statistically significant difference of 0.26 (95% CI, 0.04 to 0.48), t(38) = 2.365, <em>p</em> = 0.023, <em>d</em> = 0.75.</p>
+</blockquote>
+<p>Here is how you would report the Mann-Whitney U-Test.</p>
+<blockquote>
+<p>A Mann-Whitney U test was run to determine if there were differences in engagement score between males and females. Distributions of the engagement scores for males and females were similar, as assessed by visual inspection. Median engagement score for males (5.58) and females (5.38) was not statistically significantly different, <em>U</em> = 145, <em>z</em> = -1.488, <em>p</em> = 0.142, using an exact sampling distribution for <em>U</em>.</p>
+</blockquote>
+<p>Had the distributions differed, you would report the Mann-Whitney like this:</p>
+<blockquote>
+<p>A Mann-Whitney U test was run to determine if there were differences in engagement score between males and females. Distributions of the engagement scores for males and females were not similar, as assessed by visual inspection. Engagement scores for males (mean rank = 23.25) and females (mean rank = 17.75) were not statistically significantly different, <em>U</em> = 145, <em>z</em> = -1.488, <em>p</em> = 0.142, using an exact sampling distribution for <em>U</em>.</p>
 </blockquote>
 </div>
 </div>
@@ -1129,14 +1231,14 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <div id="example-6" class="section level4 unnumbered">
 <h4>Example</h4>
 <p><span class="math inline">\(n\)</span> = 20 athletes consume a carb-only or carb+protein drink prior to running as far as possible in 2 hours and a researcher measures their distances under both conditions. Does the mean differences in scores differ from 0?</p>
-<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb18-1"><a href="two-group-comparison-tests.html#cb18-1"></a>drink_gt &lt;-<span class="st"> </span>drink <span class="op">%&gt;%</span><span class="st"> </span></span>
-<span id="cb18-2"><a href="two-group-comparison-tests.html#cb18-2"></a><span class="st">  </span>gtsummary<span class="op">::</span><span class="kw">tbl_summary</span>(<span class="dt">statistic =</span> <span class="kw">list</span>(<span class="kw">all_continuous</span>() <span class="op">~</span><span class="st"> &quot;{mean} ({sd})&quot;</span>))</span>
-<span id="cb18-3"><a href="two-group-comparison-tests.html#cb18-3"></a>drink_gt</span></code></pre></div>
+<div class="sourceCode" id="cb23"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb23-1"><a href="two-group-comparison-tests.html#cb23-1"></a>drink_gt &lt;-<span class="st"> </span>drink <span class="op">%&gt;%</span><span class="st"> </span></span>
+<span id="cb23-2"><a href="two-group-comparison-tests.html#cb23-2"></a><span class="st">  </span>gtsummary<span class="op">::</span><span class="kw">tbl_summary</span>(<span class="dt">statistic =</span> <span class="kw">list</span>(<span class="kw">all_continuous</span>() <span class="op">~</span><span class="st"> &quot;{mean} ({sd})&quot;</span>))</span>
+<span id="cb23-3"><a href="two-group-comparison-tests.html#cb23-3"></a>drink_gt</span></code></pre></div>
 <style>html {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Helvetica Neue', 'Fira Sans', 'Droid Sans', Arial, sans-serif;
 }
 
-#ykiicfvdyu .gt_table {
+#irtousxcqh .gt_table {
   display: table;
   border-collapse: collapse;
   margin-left: auto;
@@ -1161,7 +1263,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
   border-left-color: #D3D3D3;
 }
 
-#ykiicfvdyu .gt_heading {
+#irtousxcqh .gt_heading {
   background-color: #FFFFFF;
   text-align: center;
   border-bottom-color: #FFFFFF;
@@ -1173,7 +1275,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
   border-right-color: #D3D3D3;
 }
 
-#ykiicfvdyu .gt_title {
+#irtousxcqh .gt_title {
   color: #333333;
   font-size: 125%;
   font-weight: initial;
@@ -1183,7 +1285,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
   border-bottom-width: 0;
 }
 
-#ykiicfvdyu .gt_subtitle {
+#irtousxcqh .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
@@ -1193,13 +1295,13 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
   border-top-width: 0;
 }
 
-#ykiicfvdyu .gt_bottom_border {
+#irtousxcqh .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-#ykiicfvdyu .gt_col_headings {
+#irtousxcqh .gt_col_headings {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -1214,7 +1316,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
   border-right-color: #D3D3D3;
 }
 
-#ykiicfvdyu .gt_col_heading {
+#irtousxcqh .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1234,7 +1336,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
   overflow-x: hidden;
 }
 
-#ykiicfvdyu .gt_column_spanner_outer {
+#irtousxcqh .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1246,15 +1348,15 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
   padding-right: 4px;
 }
 
-#ykiicfvdyu .gt_column_spanner_outer:first-child {
+#irtousxcqh .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#ykiicfvdyu .gt_column_spanner_outer:last-child {
+#irtousxcqh .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#ykiicfvdyu .gt_column_spanner {
+#irtousxcqh .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
@@ -1266,7 +1368,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
   width: 100%;
 }
 
-#ykiicfvdyu .gt_group_heading {
+#irtousxcqh .gt_group_heading {
   padding: 8px;
   color: #333333;
   background-color: #FFFFFF;
@@ -1288,7 +1390,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
   vertical-align: middle;
 }
 
-#ykiicfvdyu .gt_empty_group_heading {
+#irtousxcqh .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -1303,15 +1405,15 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
   vertical-align: middle;
 }
 
-#ykiicfvdyu .gt_from_md > :first-child {
+#irtousxcqh .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#ykiicfvdyu .gt_from_md > :last-child {
+#irtousxcqh .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#ykiicfvdyu .gt_row {
+#irtousxcqh .gt_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1330,7 +1432,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
   overflow-x: hidden;
 }
 
-#ykiicfvdyu .gt_stub {
+#irtousxcqh .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1342,7 +1444,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
   padding-left: 12px;
 }
 
-#ykiicfvdyu .gt_summary_row {
+#irtousxcqh .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -1352,7 +1454,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
   padding-right: 5px;
 }
 
-#ykiicfvdyu .gt_first_summary_row {
+#irtousxcqh .gt_first_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1362,7 +1464,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
   border-top-color: #D3D3D3;
 }
 
-#ykiicfvdyu .gt_grand_summary_row {
+#irtousxcqh .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -1372,7 +1474,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
   padding-right: 5px;
 }
 
-#ykiicfvdyu .gt_first_grand_summary_row {
+#irtousxcqh .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1382,11 +1484,11 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
   border-top-color: #D3D3D3;
 }
 
-#ykiicfvdyu .gt_striped {
+#irtousxcqh .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-#ykiicfvdyu .gt_table_body {
+#irtousxcqh .gt_table_body {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -1395,7 +1497,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
   border-bottom-color: #D3D3D3;
 }
 
-#ykiicfvdyu .gt_footnotes {
+#irtousxcqh .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -1409,13 +1511,13 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
   border-right-color: #D3D3D3;
 }
 
-#ykiicfvdyu .gt_footnote {
+#irtousxcqh .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding: 4px;
 }
 
-#ykiicfvdyu .gt_sourcenotes {
+#irtousxcqh .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -1429,46 +1531,46 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
   border-right-color: #D3D3D3;
 }
 
-#ykiicfvdyu .gt_sourcenote {
+#irtousxcqh .gt_sourcenote {
   font-size: 90%;
   padding: 4px;
 }
 
-#ykiicfvdyu .gt_left {
+#irtousxcqh .gt_left {
   text-align: left;
 }
 
-#ykiicfvdyu .gt_center {
+#irtousxcqh .gt_center {
   text-align: center;
 }
 
-#ykiicfvdyu .gt_right {
+#irtousxcqh .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#ykiicfvdyu .gt_font_normal {
+#irtousxcqh .gt_font_normal {
   font-weight: normal;
 }
 
-#ykiicfvdyu .gt_font_bold {
+#irtousxcqh .gt_font_bold {
   font-weight: bold;
 }
 
-#ykiicfvdyu .gt_font_italic {
+#irtousxcqh .gt_font_italic {
   font-style: italic;
 }
 
-#ykiicfvdyu .gt_super {
+#irtousxcqh .gt_super {
   font-size: 65%;
 }
 
-#ykiicfvdyu .gt_footnote_marks {
+#irtousxcqh .gt_footnote_marks {
   font-style: italic;
   font-size: 65%;
 }
 </style>
-<div id="ykiicfvdyu" style="overflow-x:auto;overflow-y:auto;width:auto;height:auto;"><table class="gt_table">
+<div id="irtousxcqh" style="overflow-x:auto;overflow-y:auto;width:auto;height:auto;"><table class="gt_table">
   
   <thead class="gt_col_headings">
     <tr>
@@ -1522,7 +1624,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <div id="outliers-2" class="section level5 unnumbered">
 <h5>Outliers</h5>
 <p>Assess outliers with a box plot. Box plot whiskers extend up to 1.5*IQR from the upper and lower hinges and outliers (beyond the whiskers) are are plotted individually. The boxplot shows no outliers, although two points are actually right on the 1.5*IQR cusp.</p>
-<p><img src="statistics_files/figure-html/unnamed-chunk-18-1.png" width="672" /></p>
+<p><img src="statistics_files/figure-html/unnamed-chunk-22-1.png" width="672" /></p>
 <p>Report inconsequential outliers as
 &gt; Two outliers were detected that were more than 1.5 box-lengths from the edge of the box in a boxplot. Inspection of their values did not reveal them to be extreme and they were kept in the analysis.</p>
 <p>or if there are no outliers, report as
@@ -1537,16 +1639,16 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <h5>Normality</h5>
 <p>Assume the population is normally distributed if <em>n</em> <span class="math inline">\(\ge\)</span> 30. Otherwise, asses a Q-Q plot, skewness and kurtosis values, or a histogram. If you still don’t feel confident about normality, run a [Shapiro-Wilk Test].</p>
 <p>The data set has <em>n</em> = 20 observations, so you cannot assume normality. The QQ plot indicates normality.</p>
-<div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb19-1"><a href="two-group-comparison-tests.html#cb19-1"></a>drink <span class="op">%&gt;%</span></span>
-<span id="cb19-2"><a href="two-group-comparison-tests.html#cb19-2"></a><span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(<span class="dt">sample =</span> difference)) <span class="op">+</span></span>
-<span id="cb19-3"><a href="two-group-comparison-tests.html#cb19-3"></a><span class="st">  </span><span class="kw">stat_qq</span>() <span class="op">+</span></span>
-<span id="cb19-4"><a href="two-group-comparison-tests.html#cb19-4"></a><span class="st">  </span><span class="kw">stat_qq_line</span>(<span class="dt">col =</span> <span class="st">&quot;goldenrod&quot;</span>) <span class="op">+</span></span>
-<span id="cb19-5"><a href="two-group-comparison-tests.html#cb19-5"></a><span class="st">  </span><span class="kw">theme_minimal</span>() <span class="op">+</span></span>
-<span id="cb19-6"><a href="two-group-comparison-tests.html#cb19-6"></a><span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;Normal Q-Q Plot&quot;</span>)</span></code></pre></div>
-<p><img src="statistics_files/figure-html/unnamed-chunk-19-1.png" width="672" /></p>
+<div class="sourceCode" id="cb24"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb24-1"><a href="two-group-comparison-tests.html#cb24-1"></a>drink <span class="op">%&gt;%</span></span>
+<span id="cb24-2"><a href="two-group-comparison-tests.html#cb24-2"></a><span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(<span class="dt">sample =</span> difference)) <span class="op">+</span></span>
+<span id="cb24-3"><a href="two-group-comparison-tests.html#cb24-3"></a><span class="st">  </span><span class="kw">stat_qq</span>() <span class="op">+</span></span>
+<span id="cb24-4"><a href="two-group-comparison-tests.html#cb24-4"></a><span class="st">  </span><span class="kw">stat_qq_line</span>(<span class="dt">col =</span> <span class="st">&quot;goldenrod&quot;</span>) <span class="op">+</span></span>
+<span id="cb24-5"><a href="two-group-comparison-tests.html#cb24-5"></a><span class="st">  </span><span class="kw">theme_minimal</span>() <span class="op">+</span></span>
+<span id="cb24-6"><a href="two-group-comparison-tests.html#cb24-6"></a><span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;Normal Q-Q Plot&quot;</span>)</span></code></pre></div>
+<p><img src="statistics_files/figure-html/unnamed-chunk-23-1.png" width="672" /></p>
 <p>The Shapiro-Wilk normality test fails to reject the null hypothesis of a normally distributed population.</p>
-<div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb20-1"><a href="two-group-comparison-tests.html#cb20-1"></a>drink_report<span class="op">$</span>shapiro &lt;-<span class="st"> </span><span class="kw">shapiro.test</span>(drink<span class="op">$</span>difference)</span>
-<span id="cb20-2"><a href="two-group-comparison-tests.html#cb20-2"></a>drink_report<span class="op">$</span>shapiro</span></code></pre></div>
+<div class="sourceCode" id="cb25"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb25-1"><a href="two-group-comparison-tests.html#cb25-1"></a>drink_report<span class="op">$</span>shapiro &lt;-<span class="st"> </span><span class="kw">shapiro.test</span>(drink<span class="op">$</span>difference)</span>
+<span id="cb25-2"><a href="two-group-comparison-tests.html#cb25-2"></a>drink_report<span class="op">$</span>shapiro</span></code></pre></div>
 <pre><code>## 
 ##  Shapiro-Wilk normality test
 ## 
@@ -1564,13 +1666,13 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <div id="results-6" class="section level4 unnumbered">
 <h4>Results</h4>
 <p>Conduct the <em>t</em>-test. To get a 95% CI around the <em>difference</em> (instead of around the estimate), run the test using the difference, <span class="math inline">\(\mu_0 - \bar{x}\)</span>, and leave <code>mu</code> at its default of 0.</p>
-<div class="sourceCode" id="cb22"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb22-1"><a href="two-group-comparison-tests.html#cb22-1"></a>(drink_report<span class="op">$</span>ci &lt;-<span class="st"> </span><span class="kw">t.test</span>(</span>
-<span id="cb22-2"><a href="two-group-comparison-tests.html#cb22-2"></a>  <span class="dt">x =</span> drink<span class="op">$</span>carb_protein, </span>
-<span id="cb22-3"><a href="two-group-comparison-tests.html#cb22-3"></a>  <span class="dt">y =</span> drink<span class="op">$</span>carb, </span>
-<span id="cb22-4"><a href="two-group-comparison-tests.html#cb22-4"></a>  <span class="dt">alternative =</span> <span class="st">&quot;two.sided&quot;</span>, </span>
-<span id="cb22-5"><a href="two-group-comparison-tests.html#cb22-5"></a>  <span class="dt">paired =</span> <span class="ot">TRUE</span>,</span>
-<span id="cb22-6"><a href="two-group-comparison-tests.html#cb22-6"></a>  <span class="dt">conf.level =</span> <span class="fl">.95</span>)</span>
-<span id="cb22-7"><a href="two-group-comparison-tests.html#cb22-7"></a>)</span></code></pre></div>
+<div class="sourceCode" id="cb27"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb27-1"><a href="two-group-comparison-tests.html#cb27-1"></a>(drink_report<span class="op">$</span>ci &lt;-<span class="st"> </span><span class="kw">t.test</span>(</span>
+<span id="cb27-2"><a href="two-group-comparison-tests.html#cb27-2"></a>  <span class="dt">x =</span> drink<span class="op">$</span>carb_protein, </span>
+<span id="cb27-3"><a href="two-group-comparison-tests.html#cb27-3"></a>  <span class="dt">y =</span> drink<span class="op">$</span>carb, </span>
+<span id="cb27-4"><a href="two-group-comparison-tests.html#cb27-4"></a>  <span class="dt">alternative =</span> <span class="st">&quot;two.sided&quot;</span>, </span>
+<span id="cb27-5"><a href="two-group-comparison-tests.html#cb27-5"></a>  <span class="dt">paired =</span> <span class="ot">TRUE</span>,</span>
+<span id="cb27-6"><a href="two-group-comparison-tests.html#cb27-6"></a>  <span class="dt">conf.level =</span> <span class="fl">.95</span>)</span>
+<span id="cb27-7"><a href="two-group-comparison-tests.html#cb27-7"></a>)</span></code></pre></div>
 <pre><code>## 
 ##  Paired t-test
 ## 
@@ -1587,62 +1689,58 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <p>The carbohydrate-protein drink elicited an increase of 0.135 (95% CI, 0.091 to 0.180) km in the distance run in two hours compared to a carbohydrate-only drink.</p>
 </blockquote>
 <p>The effect size, called Cohen’s <em>d</em>, is defined as <span class="math inline">\(d = |M_D| / s\)</span>, where <span class="math inline">\(|M_D| = \bar{x} - \mu_0\)</span>, and <span class="math inline">\(s\)</span> is the sample standard deviation. <span class="math inline">\(d &lt;.2\)</span> is considered trivial, <span class="math inline">\(.2 \le d &lt; .5\)</span> small, and <span class="math inline">\(.5 \le d &lt; .8\)</span> large.</p>
-<div class="sourceCode" id="cb24"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb24-1"><a href="two-group-comparison-tests.html#cb24-1"></a>(drink_report<span class="op">$</span>d &lt;-<span class="st"> </span>effectsize<span class="op">::</span><span class="kw">cohens_d</span>(drink<span class="op">$</span>difference))</span></code></pre></div>
+<div class="sourceCode" id="cb29"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb29-1"><a href="two-group-comparison-tests.html#cb29-1"></a>(drink_report<span class="op">$</span>d &lt;-<span class="st"> </span>effectsize<span class="op">::</span><span class="kw">cohens_d</span>(drink<span class="op">$</span>difference))</span></code></pre></div>
 <pre><code>## Cohen&#39;s d |       95% CI
 ## ------------------------
 ##      1.42 | [0.80, 2.09]
 ##  - Estimate using pooled SD</code></pre>
 <p>Cohen’s <em>d</em> is 1.42, a large effect.</p>
 <p>Construct a plot.</p>
-<p><img src="statistics_files/figure-html/unnamed-chunk-23-1.png" width="624" /></p>
+<p><img src="statistics_files/figure-html/unnamed-chunk-27-1.png" width="624" /></p>
 <p>Now you are ready to report the results.</p>
 <blockquote>
 <p>A paired-samples t-test was used to determine whether there was a statistically significant mean difference between the distance ran when participants drank a carbohydrate-protein drink compared to a carbohydrate-only drink. Data are mean <span class="math inline">\(\pm\)</span> standard deviation, unless otherwise stated. Two outliers were detected that were more than 1.5 box-lengths from the edge of the box in a boxplot. Inspection of their values did not reveal them to be extreme and they were kept in the analysis. The assumption of normality was not violated, as assessed by Shapiro-Wilk’s test (<em>p</em> = 0.780). Participants ran further after consuming the carbohydrate-protein drink, 11.30 (0.71) km, than the carbohydrate-only drink, 11.17 (0.73) km, a statistically significant increase of 0.135 (95% CI, 0.091 to 0.180) km, <em>t</em>(19) = 6.352, <em>p</em> = 0.0000, <em>d</em> = 1.42.</p>
 </blockquote>
 </div>
 </div>
-<div id="mann-whitney-u-test-for-numeric-vars" class="section level2">
-<h2><span class="header-section-number">2.3</span> Mann-Whitney U Test for Numeric Vars</h2>
-<p>This test applies when the variable distributions are non-normally.</p>
-</div>
 <div id="wilcoxon-paired-sample-test-for-numeric-vars" class="section level2">
-<h2><span class="header-section-number">2.4</span> Wilcoxon Paired-Sample Test for Numeric Vars</h2>
+<h2><span class="header-section-number">2.3</span> Wilcoxon Paired-Sample Test for Numeric Vars</h2>
 <p>This test applies when the variable distributions are non-normally distributed and samples are paired.</p>
 </div>
 <div id="pearsons-correlation-for-numeric-vars" class="section level2">
-<h2><span class="header-section-number">2.5</span> Pearson’s Correlation for Numeric Vars</h2>
+<h2><span class="header-section-number">2.4</span> Pearson’s Correlation for Numeric Vars</h2>
 </div>
 <div id="spearmans-ranked-correlation-for-numeric-vars" class="section level2">
-<h2><span class="header-section-number">2.6</span> Spearman’s Ranked Correlation for Numeric Vars</h2>
+<h2><span class="header-section-number">2.5</span> Spearman’s Ranked Correlation for Numeric Vars</h2>
 </div>
 <div id="sample-independent-t-test-for-categorical-vars" class="section level2">
-<h2><span class="header-section-number">2.7</span> 2 Sample Independent t Test for Categorical Vars</h2>
+<h2><span class="header-section-number">2.6</span> 2 Sample Independent t Test for Categorical Vars</h2>
 <p>This test applies when you know the population variance.</p>
 </div>
 <div id="sample-welchs-t-test-for-categorical-vars" class="section level2">
-<h2><span class="header-section-number">2.8</span> 2 Sample Welch’s t Test for Categorical Vars</h2>
+<h2><span class="header-section-number">2.7</span> 2 Sample Welch’s t Test for Categorical Vars</h2>
 <p>This test applies when the variable variances are unequal.</p>
 </div>
 <div id="paired-sample-t-test-for-categorical-vars" class="section level2">
-<h2><span class="header-section-number">2.9</span> Paired Sample t Test for Categorical Vars</h2>
+<h2><span class="header-section-number">2.8</span> Paired Sample t Test for Categorical Vars</h2>
 <p>This test applies when you have paired samples.</p>
 </div>
 <div id="mann-whitney-u-test-for-categorical-vars" class="section level2">
-<h2><span class="header-section-number">2.10</span> Mann-Whitney U Test for Categorical Vars</h2>
+<h2><span class="header-section-number">2.9</span> Mann-Whitney U Test for Categorical Vars</h2>
 <p>This test applies when the variable distributions are non-normally.</p>
 </div>
 <div id="wilcoxon-paired-sample-test-for-categorical-vars" class="section level2">
-<h2><span class="header-section-number">2.11</span> Wilcoxon Paired-Sample Test for Categorical Vars</h2>
+<h2><span class="header-section-number">2.10</span> Wilcoxon Paired-Sample Test for Categorical Vars</h2>
 <p>This test applies when the variable distributions are non-normally distributed and samples are paired.</p>
 </div>
 <div id="pearsons-correlation-for-categorical-vars" class="section level2">
-<h2><span class="header-section-number">2.12</span> Pearson’s Correlation for Categorical Vars</h2>
+<h2><span class="header-section-number">2.11</span> Pearson’s Correlation for Categorical Vars</h2>
 </div>
 <div id="spearmans-ranked-correlation-for-categorical-vars" class="section level2">
-<h2><span class="header-section-number">2.13</span> Spearman’s Ranked Correlation for Categorical Vars</h2>
+<h2><span class="header-section-number">2.12</span> Spearman’s Ranked Correlation for Categorical Vars</h2>
 </div>
 <div id="fishers-exact-test" class="section level2">
-<h2><span class="header-section-number">2.14</span> Fisher’s Exact Test</h2>
+<h2><span class="header-section-number">2.13</span> Fisher’s Exact Test</h2>
 <p>Use Fisher’s Exact Test to test whether the observed frequencies of a single discrete dichotomous variable are equal. Suppose you have a treatment and control, and a binary outcome with two levels, <em>sick</em> and <em>cured</em>. The</p>
 <p>observed frequency counts, <span class="math inline">\(O_j\)</span>, of the <span class="math inline">\(J\)</span> levels of a categorical variable differ from the expected frequency counts, <span class="math inline">\(E_j\)</span>. <span class="math inline">\(H_0\)</span> is <span class="math inline">\(O_j = E_j\)</span>. The <em>p</em>-value from the test is computed as if the margins of the table are fixed. This leads under a null hypothesis of independence to a hypergeometric distribution of the numbers in the cells of the table</p>
 <p>The test is applicable in situations where</p>
