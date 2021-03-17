@@ -1,0 +1,14 @@
+# Association
+
+
+## Pearson
+## Chi-Square
+## Spearman
+
+## Pearson's Correlation for Numeric Vars
+
+## Spearman's Ranked Correlation for Numeric Vars
+
+## Pearson's Correlation for Categorical Vars
+
+## Spearman's Ranked Correlation for Categorical Vars

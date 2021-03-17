@@ -10,6 +10,11 @@ output:
     lib_dir: assets
     split_by: section
     config:
+      toc:
+        collapse: subsection
+        scroll_highlight: yes
+        before: null
+        after: null
       toolbar:
         position: static
 documentclass: book

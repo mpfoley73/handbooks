@@ -1,4 +1,4 @@
-# One-Sample Inference Tests
+# One-Sample
 
 ```{r include=FALSE}
 library(tidyverse)
