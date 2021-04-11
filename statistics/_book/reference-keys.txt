@@ -66,9 +66,11 @@ spearmans-ranked-correlation-for-categorical-vars
 applications
 example-one
 example-two
-final-words
-linear
-generalized-linear
+generalized-linear-models-glm
+logistic-regression
+multinomial-logistic-regression
+ordinal-logistic-regression
+poisson-regression
 Probablity
 bayesian-inference
 stochastic-processes

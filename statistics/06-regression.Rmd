@@ -1,7 +1,765 @@
-# Final Words
+# Generalized Linear Models (GLM)
 
-We have finished a nice book.
+```{r include=FALSE}
+library(tidyverse)
+library(broom)  # for augment()
+library(WVPlots)  # for GainCurvePlot()
+library(caret)  # for RMSE()
+library(foreign)
+library(readr)
+library(gtsummary)
+library(VGAM)
+library(ordinal)
+```
+
+These notes are primarily from PSU's [Analysis of Discrete Data](https://online.stat.psu.edu/stat504) which uses Alan Agresti's **Categorical Data Analysis** [@Agresti2013]. I also reviewed PSU's [Regression Methods](https://newonlinecourses.science.psu.edu/stat501/lesson/15), DataCamp's [Generalized Linear Models in R](https://www.datacamp.com/courses/generalized-linear-models-in-r), DataCamp's [Multiple and Logistic Regression](https://www.datacamp.com/courses/multiple-and-logistic-regression), and **Interpretable machine learning** [@Molner2020].
+
+The linear regression model, $E(y|X) = X \beta$, structured as $y_i = X_i \beta + \epsilon_i$ where $X_i \beta = \mu_i$, assumes the response is a linear function of the predictors and the residuals are independent random variables normally distributed with zero mean and constant variance, $\epsilon \sim N \left(0, \sigma^2 \right)$. This implies that given a set of predictors, the response is normally distributed about its expected value, $y_i \sim N \left(\mu_i, \sigma^2 \right)$. However, there are many situations where this normality assumption does not hold. Generalized linear models (GLMs) are a generalization of the linear regression model that addresses non-normal response distributions.
+
+The response will not have a normal distribution if the underlying data-generating process is binomial or multinomial (proportions), Poisson (counts), or exponential (time-to-event). In these situations the linear regression model can predict proportions outside [0, 100] or negative counts and times. GLMs solve this problem by modeling a *function* of the expected value of $y$, $f(E(y|X)) = X \beta$. There are three components to a GLM: the *random component* is the probability distribution of the response variable (normal, binomial, Poisson, [etc](https://en.wikipedia.org/wiki/Exponential_family#Table_of_distributions).); the *systematic component* is the explanatory variables $X\beta$; and the *link function* $\eta$ specifies the link between random and systematic components, converting the response range to $[-\infty, +\infty]$.  
+
+Linear regression is thus a special case of GLM where link function is the identity function, $f(E(y|X)) = E(y|X)$. For logistic regression, where the data generating process is binomial, the link function is 
+
+$$f(E(y|X)) = \ln \left( \frac{E(y|X)}{1 - E(y|X)} \right) = \ln \left( \frac{\pi}{1 - \pi} \right) = logit(\pi)$$
+
+where $\pi$ is the event probability.^[The related probit regression link function is $f(E(Y|X)) = \Phi^{-1}(E(Y|X)) = \Phi^{-1}(\pi)$. The difference between the logistic and probit link function is theoretical, and [the practical significance is slight](https://www.theanalysisfactor.com/the-difference-between-logistic-and-probit-regression/). You can safely ignore probit.]  
+
+For Poisson regression, the link function is
+
+$$f(E(y|X)) = \ln (E(y|X)) = \ln(\lambda)$$
+
+where $\lambda$ is the expected event rate.  
+
+For exponential regression, the link function is 
+
+$$f(E(y|X) = -E(y|X) = -\lambda$$
+
+where $\lambda$ is the expected time to event.
+
+GLM uses maximum likelihood estimation (MLE) rather than ordinary least squares (OLS) to estimate the parameters, and thus relies on large-sample approximations. 
+
+In R, specify a GLM just like an linear model, but with the `glm()` function, specifying the distribution with the `family` parameter.
+
+* `family = "gaussian"`: linear regression
+* `family = "binomial"`: logistic regression
+* `family = binomial(link = "probit")`: probit regression
+* `family = "poisson"`: Poisson regression
 
 
-## Linear
-## Generalized Linear
+## Logistic Regression
+
+Logistic regression estimates the probability of a particular level of a categorical response variable given a set of predictors. The response levels can be binary, nominal, or ordinal.
+
+The *binary* logistic regression model is
+
+$$y = logit(\pi) = \ln \left( \frac{\pi}{1 - \pi} \right) = X \beta$$
+
+where $\pi$ is the event probability. The model predicts the *log odds* of the response variable.  The maximum likelihood estimator maximizes the likelihood function
+
+$$L(\beta; y, X) = \prod_{i=1}^n \pi_i^{y_i}(1 - \pi_i)^{(1-y_i)} = \prod_{i=1}^n\frac{\exp(y_i X_i \beta)}{1 + \exp(X_i \beta)}.$$
+
+There is no closed-form solution, so GLM estimates coefficients with interatively reweighted least squares.  
+
+Here is a case study to illustrate the points.  Dataset `donner` contains observations of 45 members of the Donner party with response variable (`surv`) an explanatory variables `age` and `sex`.
+
+```{r include=FALSE}
+donner <- tribble(
+  ~age, ~sex, ~surv,
+  23, 1, 0,
+  40, 0, 1,
+  40, 1, 1,
+  30, 1, 0,
+  28, 1, 0,
+  40, 1, 0,
+  45, 0, 0,
+  62, 1, 0,
+  65, 1, 0,
+  45, 0, 0,
+  25, 0, 0,
+  28, 1, 1,
+  28, 1, 0,
+  23, 1, 0,
+  22, 0, 1,
+  23, 0, 1,
+  28, 1, 1,
+  15, 0, 1,
+  47, 0, 0,
+  57, 1, 0,
+  20, 0, 1,
+  18, 1, 1,
+  25, 1, 0,
+  60, 1, 0,
+  25, 1, 1,
+  20, 1, 1,
+  32, 1, 1,
+  32, 0, 1,
+  24, 0, 1,
+  30, 1, 1,
+  15, 1, 0,
+  50, 0, 0,
+  21, 0, 1,
+  25, 1, 0,
+  46, 1, 1,
+  32, 0, 1,
+  30, 1, 0,
+  25, 1, 0,
+  25, 1, 0,
+  25, 1, 0,
+  30, 1, 0,
+  35, 1, 0,
+  23, 1, 1,
+  24, 1, 0,
+  25, 0, 1,
+) %>%
+  mutate(
+    surv = factor(surv, levels = c(0:1), labels = c("Died", "Lived")),
+    sex = factor(sex, levels = c(0:1), labels = c("F", "M"))
+  )
+```
+
+```{r collapse=TRUE}
+glimpse(donner)
+```
+
+```{r, fig.height=3.5}
+donner %>%  
+  ggplot(aes(x = age, y = as.integer(surv)-1, color = sex)) +
+  geom_jitter(height = 0, alpha = 0.6) +
+  geom_smooth(aes(y = as.integer(surv) - 1),
+              method = "glm", method.args = list(family = "binomial"), formula = "y ~ x") +
+  scale_y_continuous(breaks = c(0,1), labels = c("Died", "Lived")) +
+  labs(title = "Donner Party Survivorship", color = NULL, y = NULL) +
+  theme_minimal() +
+  theme(legend.position = "top")
+```
+
+Fit a logistic regression $surv = sex + age + sex:age$.
+
+```{r}
+m <- glm(surv ~ sex*age, data = donner, family = binomial(link = logit))
+summary(m)
+```
+
+The "z value" in the Coefficients table is the Wald z statistic, $z = \hat{\beta} / SE(\hat{\beta})$, which if squared is the Wald chi-squared statistic, $z^2$.  The p.value is the area to the right of $z^2$ in the $\chi_1^2$ density curve:
+
+```{r collapse=TRUE}
+m %>% tidy() %>% 
+  mutate(
+    z = estimate / std.error, 
+    p_z2 = pchisq(z^2, df = 1, lower.tail = FALSE)
+  )
+```
+
+Below the Coefficients table, the "dispersion parameter" refers to overdispersion, a common issue with GLM.  For a logistic regression, the response variable should be distributed $y_i \sim Bin(n_i, \pi_i)$ with $\mu_i = n_i \pi_i$ and $\sigma^2 = \pi (1 - \pi)$.  Overdispersion means the data shows evidence of variance greater than $\sigma^2$.
+
+"Fisher scoring" is a method for ML estimation. Logistic regression uses an iterative procedure to fit the model, so this section indicates whether the algorithm converged.
+
+The null deviance is the likelihood ratio $G^2 = 61.827$ of the intercept-only model.  The residual deviance is the likelihood ratio $G^2 = 47.346$ after including all model covariates.  $G^2$ is large, so reject the null hypothesis of no age and sex effects.  The ANOVA table shows the change in deviance from adding each variable successively to the model.
+
+```{r}
+anova(m)
+```
+
+```{r}
+glance(m)
+```
+
+Plug in values to interpret the model.  The log odds of a 24 year-old female surviving is $\hat{y} = 2.59$.  The log odds of a 24 year-old male surviving is $\hat{y} = -0.46$.
+
+```{r results=FALSE}
+coef(m)["(Intercept)"] + coef(m)["sexM"]*0 + coef(m)["age"]*24 +
+  coef(m)["sexM:age"]*0*24
+coef(m)["(Intercept)"] + coef(m)["sexM"]*1 + coef(m)["age"]*24 +
+  coef(m)["sexM:age"]*1*24
+
+# Or use predict()
+(lo_f <- predict(m, newdata = data.frame(sex = "F", age = 24)))
+(lo_m <- predict(m, newdata = data.frame(sex = "M", age = 24)))
+```
+
+Log odds are not easy to interpet.  Exponentiate the log odds to get the **odds**.
+
+$$odds(\hat{y}) = \exp (\hat{y}) = \frac{\pi}{1 - \pi}.$$
+
+The odds of a 24 year-old female surviving is $\exp(\hat{y}) = 13.31$.  The odds of a 24 year-old male surviving is $\exp(\hat{y}) = 0.63$.
+
+```{r results=FALSE}
+exp(lo_f)
+exp(lo_m)
+```
+
+Solve for $\pi$ to get the **probability**.  
+
+$$\pi = \frac{\exp (\hat{y})}{1 + \exp (\hat{y})}$$
+
+The probability of a 24 year-old female surviving is $\pi = 0.93$.  The probability of a female of average age surviving is $\pi = 0.39$.  The `predict()` function for a logistic model returns log-odds, but can also return $\pi$ by specifying parameter `type = "response"`.
+
+```{r results=FALSE}
+exp(lo_f) / (1 + exp(lo_f))
+exp(lo_m) / (1 + exp(lo_m))
+
+# Or use predict(..., type = "response")
+(p_f <- predict(m, newdata = data.frame(sex = "F", age =24), type = "response"))
+(p_m <- predict(m, newdata = data.frame(sex = "M", age =24), type = "response"))
+```
+
+Interpret the *coefficient* estimates using the **odds ratio**, the ratio of the odds before and after an increment to the predictors.  The odds ratio is how much the odds would be multiplied after a $\delta = X_1 - X_0$ unit increase in $X$.
+
+$$\theta = \frac{\pi / (1 - \pi) |_{X = X_1}}{\pi / (1 - \pi) |_{X = X_0}} = \frac{\exp (X_1 \hat{\beta})}{\exp (X_0 \hat{\beta})} = \exp ((X_1-X_0) \hat{\beta}) = \exp (\delta \hat{\beta})$$
+
+The odds of a female surviving are multiplied by a factor of $\exp(1 \cdot (-0.19)) = 0.824$ per additional year of age (or the odds fall by $1 - 0.824 = 17.6\%$). The odds of a male surviving are multiplied by a factor of $\exp(1 \cdot (-0.161-0.19)) = 0.968$ per additional year of age.   
+
+```{r results=FALSE}
+exp(1 * (coef(m)["age"] + 0*coef(m)["sexM:age"]))  # female
+exp(1 * (coef(m)["age"] + 1*coef(m)["sexM:age"]))  # male
+```
+
+`oddsratio::or_glm()` calculates the odds ratio from an increment in the predictor values.
+
+```{r}
+oddsratio::or_glm(donner, m, incr = list(age = 1))
+```
+
+The predicted values can also be expressed as the probabilities $\pi$.  This produces the familiar signmoidal shape of the binary relationship.
+
+```{r fig.height=3.5}
+augment(m, type.predict = "response") %>%
+  ggplot(aes(x = age)) +
+  geom_point(aes(y = surv)) +
+  geom_line(aes(y = .fitted+1)) +
+  labs(x = "AGE",
+       y = "Probability of SURVIVE",
+       title = "Binary Fitted Line Plot")
+```
+
+Evaluate a logistic regression using a [Gain curve or ROC curve](https://community.tibco.com/wiki/gains-vs-roc-curves-do-you-understand-difference). 
+
+In the **gain curve**, the x-axis is the fraction of items seen when sorted by the predicted value, and the y-axis is the cumulative summed true outcome. The "wizard" curve is the gain curve when the data is sorted by the true outcome.  If the model's gain curve is close to the wizard curve, then the model predicted the response variable well. The grey area is the "gain" over a random prediction.
+
+20 of the 45 members of the Donner party survived. 
+
+* The gain curve encountered 10 survivors (50%) within the first 12 observations (27%).  It encountered all 20 survivors on the 37th observation.
+* The bottom of the grey area is the outcome of a random model.  Only half the survivors would be observed within 50% of the observations.  
+* The top of the grey area is the outcome of the perfect model, the "wizard curve".  Half the survivors would be observed in 10/45=22% of the observations.
+
+```{r, fig.height=3.5}
+options(yardstick.event_first = FALSE)  # set the second level as success
+augment(m, type.predict = "response") %>%
+yardstick::gain_curve(surv, .fitted) %>%
+  autoplot() +
+  labs(title = "Gain Curve")
+```
+
+The ROC (Receiver Operating Characteristics) curve plots sensitivity vs specificity at different cut-off values for the probability, ranging cut-off from 0 to 1.
+
+```{r, fig.height=3.5}
+options(yardstick.event_first = FALSE)  # set the second level as success
+augment(m, type.predict = "response") %>%
+yardstick::roc_curve(surv, .fitted) %>%
+  autoplot() +
+  labs(title = "ROC Curve")
+```
+
+
+## Multinomial Logistic Regression
+
+The following notes rely on the [PSU STAT 504 course notes](https://online.stat.psu.edu/stat504/node/171/.
+
+Multinomial logistic regression models the odds the multinomial response variable $Y \sim Mult(n, \pi)$ is in level $j$ relative to baseline category $j^*$ for all pairs of categories as a function of $k$ explanatory variables, $X = (X_1, X_2, ... X_k)$. 
+
+$$\log \left( \frac{\pi_{ij}}{\pi_{ij^*}} \right) = x_i^T \beta_j, \hspace{5mm} j \ne j^2$$
+
+Interpet the $k^{th}$ element of $\beta_j$ as the increase in log-odds of falling a response in category $j$ relative to category $j^*$ resulting from a one-unit increase in the $k^{th}$ predictor term, holding the other terms constant.
+
+Multinomial model is a type of GLM.
+
+Here is an example using multinomial logistic regression.  A researcher classified the stomach contents of $n = 219$ alligators according to $r = 5$ categories (*fish, Inv., Rept, Bird, Other*) as a function of covariates *Lake*, *Sex*, and *Size*..
+
+```{r}
+gator_dat <- tribble(
+  ~profile, ~Gender, ~Size, ~Lake, ~Fish, ~Invertebrate, ~Reptile, ~Bird, ~Other,
+  "1", "f", "<2.3", "george",  3, 9, 1, 0, 1,
+  "2", "m", "<2.3", "george", 13, 10, 0, 2, 2,
+  "3", "f", ">2.3", "george", 8, 1, 0, 0, 1,
+  "4", "m", ">2.3", "george", 9, 0, 0, 1, 2,
+  "5", "f", "<2.3", "hancock", 16, 3, 2, 2, 3,
+  "6", "m", "<2.3", "hancock", 7, 1, 0, 0, 5,
+  "7", "f", ">2.3", "hancock", 3, 0, 1, 2, 3,
+  "8", "m", ">2.3", "hancock", 4, 0, 0, 1, 2,
+  "9", "f", "<2.3", "oklawaha", 3, 9, 1, 0, 2,
+  "10", "m", "<2.3", "oklawaha", 2, 2, 0, 0, 1,
+  "11", "f", ">2.3", "oklawaha", 0, 1, 0, 1, 0,
+  "12", "m", ">2.3", "oklawaha", 13, 7, 6, 0, 0,
+  "13", "f", "<2.3", "trafford", 2, 4, 1, 1, 4,
+  "14", "m", "<2.3", "trafford", 3, 7, 1, 0, 1,
+  "15", "f", ">2.3", "trafford", 0, 1, 0, 0, 0,
+  "16", "m", ">2.3", "trafford", 8, 6, 6, 3, 5
+)
+gator_dat <- gator_dat %>%
+  mutate(
+    Gender = as_factor(Gender),
+    Lake = fct_relevel(Lake, "hancock"),
+    Size = as_factor(Size)
+  )
+```
+
+There are 4 equations to estimate:
+
+$$\log \left( \frac{\pi_j} {\pi_{j^*}} \right) = \beta X$$
+
+where $\pi_{j^*}$ is the probability of fish, the baseline category.  
+
+
+Run a multivariate logistic regression model with `VGAM::vglm()`.
+
+```{r message=FALSE}
+library(VGAM)
+```
+
+`vglm()` fits 4 logit models.
+
+```{r}
+gator_vglm <- vglm(
+  cbind(Bird,Invertebrate,Reptile,Other,Fish) ~ Lake + Size + Gender, 
+  data = gator_dat, 
+  family = multinomial
+)
+summary(gator_vglm)
+```
+
+The **residual deviance** is 50.2637 on 40 degrees of freedom.  Residual deviance tests the current model fit versus the saturated model. The saturated model, which fits a separate multinomial distribution to each of the 16 profiles (unique combinations of lake, sex and size), has 16 × 4 = 64 parameters. The current model has an intercept, three lake coefficients, one sex coefficient and one size coefficient for each of the four logit equations, for a total of 24 parameters. Therefore, the overall fit statistics have 64 − 24 = 40 degrees of freedom.
+
+```{r}
+# E <- data.frame(fitted(gator_vglm) * rowSums(gator_dat[, 5:9]))
+# O <- gator_dat %>% select(Bird, Invertebrate, Reptile, Other, Fish) + .000001
+# (g2 <- 2 * sum(O * log(O / E)))
+```
+
+
+indicates the model fits okay, but not great. The Residual Deviance of 50.26 with 40 df from the table above output is reasonable, with p-value of 0.1282 and the statistics/df is close to 1 that is 1.256.
+
+
+
+## Ordinal Logistic Regression
+
+Ordinal logistic regression, also call cumulative link model (CLM), is a generalized linear model (GZLM), an extension of the general linear model (GLM) to non-continuous outcome variables. There are many approaches to ordinal logistic regression, including cumulative, adjacent, and continuation categories, but the most popular is the **cumulative odds ordinal logistic regression with proportional odds**. These notes rely on [UVA](https://data.library.virginia.edu/fitting-and-interpreting-a-proportional-odds-model/), [PSU](https://online.stat.psu.edu/stat504/),  [Laerd](https://statistics.laerd.com/spss-tutorials/ordinal-regression-using-spss-statistics.php), and the CLM package [article vignette](https://cran.r-project.org/web/packages/ordinal/vignettes/clm_article.pdf).
+
+The model for ordinal response random variable $Y_i$ with $J$ levels is
+
+$$\gamma_{ij} = F(\eta_{ij}), \hspace{5 mm} \eta_{ij} = \theta_j - x_i^\mathrm{T}\beta, \hspace{5 mm} i = 1, \ldots, n, \hspace{5 mm} j = 1, \ldots, J-1$$
+
+where $\gamma_{ij} = P(Y_i \le j) = \pi_{i1} + \cdots + \pi_{ij}$. $\eta_{ij}$ is a linear predictor with $J-1$ intercepts. $F$ is the inverse link function. The regression models the logit link function of $\gamma_{ij}$.
+
+$$\mathrm{logit}(\gamma_{ij}) = \log \left[\frac{P(Y_i \le j)}{P(Y_i \gt j)} \right] = \theta_j - x_i^\mathrm{T}\beta$$
+The cumulative logit is the log-odds of the cumulative probabilities that the response is in category $\le j$ versus $\gt j$. $\theta_j$ is the log-odds when $x_i^\mathrm{T}=0$ and $\beta$ is the increase in the log odds attributed to a one unit increase in $x_i^\mathrm{T}=0$. Notice $\beta$ is the same for all $j$. 
+
+Once you fit the model, you will either generate predicted values or evaluate the coefficient estimators. The predicted value is a log-odds by default (useless), so you will at least take exponential to get the odds. From there you can solve for the probability, 
+
+$$P(Y_i \gt j) = \frac{\mathrm{exp}(\hat{y}_i)}{1 + \mathrm{exp}(\hat{y}_i)}.$$
+
+The exponential of $\beta$ is the odds ratio of $x_1^\mathrm{T} - x_0^\mathrm{T}$. You can solve for the odds ratio 
+
+$$\mathrm{OR} = \frac{\mathrm{exp}(\theta_j - x_1^\mathrm{T}\beta)}{\mathrm{exp}(\theta_j - x_2^\mathrm{T}\beta)} = \mathrm{exp}(\beta(x_1^\mathrm{T} - x_0^\mathrm{T}))$$
+
+If $x$ is a binary factor factor, then $exp(\beta)$ is the odds ratio of $x=1$ vs $x=0$. Thus the odds-ratio is *proportional* to the difference between values of $x$ and $\beta$ is the constant of proportionality.
+
+The model is estimated with a regularized Newton-Raphson algorithm with step-halving (line search) using analytic expressions for the gradient and Hessian of the negative log-likelihood function. What this means is beyond me right now, but the upshot is that the estimation is an iterative maximization exercise, not a formulaic matrix algebra process. It is possible for the model estimation to fail to converge on a maximum.
+
+You will sometimes encounter discussion about the *latent variable*. That is just the underlying quality you are trying to measure. If you rate something a 4 on a 5-level likert scale, 4 is the expression of your valuation, the latent variable. Your precise valuation is somewhere between 3 and 5 on a continuous scale. The link function defines the distribution of the latent variable.
+
+There are variations on the ordinal model. Structured thresholds impose restrictions on $\theta_j$, for example requiring equal distances between levels. Partial proportional odds allow $\theta_j$ to vary with nominal predictors. You can also use link functions other than logit.
+
+There are two conditions to ordinal logistic regression: (a) no multicollinearity, and (b) proportional odds.
+
+### Case Study {-}
+
+```{r include=FALSE}
+tax <- list()
+
+tax$dat <- read.spss("./input/ordinal-logistic-regression.sav", to.data.frame = TRUE) %>%
+  mutate(tax_too_high = factor(tax_too_high, ordered = TRUE),
+         biz_owner = fct_relevel(biz_owner, "No", "Yes"),
+         politics = fct_relevel(politics, "Lab")) %>%
+  select(-c(biz_friends, uni_educated))
+tax$n <- nrow(tax$dat)
+```
+
+`r tax$n` participants in a study respond to the statement "Taxes are too high" on a 4-level likert scale (`tax_too_high`, *Strongly Disagree*, *Disagree*, *Agree*, *Strongly Agree*). Participant attributes include business owner (`biz_owner`, *Y*|*N*), age (`age`), and political affiliation (`politics`, *Liberal*, *Conservative*, *Labor*). 
+
+```{r}
+tax$gt <- tbl_summary(
+  tax$dat %>% select(-age), 
+  by = politics, 
+  statistic = list(all_continuous() ~ "{mean} ({sd})")
+)
+tax$gt
+```
+
+```{r}
+tax$dat %>%
+  mutate(income = case_when(income < quantile(income, .25) ~ "low income",
+                            income < quantile(income, .75) ~ "med income",
+                            TRUE ~ "high income"),
+         income = factor(income, levels = c("low income", "med income", "high income"))) %>%
+  count(tax_too_high, biz_owner, politics, income) %>%
+  ggplot(aes(x = tax_too_high, y = n, fill = biz_owner)) +
+  geom_col(position = position_dodge2(preserve = "single")) +
+  facet_grid(rows = vars(income), cols = vars(politics), space = "free") +
+  scale_x_discrete(labels = function (x) str_wrap(x, width = 10)) +
+  theme_bw() +
+  theme(legend.position = "bottom") +
+  labs(title = "Taxes too high?",
+       subtitle = "Reponse count by business owner, income level, and party.")
+```
+
+Fit a cumulative link model for the cumulative probability of the $i$th response falling in $j$th category or below where $i$ indexes the ($n = 192$) responses, $j = 1, \ldots, J$ indexes the ($J = 4$) response categories, and $\theta_j$ is the threshold for the $j$th cumulative logit.
+
+$$\mathrm{logit}(P(Y_i \le j)) = \theta_j - \beta_1(\mathrm{politics}_i) - \beta_2(\mathrm{biz\_owner}_i) - \beta_3(\mathrm{age}_i)$$
+
+#### Fit the Model {-}
+
+```{r}
+tax$fmla <- formula(tax_too_high ~ biz_owner + age + politics)
+tax$clm <- clm(tax$fmla, data = tax$dat)
+summary(tax$clm)
+```
+
+The summary table shows two fit statistics at the top: the log-likelihood and the AIC. The log-likelihood is the sum of the likelihoods for each observation that the predicted value correctly predicts the observed value. Its value ranges from $-\infty$ to $+\infty$. It's value increases with observations, additional variables, and fit quality. I think you just use it to compare alternative model formulations. Akaike Information Criterion (AIC) is a measure of the relative quality of a statistical model. Again, I think the value is only useful as a comparison benchmark between alternative model fits. You'd want the model with the lowest AIC.
+
+The Coefficients table is the familiar parameter estimates. E.g., for `biz_ownerYes`, the coefficient estimate is `r coef(summary(tax$clm))[4, "Estimate"] %>% scales::comma(accuracy = .001)` with standard error `r coef(summary(tax$clm))[4, "Std. Error"] %>% scales::comma(accuracy = .001)`. The *z*-value is the ratio $z = \hat{\beta} / se =$ `r coef(summary(tax$clm))[4, "z value"] %>% scales::comma(accuracy = .001)` with *p*-value equal to $2 \cdot P(Z>z) =$ `r coef(summary(tax$clm))[4, "Pr(>|z|)"] %>% scales::comma(accuracy = .001)`. Some programs (e.g., SPSS) also show the Wald chi-squared statistic, the square of the *z* statistic, $z^2 =$, `r coef(summary(tax$clm))[4, "z value"]^2 %>% scales::comma(accuracy = .001)`. The square of a normal variable has a chi-square distribution, so the *p* value for the Wald chi-squared statistic is the `pchisq(z^2, df = 1)` $=$ `r coef(summary(tax$clm))[4, "z value"]^2 %>% pchisq(df = 1, lower.tail = FALSE) %>% scales::comma(accuracy = .001)`.
+
+The Threshold coefficients table are the intercepts, or cut-points. The first cut-point is log-odds of a response level *Strongly Disagree* (or less) vs greater than *Strongly Disagree* when all factor variables are at their reference level and the continuous vars are at 0.
+
+There may be interaction effects between `biz_owner` and `politics`. Fit a saturate model, then compare their log likelihoods with a likelihood ratio test.
+```{r}
+tax$fmla_sat <- formula(tax_too_high ~ biz_owner*politics + age)
+tax$clm_sat <- clm(tax$fmla_sat, data = tax$dat)
+tax$sat_anova <- anova(tax$clm, tax$clm_sat)
+tax$sat_anova
+```
+
+The likelihood ratio test indicates the main-effects model fits about the same in comparison to the saturated model ($\chi^2($ `r tax$sat_anova[["df"]][2]` $) = $ *LR* = `r tax$sat_anova$LR.stat[2] %>% scales::comma(accuracy = .01)`, *p* = `r tax$sat_anova[["Pr(>Chisq)"]][2] %>% scales::comma(accuracy = .001)`)
+
+#### Verify Assumptions {-}
+
+Cumulative odds ordinal logistic regression with proportional odds models require a) no multicollinearity, and b) proportional odds.
+
+##### Multicollinearity {-}
+
+Multicollinearity occurs when two or more independent variables are *highly correlated* so that they do not provide unique or independent information in the regression model. Multicollinearity inflates the variances of the estimated coefficients, resulting in larger confidence intervals. The usual interpretation of a slope coefficient as the change in the mean response per unit increase in the predictor when all the other predictors are held constant breaks down because changing one predictor *necessarily* changes other predictors.
+
+Test for multicollinearity with variance inflation factors (VIF). The VIF is the inflation percentage of the parameter variance due to multicollinearity. E.g., a VIF of 1.9 means the parameter variance is 90% larger than what it would be if it was not correlated with other predictors.
+
+Predictor $K$'s variance, $Var(\hat{\beta_k})$, is inflated by a factor of
+
+$$VIF_k = \frac{1}{1 - R_k^2}$$
+
+due to collinearity with other predictors, where $R_k^2$ is the $R^2$ of a regression of the $k^{th}$ predictor on the remaining predictors. If there is zero relationship between predictor $k$ and the other variables, $R_k^2 = 0$ and $VIF = 1$ (no variance inflation). If 100% of the variance in predictor $k$ is explained by the other predictors, then $R_k^2 = 1$ and $VIF = \infty$. A good rule of thumb is that $VIF \le 5$ is acceptable.
+
+```{r}
+# Cannot use CLM model with vif(). Re-express as a linear model.
+tax$vif <- lm(as.numeric(tax_too_high) ~ politics + biz_owner + age, dat = tax$dat) %>%
+  car::vif()
+tax$vif
+```
+
+The VIFs in column GVIF are all below 5, so this model is not compromised by multicollinearity.
+
+##### Proportional Odds {-}
+
+The assumption of proportional odds means the independent variable effects are constant across each cumulative split of the ordinal dependent variable. Test for proportional odds using a full [likelihood ratio test](https://stats.idre.ucla.edu/other/mult-pkg/faq/general/faqhow-are-the-likelihood-ratio-wald-and-lagrange-multiplier-score-tests-different-andor-similar/) comparing the proportional odds model with a multinomial logit model, also called an unconstrained baseline logit model. This is also called the *test of parallel lines*. The multinomial logit model fits a slope to each of the $J – 1$ levels. The proportional odds model is nested within the multinomial model, so you can use a likelihood ratio test to see if the models are statistically different. Fit the proportional odds model and a multinomial model using `VGAM::vglm()` and capture the log likelihoods and degrees of freedom. Perform a likelihood ratio test on the differences in log likelihoods, $D = -2 \mathrm{loglik}(\beta)$.
+
+```{r}
+tax$vglm_ordinal     <- vglm(tax$fmla, propodds,   data = tax$dat)
+tax$vglm_multinomial <- vglm(tax$fmla, cumulative, data = tax$dat)
+tax$po_lrt <- lrtest(tax$vglm_multinomial, tax$vglm_ordinal)
+tax$po_lrt
+```
+
+> The assumption of proportional odds was met, as assessed by a full likelihood ratio test comparing the fit of the proportional odds model to a model with varying location parameters, $\chi^2$(8) = `r tax$po_lrt %>% slot("Body") %>% tail(1) %>% pull(Chisq) %>% scales::number(accuracy = .001)`, *p* = `r tax$po_lrt %>% slot("Body") %>% tail(1) %>% pull("Pr(>Chisq)") %>% scales::number(accuracy = .001)`.
+
+Another option is the partial proportional odds test. This test locates specific variables causing the rejection of proportional odds.
+
+```{r}
+tax$po_lrt2 <- clm(tax$fmla, data = tax$dat) %>%
+  nominal_test()
+tax$po_lrt2
+```
+
+> The assumption of proportional odds was met, as assessed by a full likelihood ratio test comparing the fit of the proportional odds model to a model with varying location parameters for business owner, $\chi^2$(`r tax$po_lrt2["biz_owner", "Df"]`) = `r tax$po_lrt2["biz_owner", "LRT"] %>% scales::number(accuracy = .001)`, *p* = `r tax$po_lrt2["biz_owner", "Pr(>Chi)"] %>% scales::number(accuracy = .001)` and politics, $\chi^2$(`r tax$po_lrt2["politics", "Df"]`) = `r tax$po_lrt2["politics", "LRT"] %>% scales::number(accuracy = .001)`, *p* = `r tax$po_lrt2["politics", "Pr(>Chi)"] %>% scales::number(accuracy = .001)`.
+
+#### Assess the Model Fit {-}
+
+There are three ways to assess overall model fit: The Deviance and Pearson goodness-of-fit tests of the overall model fit; the Cox and Snell, Nagelkerke, and McFadden pseudo R measures of explained variance; and the likelihood ratio test comparing the model fit to the intercept-only model. 
+
+###### Deviance and Pearson {-}
+
+However, these tests rely on large frequencies in each *cell*, that is, each possible combination of predictor values. Overall goodness-of-fit statistics should be treated with suspicion when a continuous independent variable is present and/or there are a large number of cells with zero frequency.The Pearson goodness-of-fit statistic is $X^2 = \sum \frac{(O_{ij} - E_{ij})^2}{E_{ij}}$ where $i$ is the observation number and $j$ is the response variable level. It is a summary of the Pearson residuals, the difference between the observed and expected cell counts, $O_{ij} - E_{ij}$. The deviance goodness-of-fit statistic is the difference in fit between the model and a full model; a full model being a model that fits the data perfectly, $G^2 = 2 \sum_{ij} O_{ij} \log \left( \frac{O_{ij}}{E_{ij}} \right)$. Neither of these tests are reliable if there are many cells with zero frequencies and/or small expected frequencies and are generally not recommended. Generally, the chi-squared test requires a frequency count of at least 5 per cell. 
+
+```{r}
+# Observed combinations of model vars
+tax$cell_patterns <- tax$dat %>% count(biz_owner, age, politics, tax_too_high) %>% nrow()
+
+# Observed combinations of predictor vars * levels of response var
+tax$covariate_patterns <- tax$dat %>% count(biz_owner, age, politics) %>% nrow()
+tax$possible_cells <- tax$covariate_patterns * length(levels(tax$dat$tax_too_high))
+
+# 1 - ratio of observed to possible
+tax$pct_freq_zero <- 1 - tax$cell_patterns / tax$possible_cells
+```
+
+There are `r tax$cell_patterns` observed combinations of model variables (predictors), and `r tax$possible_cells` possible combinations (predictors * outcome levels), so `r tax$pct_freq_zero %>% scales::percent(accuracy = .1)` of cells have zero frequencies. Ideally, zero frequencies should be less than 20%, so if you were to use the deviance or Pearson tests, you would need to report this. The results below are contradictory and bogus. I think you'd only use this test if you didn't have continuous predictor variables.
+
+```{r}
+observed <- tax$dat %>% 
+  count(biz_owner, age, politics, tax_too_high) %>%
+  pivot_wider(names_from = tax_too_high, values_from = n) %>%
+  replace_na(list(`Strongly Disagree` = 0, Disagree = 0, Agree = 0, `Strongly Agree` = 0)) %>%
+  pivot_longer(cols = `Strongly Disagree`:`Strongly Agree`, names_to = "outcome", values_to = "observed")
+
+expected <- bind_cols(
+  tax$dat, 
+  predict(tax$clm, subset(tax$dat, select = -tax_too_high))$fit %>% data.frame()
+) %>%
+  rename(c("Strongly Disagree" = "Strongly.Disagree", "Strongly Agree" = "Strongly.Agree")) %>%
+  group_by(biz_owner, age, politics) %>%
+  summarize(.groups = "drop", across(`Strongly Disagree`:`Strongly Agree`, sum)) %>%
+  pivot_longer(cols = `Strongly Disagree`:`Strongly Agree`, names_to = "outcome", values_to = "expected")
+
+obs_exp <- observed %>%
+  inner_join(expected, by = c("politics", "biz_owner", "age", "outcome")) %>%
+  mutate(epsilon_sq = (observed - expected)^2,
+         chi_sq = epsilon_sq / expected,
+         g_sq = 2 * observed * log((observed+.0001) / expected)
+  )
+
+tax$chisq <- list()
+tax$chisq$X2 = sum(obs_exp$chi_sq)
+tax$chisq$G2 = sum(obs_exp$g_sq)
+tax$chisq$df = tax$covariate_patterns * (length(levels(tax$dat$tax_too_high)) - 1) - 7
+tax$chisq$X2_p.value = pchisq(tax$chisq$X2, df = tax$chisq$df, lower.tail = FALSE)
+tax$chisq$G2_p.value = pchisq(tax$chisq$G2, df = tax$chisq$df, lower.tail = FALSE)
+```
+
+> The Pearson goodness-of-fit test indicated that the model was *not* a good fit to the observed data, $\chi^2$(`r tax$chisq$df`) = `r tax$chisq$X2 %>% scales::comma(accuracy = 0.1)`, *p* < .001$. The deviance goodness-of-fit test indicated that the model was a good fit to the observed data, $G^2$(`r tax$chisq$df`) = `r tax$chisq$G2 %>% scales::comma(accuracy = 0.1)`, *p* = `r tax$chisq$G2_p.value %>% scales::comma(accuracy = 0.001)`. 
+
+###### Pseudo-R2 Measures {-}
+
+There are a number of measures in ordinal regression that attempt to provide a similar "variance explained" measure as that provided in ordinary least-squares linear regression. However, these measures do not have the direct interpretation that they do in ordinary linear regression and are often, therefore, referred to as "pseudo" R2 measures. The three most common measures (Cox and Snell, Nagelkerke, and McFadden) are not particularly good and not universally used. It is presented in the SPSS output, so you might encounter it in published work.
+
+```{r}
+tax$nagelkerke <- rcompanion::nagelkerke(tax$clm)
+tax$nagelkerke$Pseudo.R.squared.for.model.vs.null
+```
+
+###### Likelihood Ratio Test {-}
+
+The best way to assess model fit is the likelihood ratio test comparing the model to an intercept-only model. The difference in the -2 log likelihood between the models has a $\chi^2$ distribution with degrees of freedom equal to the difference in the number of parameters.
+
+```{r}
+intercept_only <- clm(tax_too_high ~ 1, data = tax$dat)
+tax$lrt <- anova(tax$clm, intercept_only)
+tax$lrt
+```
+
+The table shows the log likelihoods of the two models. LR.stat is the difference between 2 * the logLik values.
+
+> The final model statistically significantly predicted the dependent variable over and above the intercept-only model, $\chi^2(4)$ = `r tax$lrt$LR.stat[2] %>% scales::comma(accuracy = .1)`, *p* = `r tax$lrt[[6]][2] %>% scales::comma(accuracy = .001)`.
+
+#### Interpret Results {-}
+
+Return to the model summary. 
+
+```{r}
+tidy(tax$clm)
+```
+
+The coefficients for `biz_owner`, `age`, and politics are positive. Positive parameters *increase* the likelihood of stronger agreement with the statement. In this case, discontent with taxes are higher for business owners, increase with age, and are higher for Liberal Democrats and Conservatives relative to the Labor Party. The expected cumulative log-odds of declaring $\le j$ level of agreement with the statement for the baseline group (`biz_ownerNo`, `age = 0`, `politicsLib`) is `r tax$clm$coefficients["Strongly Disagree|Disagree"] %>% scales::comma(accuracy = .001)` for $j = 1$ (Strongly Disagree), `r tax$clm$coefficients["Disagree|Agree"] %>% scales::comma(accuracy = .001)` for $j = 2$ (Disagree), and `r tax$clm$coefficients["Agree|Strongly Agree"] %>% scales::comma(accuracy = .001)` for $j = 3$ (Agree). 
+
+You could solve the logit equation for 
+
+$$\pi_j = \frac{\mathrm{exp}(Y_i)} {1 + \mathrm{exp}(Y_i)}$$
+to get the cumulative probabilities for each level. That's what `predict(type = "cum.prob")` does. But it might be more intuitive to work with individual probabilities, the lagged differences to get the individual probabilities for each $j$. That's what `predict(type = "prob")` does. I like to play with predicted values to get a sense of the outcome distributions. In this case, I'll take the median `age`, and each combination of `biz_owner` and `politics`.
+
+```{r fig.height=2.5, fig.width=6.5}
+new_data <- tax$dat %>% 
+  mutate(age = median(tax$dat$age)) %>% 
+  expand(age, politics, biz_owner)
+
+preds <- predict(tax$clm, newdata = new_data, type = "prob")[["fit"]] %>% as.data.frame()
+
+bind_cols(new_data, preds) %>%
+  pivot_longer(cols = `Strongly Disagree`:`Strongly Agree`) %>% 
+  mutate(name = factor(name, levels = levels(tax$dat$tax_too_high))) %>%
+  ggplot(aes(y = politics, x = value, fill = fct_rev(name))) +
+  geom_col() +
+  geom_text(aes(label = scales::percent(value, accuracy = 1)), 
+            size = 3, position = position_stack(vjust=0.5)) +
+  facet_grid(~paste("Bus Owner = ", biz_owner)) +
+  scale_fill_grey(start = 0.5, end = 0.8) +
+  theme_bw() + 
+  theme(legend.position = "top",
+        axis.text.x = element_blank(),
+        axis.ticks.x = element_blank()) +
+  guides(fill = guide_legend(reverse = TRUE)) +
+  labs(title = "Taxes too High for Conservative Business Owners?", 
+       x = NULL, fill = NULL)
+```
+
+You will want to establish whether `politics` is statistically significant overall before exploring any specific contrasts. The ANOVA procedure with type I test reports an overall test of significance for each variable entered into the model.
+
+```{r}
+(tax$anovaI <- anova(tax$clm, type = "I"))
+```
+
+> The political party last voted for has a statistically significant effect on the prediction of whether tax is thought to be too high, Wald $\chi^2$(`r tax$anovaI$Df[3]`) = `r tax$anovaI$Chisq[3] %>% scales::comma(accuracy = .1)`, *p* = `r tax$anovaI[[3]][3] %>% scales::comma(accuracy = .001)`.
+
+The best way to work with the data is with the `tidy(exponentiate = TRUE)` version. 
+
+```{r}
+tax$tidy <- tax$clm %>% tidy(conf.int = TRUE, exponentiate = TRUE)
+tax$tidy
+```
+
+Then you can summarize the table in words.
+
+> The odds of business owners considering tax to be too high was `r tax$tidy %>% filter(term == "biz_ownerYes") %>% pull(estimate) %>% scales::comma(accuracy = .001)` (95% CI, `r tax$tidy %>% filter(term == "biz_ownerYes") %>% pull(conf.low) %>% scales::comma(accuracy = .001)` to `r tax$tidy %>% filter(term == "biz_ownerYes") %>% pull(conf.high) %>% scales::comma(accuracy = .001)`) times that of non-business owners, a statistically significant effect, *z* = `r tax$tidy %>% filter(term == "biz_ownerYes") %>% pull(statistic) %>% scales::comma(accuracy = .001)`, *p* = `r tax$tidy %>% filter(term == "biz_ownerYes") %>% pull(p.value) %>% scales::comma(accuracy = .001)`.
+
+> The odds of Conservative voters considering tax to be too high was `r tax$tidy %>% filter(term == "politicsCon") %>% pull(estimate) %>% scales::comma(accuracy = .001)` (95% CI, `r tax$tidy %>% filter(term == "politicsCon") %>% pull(conf.low) %>% scales::comma(accuracy = .001)` to `r tax$tidy %>% filter(term == "politicsCon") %>% pull(conf.high) %>% scales::comma(accuracy = .001)`) times that of Labour voters, a statistically significant effect, *z* = `r tax$tidy %>% filter(term == "politicsCon") %>% pull(statistic) %>% scales::comma(accuracy = .001)`, *p* = `r tax$tidy %>% filter(term == "politicsCon") %>% pull(p.value) %>% scales::comma(accuracy = .001)`. The odds of Liberal Democrat voters considering tax to be too high was similar to that of Labour voters (odds ratio of `r tax$tidy %>% filter(term == "politicsLib") %>% pull(estimate) %>% scales::comma(accuracy = .001)` (95% CI, `r tax$tidy %>% filter(term == "politicsLib") %>% pull(conf.low) %>% scales::comma(accuracy = .001)` to `r tax$tidy %>% filter(term == "politicsLib") %>% pull(conf.high) %>% scales::comma(accuracy = .001)`), *p* = `r tax$tidy %>% filter(term == "politicsLib") %>% pull(p.value) %>% scales::comma(accuracy = .001)`.
+
+> An increase in age (expressed in years) was associated with an increase in the odds of considering tax too high, with an odds ratio of `r tax$tidy %>% filter(term == "age") %>% pull(estimate) %>% scales::comma(accuracy = .001)` (95% CI, `r tax$tidy %>% filter(term == "age") %>% pull(conf.low) %>% scales::comma(accuracy = .001)` to `r tax$tidy %>% filter(term == "age") %>% pull(conf.high) %>% scales::comma(accuracy = .001)`), *z* = `r tax$tidy %>% filter(term == "age") %>% pull(statistic) %>% scales::comma(accuracy = .001)`, *p* = `r tax$tidy %>% filter(term == "age") %>% pull(p.value) %>% scales::comma(accuracy = .001)`.
+
+#### Reporting {-}
+
+Here is the complete write-up.
+
+> A cumulative odds ordinal logistic regression with proportional odds was run to determine the effect of business ownership, political party voted for, and age, on the belief that taxes are too high. There were proportional odds, as assessed by a full likelihood ratio test comparing the fitted model to a model with varying location parameters, $\chi^2$(8) = `r tax$po_lrt %>% slot("Body") %>% tail(1) %>% pull(Chisq) %>% scales::number(accuracy = .001)`, *p* = `r tax$po_lrt %>% slot("Body") %>% tail(1) %>% pull("Pr(>Chisq)") %>% scales::number(accuracy = .001)`. The final model statistically significantly predicted the dependent variable over and above the intercept-only model, $\chi^2(4)$ = `r tax$lrt$LR.stat[2] %>% scales::comma(accuracy = .1)`, *p* = `r tax$lrt[[6]][2] %>% scales::comma(accuracy = .001)`. The odds of business owners considering tax to be too high was `r tax$tidy %>% filter(term == "biz_ownerYes") %>% pull(estimate) %>% scales::comma(accuracy = .001)` (95% CI, `r tax$tidy %>% filter(term == "biz_ownerYes") %>% pull(conf.low) %>% scales::comma(accuracy = .001)` to `r tax$tidy %>% filter(term == "biz_ownerYes") %>% pull(conf.high) %>% scales::comma(accuracy = .001)`) times that of non-business owners, a statistically significant effect, *z* = `r tax$tidy %>% filter(term == "biz_ownerYes") %>% pull(statistic) %>% scales::comma(accuracy = .001)`, *p* = `r tax$tidy %>% filter(term == "biz_ownerYes") %>% pull(p.value) %>% scales::comma(accuracy = .001)`. The political party last voted for has a statistically significant effect on the prediction of whether tax is thought to be too high, Wald $\chi^2$(`r tax$anovaI$Df[3]`) = `r tax$anovaI$Chisq[3] %>% scales::comma(accuracy = .1)`, *p* = `r tax$anovaI[[3]][3] %>% scales::comma(accuracy = .001)`. The odds of Conservative voters considering tax to be too high was `r tax$tidy %>% filter(term == "politicsCon") %>% pull(estimate) %>% scales::comma(accuracy = .001)` (95% CI, `r tax$tidy %>% filter(term == "politicsCon") %>% pull(conf.low) %>% scales::comma(accuracy = .001)` to `r tax$tidy %>% filter(term == "politicsCon") %>% pull(conf.high) %>% scales::comma(accuracy = .001)`) times that of Labour voters, a statistically significant effect, *z* = `r tax$tidy %>% filter(term == "politicsCon") %>% pull(statistic) %>% scales::comma(accuracy = .001)`, *p* = `r tax$tidy %>% filter(term == "politicsCon") %>% pull(p.value) %>% scales::comma(accuracy = .001)`. The odds of Liberal Democrat voters considering tax to be too high was similar to that of Labour voters (odds ratio of `r tax$tidy %>% filter(term == "politicsLib") %>% pull(estimate) %>% scales::comma(accuracy = .001)` (95% CI, `r tax$tidy %>% filter(term == "politicsLib") %>% pull(conf.low) %>% scales::comma(accuracy = .001)` to `r tax$tidy %>% filter(term == "politicsLib") %>% pull(conf.high) %>% scales::comma(accuracy = .001)`), *p* = `r tax$tidy %>% filter(term == "politicsLib") %>% pull(p.value) %>% scales::comma(accuracy = .001)`. An increase in age (expressed in years) was associated with an increase in the odds of considering tax too high, with an odds ratio of `r tax$tidy %>% filter(term == "age") %>% pull(estimate) %>% scales::comma(accuracy = .001)` (95% CI, `r tax$tidy %>% filter(term == "age") %>% pull(conf.low) %>% scales::comma(accuracy = .001)` to `r tax$tidy %>% filter(term == "age") %>% pull(conf.high) %>% scales::comma(accuracy = .001)`), *z* = `r tax$tidy %>% filter(term == "age") %>% pull(statistic) %>% scales::comma(accuracy = .001)`, *p* = `r tax$tidy %>% filter(term == "age") %>% pull(p.value) %>% scales::comma(accuracy = .001)`.
+
+Package **gtsummary** shows a nice summary table.
+
+```{r}
+tbl_regression(tax$clm)
+```
+
+## Poisson Regression
+
+Poisson models count data, like "traffic tickets per day", or "website hits per day".  The response is an expected *rate* or intensity.  For count data, specify the generalized model, this time with `family = poisson` or `family = quasipoisson`. 
+
+Recall that the probability of achieving a count $y$ when the expected rate is $\lambda$ is distributed 
+
+$$P(Y = y|\lambda) = \frac{e^{-\lambda} \lambda^y}{y!}.$$
+
+
+The poisson regression model is
+
+$$\lambda = \exp(X \beta).$$ 
+ 
+You can solve this for $y$ to get
+
+$$y = X\beta = \ln(\lambda).$$
+
+That is, the model predicts the log of the response rate.  For a sample of size *n*, the likelihood function is
+
+$$L(\beta; y, X) = \prod_{i=1}^n \frac{e^{-\exp({X_i\beta})}\exp({X_i\beta})^{y_i}}{y_i!}.$$
+
+The log-likelihood is
+
+$$l(\beta) = \sum_{i=1}^n (y_i X_i \beta - \sum_{i=1}^n\exp(X_i\beta) - \sum_{i=1}^n\log(y_i!).$$
+
+Maximizing the log-likelihood has no closed-form solution, so the coefficient estimates are found through interatively reweighted least squares.  
+
+Poisson processes assume the variance of the response variable equals its mean.  "Equals" means the mean and variance are of a similar order of magnitude.  If that assumption does not hold, use the quasi-poisson.  Use Poisson regression for large datasets.  If the predicted counts are much greater than zero (>30), the linear regression will work fine.  Whereas RMSE is not useful for logistic models, it is a good metric in Poisson.
+
+
+Dataset `fire` contains response variable `injuries` counting the number of injuries during the month and one explanatory variable, the month `mo`.
+
+```{r}
+fire <- read_csv(file = "C:/Users/mpfol/OneDrive/Documents/Data Science/Data/CivilInjury_0.csv")
+fire <- fire %>% 
+  mutate(mo = as.POSIXlt(`Injury Date`)$mon + 1) %>%
+  rename(dt = `Injury Date`,
+         injuries = `Total Injuries`)
+str(fire)
+```
+
+In a situation like this where there the relationship is bivariate, start with a visualization.
+
+```{r}
+ggplot(fire, aes(x = mo, y = injuries)) +
+  geom_jitter() +
+  geom_smooth(method = "glm", method.args = list(family = "poisson")) +
+  labs(title = "Injuries by Month")
+```
+
+
+Fit a poisson regression in R using `glm(formula, data, family = poisson)`.  But first, check whether the mean and variance of `injuries` are the same magnitude?  If not, then use `family = quasipoisson`.
+
+```{r}
+mean(fire$injuries)
+var(fire$injuries)
+```
+
+They are of the same magnitude, so fit the regression with `family = poisson`.
+
+```{r}
+m2 <- glm(injuries ~ mo, family = poisson, data = fire)
+summary(m2)
+```
+
+The *predicted* value $\hat{y}$ is the estimated **log** of the response variable, 
+
+$$\hat{y} = X \hat{\beta} = \ln (\lambda).$$
+
+Suppose `mo` is January (mo = `), then the log of `injuries` is $\hat{y} = 0.323787$. Or, more intuitively, the expected count of injuries is $\exp(0.323787) = 1.38$  
+
+```{r}
+predict(m2, newdata = data.frame(mo=1))
+predict(m2, newdata = data.frame(mo=1), type = "response")
+```
+
+Here is a plot of the predicted counts in red.
+
+```{r}
+augment(m2, type.predict = "response") %>%
+  ggplot(aes(x = mo, y = injuries)) +
+  geom_point() +
+  geom_point(aes(y = .fitted), color = "red") + 
+  scale_y_continuous(limits = c(0, NA)) +
+  labs(x = "Month",
+       y = "Injuries",
+       title = "Poisson Fitted Line Plot")
+```
+
+Evaluate a logistic model fit with an analysis of deviance.  
+
+```{r}
+(perf <- glance(m2))
+(pseudoR2 <- 1 - perf$deviance / perf$null.deviance)
+```
+
+The deviance of the null model (no regressors) is 139.9.  The deviance of the full model is 132.2.  The psuedo-R2 is very low at .05.  How about the RMSE?
+
+```{r}
+RMSE(pred = predict(m2, type = "response"), obs = fire$injuries)
+```
+
+The average prediction error is about 0.99.  That's almost as much as the variance of `injuries` - i.e., just predicting the mean of `injuries` would be almost as good!  Use the `GainCurvePlot()` function to plot the gain curve.
+
+```{r}
+augment(m2, type.predict = "response") %>%
+  ggplot(aes(x = injuries, y = .fitted)) +
+  geom_point() +
+  geom_smooth(method ="lm") +
+  labs(x = "Actual",
+       y = "Predicted",
+       title = "Poisson Fitted vs Actual")
+```
+
+
+```{r}
+augment(m2) %>% data.frame() %>% 
+  GainCurvePlot(xvar = ".fitted", truthVar = "injuries", title = "Poisson Model")
+```
+
+It seems that `mo` was a poor predictor of `injuries`.  
+

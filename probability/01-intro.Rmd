@@ -1,0 +1,7 @@
+# Basics {#intro}
+
+The sample space is the set of all possible outcomes. An event is a subset of the sample space, either an outcome (simple event) or a collection of outcomes (compound event).
+
+Events are **independent** if an occurrence of one has no effect on the probability of the other. Events are **exclusive** if $P(AB) = 0$. Use the multiplication rule to calculate combined probabilities for non-exclusive events ($P(A|B) = P(A)P(B)$ for independent events, and $P*()(), and the addition rule to calculate combined probabilities for exclusive events.
+
+)

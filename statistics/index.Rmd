@@ -6,6 +6,7 @@ date: "`r Sys.Date()`"
 site: bookdown::bookdown_site
 output:
   bookdown::html_book:
+    toc_depth: 3
     fig_caption: true
     lib_dir: assets
     split_by: section
