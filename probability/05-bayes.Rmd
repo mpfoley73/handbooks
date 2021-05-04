@@ -1,0 +1,186 @@
+# Bayesian Inference
+
+```{r include=FALSE}
+library(tidyverse)
+```
+
+Bayesian inference estimates the probability, $\theta$, that an hypothesis is true. It differs from frequentist inference in its insistence that *all* uncertainties be described by probabilities.
+
+Bayesian inference uses the structure of Bayes' Law, so start there 
+
+## Bayes' Law
+
+Bayes' Law is a clever re-ordering of the equivalence, $\pi(\theta s) = \pi(\theta|s)\pi(s) = \pi(s|\theta)\pi(\theta)$ into 
+
+$$\pi(\theta|s) = \frac{\pi(s|\theta)\pi(\theta)}{\pi(s)}.$$
+
+$\pi(\theta)$ can be understood to be a *prior* probability that $\theta$ is true. $\pi(s|\theta)$ is the *likelihood* of observing evidence $s$ if $\theta$ were in fact true. The denominator, $\pi(s) = \pi(s|\theta)\pi(\theta) + \pi(s|\hat{\theta})\pi(\hat{\theta}),$ is the marginal probability of $s$ and normalizes the product so that $\pi(\theta|s)$ is the *posterior* probability that $\theta$ is true.
+
+Bayes' Law shows up in evaluations of medical test results. The *sensitivity* of a test is the probability of observing a positive test result $s$ when the condition $\theta$ exists. The numerator, the test sensitivity multiplied by the prior probability, is the joint probability of $s$ and $\theta$, $\pi(s \theta)$. The *specificity* of a test is the probability of observing a negative test result $\hat{s}$ when the condition does not exist, $\hat{\theta}$. The specificity is the compliment of the *false positive* test result, $\pi(s | \hat{\theta}) = 1 - \pi(\hat{s} | \hat{\theta})$. The denominator is the overall probability of a positive test result, $\pi(s) = \pi(s|\theta)\pi(\theta) + \pi(s|\hat\theta)\pi(\hat\theta)$.
+
+**Example.** Suppose E. Coli is typically present in 4.5% of samples, and an E. Coli screen has a sensitivity of 0.95 and a specificity of 0.99. Given a positive test result, what is the probability that E. Coli is actually present?
+
+$$\pi(\theta|s) = \frac{.95\cdot .045}{.95\cdot .045 + (1 - .99)(1 - .045)} = \frac{.04275}{.04275 + .00955} = \frac{.04275}{.05230} = 81.7\%.$$
+
+The Bayes' Law logic is apparent from the contingency table. The first row is the positive test result.
+
+|      |E. Coli|Safe   |Total  |
+|------|-------|-------|-------|
+|+ Test|.95 * .045 = 0.04275|.01 * .955 = 0.00955|0.05230|
+|- Test|.05 * .045 = 0.00225|.99 * .955 = 0.94545|0.94770|
+|Total |0.04500|0.95500|1.00000|
+
+## Bayesian Inference
+
+Bayesian inference extends the logic of Bayes' Law by replacing the prior probability that $s$ is true with a prior probability *distribution* that $s$ is true. Rather than saying, "I am *x*% certain that $s$ is true," you are now saying "I believe the probability that $s$ is true is somewhere in a range that is centered at, and has maximum likelihood at *x*%".
+
+The Bayesian formulation prescribes a *prior* probability measure of the hypothesized data generating probability $\theta$, $\Pi(\theta)$, with an associated pmf or pdf $\pi(\theta)$, and a set of conditional distributions for the observed data $s \in S$ given $\theta$, $\{f_\theta(s): \theta \in \Omega\}$. Their product, $f_\theta(s)\pi(\theta)$, is a joint distribution for $(s, \theta)$.
+
+For continuous prior distributions, the marginal distribution for $s$, called the prior predictive distribution, is 
+
+$$m(s) = \int_\Omega f_\theta(s)\pi(\theta) d\theta$$
+
+For discrete prior distributions, replace the integral with a sum, $m(s) = \sum\nolimits_\Omega f_\theta(s) \pi(\theta)$. The *posterior* probability distribution of $\theta$, conditioned on the observance of $s$, is $\Pi(\cdot|s)$. It is the joint density, $f_\theta(s) \pi(\theta),$ divided by the the marginal density, $m(s)$.
+
+$$\pi(\theta, s) = \frac{f_\theta(s) \pi(\theta)}{m(s)}$$
+The numerator makes the posterior proportional to the prior. The denominator is a normalizing constant that scales the numerator into a proper density function.
+
+It is helpful to look first at discrete priors, a list of competing priors. Once you see how the observed evidence shifts the probabilities of the priors into their posterior probabilities, it is a straight-forward step to the more abstract case of continuous prior and posterior distributions.
+
+## Discrete Cases
+
+Suppose you have a string of numbers $[1,1,1,1,0,0,1,1,1,0]$, seven 1s and three 0s, produced by a Bernoulli random number generator. What parameter $p$ was used in the Bernoulli function?^[Example borrowed from [chris' sandbox](http://chrisstrelioff.ws/sandbox/2014/12/11/inferring_probabilities_with_a_beta_prior_a_third_example_of_bayesian_calculations.html)]
+
+```{r}
+s <- c(1, 1, 1, 1, 0, 0, 1, 1, 1, 0)
+```
+
+Posit four competing priors for $p$: $\theta_1 = 0.2$, $\theta_2 = 0.4$, $\theta_3 = 0.6$, and $\theta_4 = .08$, and ascribe equal prior probabilities, $\pi(\theta) = [.25, .25, .25, .25]$.
+
+```{r}
+theta <- c(.2, .4, .6, .8)
+pi_theta <- c(.25, .25, .25, .25)
+```
+
+Using the Bernoulli distribution function, the likelihood of observing $s$ given $\theta$ is $\pi(s|\theta) = \theta^7 + (1-\theta)^3.$
+
+```{r fig.height=2.5}
+pi_s_given_theta <- theta^7 * (1 - theta)^3
+
+data.frame(theta, pi_s_given_theta) %>% 
+  ggplot() +
+  geom_point(aes(x = theta, y = pi_s_given_theta)) +
+  geom_segment(aes(x = theta, xend = theta, y = 0, yend = pi_s_given_theta)) +
+  labs(title = "Likelihood of observing s if theta is true.")
+```
+
+The posterior probability equals the likelihood of observing $s$ given $\theta$ divided by the marginal probability of observing $s$ multiplied by the prior, $\pi(\theta|s) = \frac{\pi(s|\theta)}{\pi(s)}\cdot \pi(\theta)$
+ 
+```{r fig.height=3}
+pi_theta_given_s <- pi_s_given_theta / sum(pi_s_given_theta * pi_theta) * pi_theta
+
+data.frame(theta, pi_theta, pi_theta_given_s) %>% 
+  pivot_longer(cols = c(pi_theta, pi_theta_given_s), values_to = "pi") %>%
+  ggplot() +
+  geom_point(aes(x = theta, y = pi, color = name), size = 1) +
+  geom_line(aes(x = theta, y = pi, color = name), size = 1) +
+  theme(legend.position  = "top") +
+  labs(title = "Likelihood of observing s if theta is true.", 
+       subtitle = "Four priors, evidence = 10 observations.", color = NULL)
+```
+
+What would the posterior look like if we started with an educated guess on $\pi(theta)$, say $\pi(\theta) = [.10, .10, .40, .40]$?
+
+```{r fig.height=2.5}
+pi_theta <- c(.10, .10, .40, .40)
+pi_s_given_theta <- theta^7 * (1 - theta)^3
+pi_theta_given_s <- pi_s_given_theta / sum(pi_s_given_theta * pi_theta) * pi_theta
+data.frame(theta, pi_theta, pi_theta_given_s) %>% 
+  pivot_longer(cols = c(pi_theta, pi_theta_given_s), values_to = "pi") %>%
+  ggplot() +
+  geom_point(aes(x = theta, y = pi, color = name), size = 1) +
+  geom_line(aes(x = theta, y = pi, color = name), size = 1) +
+  theme(legend.position  = "top") +
+  labs(title = "Likelihood of observing s if theta is true.", 
+       subtitle = "Four priors, evidence = 10 observations, smarter priors.", color = NULL)
+```
+
+Finally, what would all this look like if we had a larger data set, with Bernoulli generating process from $\mathrm{Bernouli}(.7)$? and equally likely priors $\theta = .1, .2, .3, \ldots, 1.0$?
+
+```{r fig.height=2.5}
+s <- rbernoulli(101, p = 0.7) %>% as.numeric()
+theta <- seq(0, 1, .1)
+pi_theta <- rep(1/11, 11)
+pi_s_given_theta <- theta^sum(s) * (1 - theta)^(101-sum(s))
+pi_theta_given_s <- pi_s_given_theta / sum(pi_s_given_theta * pi_theta) * pi_theta
+data.frame(theta, pi_theta, pi_theta_given_s) %>% 
+  ggplot() +
+  geom_point(aes(x = theta, y = pi_theta), color = "red", size = 1) +
+  geom_line(aes(x = theta, y = pi_theta_given_s), color = "cadetblue", size = 1) +
+  geom_line(aes(x = theta, y = pi_theta), color = "red", size = 1) +
+  geom_point(aes(x = theta, y = pi_theta_given_s), color = "cadetblue", size = 1) +
+  scale_x_continuous(breaks = theta) +
+  theme(panel.grid.minor = element_blank()) +
+  labs(title = "Likelihood of observing s if theta is true.", 
+       subtitle = "11 priors, evidence = 100 observations.", color = NULL)
+```
+
+Same data set, more competing hypotheses.
+
+```{r fig.height=2.5}
+s <- rbernoulli(101, p = 0.7) %>% as.numeric()
+theta <- seq(0, 1, .01)
+pi_theta <- rep(1/101, 101)
+pi_s_given_theta <- theta^sum(s) * (1 - theta)^(101-sum(s))
+pi_theta_given_s <- pi_s_given_theta / sum(pi_s_given_theta * pi_theta) * pi_theta
+data.frame(theta, pi_theta, pi_theta_given_s) %>% 
+  ggplot() +
+  geom_point(aes(x = theta, y = pi_theta), color = "red", size = 1) +
+  geom_line(aes(x = theta, y = pi_theta_given_s), color = "cadetblue", size = 1) +
+  geom_line(aes(x = theta, y = pi_theta), color = "red", size = 1) +
+  geom_point(aes(x = theta, y = pi_theta_given_s), color = "cadetblue", size = 1) +
+  scale_x_continuous(breaks = theta*10) +
+  theme(panel.grid.minor = element_blank()) +
+  labs(title = "Likelihood of observing s if theta is true.", 
+       subtitle = "101 priors, evidence = 100 observations.", color = NULL)
+```
+
+## Continuous Cases
+
+
+
+combines a distribution function, $f_\theta(s)$, for observing sample $s \in S$ conditioned on the range of probabilities, $\theta \in \Omega$, $\Omega = [0,1]$, with a prior probability $\Pi(\theta)$ expressed with function $\pi(\theta)$. For example, if $\theta$ is the probability of a coin landing on heads, then the prior density $\pi(\theta)$ would be a bell curve centered on $\theta = 0.5$.
+
+When prior beliefs are best described in continuous distributions, express prior beliefs using the beta, gamma, or normal distribution so that the posterior distributions are conjugates of the prior distributions with new parameter values.
+
+Suppose you take a $\mathrm{Beta}(\alpha, \beta)$ prior.
+
+$$P(A_i | B, \alpha, \beta) = \frac{P(B|A_i)P(A_i|\alpha, \beta)}{\int_0^1 P(B|A) P(A|\alpha, \beta) dA}$$
+
+
+
+```{r fig.height = 2.5, fig.width=6.5, echo=FALSE}
+data.frame(
+  diffuse = rnorm(10000, 0.5, .25),
+  precise = rnorm(10000, 0.5, .05),
+  ignorant = runif(10000, 0, 1)
+) %>%
+  pivot_longer(cols = c(diffuse, precise, ignorant), values_to = "theta") %>%
+  mutate(name = factor(name, levels = c("precise", "diffuse", "ignorant"))) %>%
+  ggplot(aes(x = theta, color = name)) +
+  geom_density(na.rm = TRUE) +
+  scale_x_continuous(limits = 0:1) +
+  labs(title = "Prior distributions", color = NULL)
+```
+
+By the law of total probability, the prior and conditional probability constitute a joint distribution for $(s, \theta)$, $\pi(\theta)f_\theta(s)$ where $\pi$ is the probability function associated with $\Pi$. For continuous distributions, the marginal distribution of $s$, called the *prior predictive distribution* is
+
+
+After observing data, the relevant distribution is the conditional probability, $\Pi(\cdot|s)$, or *posterior distribution*. The posterior density is the joint density divided by the marginal density.
+
+$$\pi(\theta|s) = \frac{\pi(\theta)f_\theta(s)}{m(s)}$$
+
+#### Example: Bernoulli Model {-}
+
+Suppose you observe a sample $(x_1, \ldots, x_n)$ from the $\mathrm{Bernoulli}(\theta)$ with unknown $\theta \in [0,1]$. For the prior, take $\pi$ to be a $\mathrm{Beta}(\alpha,\beta)$ density function $\frac{1}{\mathrm{B}(\alpha,\beta)} x^{\alpha-1}(1-x)^{\beta-1}$. Then the posterior of $\theta$ is  proportional to the likelihood $\Pi_{i=1}^n \theta^{x_i} (1-\theta)^{1-x_i} = \theta^{n\bar{x}}(1-\theta)^{n(1-\bar{x})}$ multiplied by the prior.
+
