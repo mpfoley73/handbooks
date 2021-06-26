@@ -1,0 +1,168 @@
+# Functions and Packages
+
+```{r include=FALSE}
+library(tidyverse)
+```
+
+
+## Functions
+
+Functions are verbs, so name them that way (e.g., `run_linear_regression()` instead of `lm()`).
+
+### Arguments
+
+Functions have two types of arguments: data and detail. Start with the data argument so your function is compatible with the `%>%` operator. Name your detail arguments thoughtfully, but name the data argument `x`.
+
+Specify a discrete list of parameter values with a character vector argument, then check the setting with `match.arg()`.
+
+```{r collapse=TRUE}
+my_fun <- function(alternative = c("a", "b", "c")) {
+  alternative = match.arg(alternative)
+  print(alternative)
+}
+
+my_fun("b")
+
+# if unspecified, `match.arg()` returns the first option.
+my_fun()
+
+# if misspecified, `match.arg()` returns an error.
+# my_fun("d")
+# Error in match.arg(alternative) : 'arg' should be one of “a”, “b”, “c”
+```
+
+If the discrete list is too long to show conveniently, default it to `NULL` and explain the behavior the documentation.
+
+```{r eval=TRUE}
+# too complicated
+my_fun <- function(x, labs = c(c("lab 1", "middle lab", "lab 3"),
+                                  c("lbl 1", "middle lbl", "lbl 3"))) {
+  labs = match.arg(labs)
+  print(labs)
+}
+my_fun()
+
+# better
+my_fun <- function(x, labs = NULL) {
+  if(is.null(labs)) {
+    labs = c("lab 1", "middle lab", "lab 3")
+  }
+  print(labs)
+}
+
+my_fun()
+```
+
+If your code is a wrapper around other code, you do not need to specify all of the parameters that the sub-functions might use. Instead, allow for parameters with `...` and let them flow downward into the sub-functions. The downside here is that the user needs to consult the documentation of the interior functions to know what to pass.
+
+```{r collapse=TRUE}
+my_fun <- function(x, ...) {
+  mean(x, ...)
+}
+
+c(1, 2, NA_real_, .5, 4) %>% my_fun(na.rm = TRUE)
+```
+
+Another problem with `...` is that it gets passed down to all functions, and that can cause an error.
+```{r eval=FALSE}
+my_fun <- function(x, ...) {
+  mean(x, ...)
+  str_detect(x, "chester", ...)
+}
+
+c(1, 2, NA_real_, .5, 4) %>% my_fun(na.rm = TRUE)
+# returns
+# Error in str_detect(x, "chester", ...) : unused argument (na.rm = TRUE)
+```
+
+Check arguments (assert) at the beginning of the function.
+
+```{r}
+my_fun <- function(x, na.rm = FALSE) {
+  if(!is.numeric(x)) {
+    stop("x is not class numeric; it's class is '", class(x), "`.")
+  }
+}
+# my_fun(c("chester", "allen", "arthur")) 
+# returns
+# Error in my_fun(c("chester", "allen", "arthur")) : x is not class numeric; it's class is 'character`.
+```
+
+A better way to handle assertions with the **assertive** package.
+
+```{r}
+my_fun <- function(x, na.rm = FALSE) {
+  # x must be a positive number
+  assertive::assert_is_numeric(x)
+  assertive::assert_all_are_positive(x)
+  log(x)
+}
+# c(2, 3, -1, 4) %>% my_fun()
+```
+
+Exit a function early with `result()`.
+```{r}
+is_leap_year <- function(year) {
+  if(year %% 400 == 0) {
+    return(TRUE)
+  }
+  if(year %% 100 == 0) {
+    return(FALSE)
+  }  
+  if(year %% 4 == 0) {
+    return(TRUE)
+  }
+  FALSE
+}
+```
+
+If the main purpose of a function is to print output, you may want to return something else silently. Do that with `invisible()`. 
+
+R functions can only return a single value. Two ways around this are to return a list and storing objects as attributes `attr()`.
+
+### Return Values and Scope
+
+Objects exist within nested *environments* in R. Environments are like lists with inheritance. Your default environment is "R_GlobalEnv". 
+
+```{r}
+environmentName(env <- environment())
+while(environmentName(env) != "R_EmptyEnv") {
+  print(environmentName(env <- parent.env(env)))
+}
+```
+
+When you define a function, it creates a new environment with the existing environment.
+
+```{r}
+x <- 1
+y <- 2
+
+# my_fun creates an environment within .GlobalEnv
+my_fun <- function() {
+  # If R cannot find an object in the current environment, it checks the parent.
+  x <- x + y
+}
+my_fun()
+# but not the other way around - x only changed its value in the sub-environ!
+print(x)
+
+# if you want to change x from .GlobalEnv, use the super-assignment operator
+my_fun <- function() {
+  x <<- x + y
+}
+my_fun()
+print(x)
+```
+
+You can override it by declaring an environment from a list with `list2Env()`. 
+
+```{r}
+# You can create a sub-environment
+my_env <- list2env(list(a_to_z = letters, numbers = 0:10))
+
+exists("x")
+exists("x", envir = my_env)
+exists("x", envir = my_env, inherits = FALSE)
+```
+
+## Packages

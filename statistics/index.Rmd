@@ -1,6 +1,6 @@
 --- 
-title: "Statistics Handbook"
-subtitle: "Statistics handbook for a data analyst"
+title: "Statistical Inference"
+subtitle: "Data Analyst Handbook"
 author: "Michael Foley"
 date: "`r Sys.Date()`"
 site: bookdown::bookdown_site
@@ -25,15 +25,17 @@ link-citations: yes
 description: "Notes cobbled together from books, online classes, etc. to be used as quick reference for common work projects."
 ---
 
-# Introduction {-}
+# Preface {-}
 
-These notes mostly self-education from books, online classes, tutorials, vignettes, etc. They probably have a lot of mistakes, are poorly organized, and shaky on fundamentals. I hope over time this document grows and improves in quality along with my own mastery of data analysis, but that's all I can say for it. *If you found this from an internet search, use at your own risk!*
+These are notes from books, classes, tutorials, vignettes, etc. They contain mistakes, are poorly organized, and are sloppy on fundamentals. They should improve over time, but that's all I can say for it. *Use at your own risk.*
 
-The focus of this handbook is statistical inference, including population estimates, group comparisons, and regression modeling. Not included in this handbook is foundational knowledge of probability and statistics, machine learning, text mining, survey analysis, or survival analysis. All these subjects frequently arise at work, but seem distinct and large enough to warrant separate handbooks.
+The focus of this handbook is statistical inference, including population estimates, group comparisons, and regression modeling. Not included here: probability, machine learning, text mining, survey analysis, or survival analysis. These subjects frequently arise at work, but are distinct enough and large enough to warrant separate handbooks.
 
 ```{r include=FALSE}
 # automatically create a bib database for R packages
 knitr::write_bib(c(
   .packages(), 'bookdown', 'knitr', 'rmarkdown'
 ), 'packages.bib')
+
+knitr::opts_chunk$set(fig.height = 3.5)
 ```

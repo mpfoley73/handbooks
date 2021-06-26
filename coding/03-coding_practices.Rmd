@@ -1,0 +1,162 @@
+```{r}
+library(tidyverse)
+```
+
+# Coding Practices
+
+## Efficient Coding
+
+This section explains how to make code run faster.^[These notes are from the DataCamp course [Writing Efficient R Code](https://campus.datacamp.com/courses/writing-efficient-r-code/).]
+
+The most basic practice in efficient coding is to keep your R, RStudio, and package versions up to date. Check you version from the `version` global list object.
+
+```{r}
+version
+```
+Update R from inside the R GUI.
+
+```{r eval=FALSE}
+installr::updateR()
+```
+
+Update RStudio from Help > Check for Updates. RStudio closes for the update. Once updated, RStudio should default to using the new version of R too.
+
+Update your packages from the RStudio's Packages panel.
+
+### Benchmarking
+
+Benchmarking is the capture of the performance time for comparison to alternative solutions. Benchmark a section of code by wrapping it within a function and calling the function with `system.time()`. Ignore the user and system times - they are components of the overall elapsed time.
+
+```{r}
+my_f <- function(n) {
+  for(i in 1:n) { x <- runif(1) }
+}
+system.time(my_f(1e4))
+```
+
+The `benchmark()` function in the **microbenchmark** package does this, but also compares functions, runs them multiple times, and calculates summary statistics.
+
+```{r}
+library(microbenchmark)
+microbenchmark(my_f(1e3), my_f(1e4), my_f(1e5), times = 10)
+```
+
+The `benchmark_io()` function in the **benchmarkme** package reads and writes a file and compares your performance to other users.
+
+```{r collapse=TRUE}
+library(benchmarkme)
+
+# read/write a 5MB file
+my_io <- benchmark_io(runs = 1, size = 5)
+plot(my_io)
+```
+
+You can also use the package to retrieve hardware data.
+
+```{r collapse=TRUE}
+get_ram()
+get_cpu()
+```
+
+### Profiling
+
+Code profiling is taking time snapshots at intervals throughout the code in order to find the location of bottlenecks. Base R function `Rprof()` does this, but it is not user friendly. Instead, use `profvis()` from the **profvis** package.
+
+```{r}
+library(profvis)
+profvis({
+  for(i in 2:3) { 
+    my_f(10^i)
+  }
+  my_f(1e4)
+  my_f(1e5)
+})
+```
+
+### Parallel Programming
+
+Use the **parallel** package to parallelize your code. Parallelization adds communication overhead among the cpus, so it's not always helpful. 
+
+```{r collapse=TRUE}
+library("parallel")
+mat <- as.matrix(mtcars)
+
+# make a cluster using all cores, or maybe all but one
+n_cores <- benchmarkme::get_cpu() %>% pluck("no_of_cores") - 1
+cl <- makeCluster(n_cores)
+
+# make copies of data and functions for each cluster
+clusterExport(cl, "my_f")
+system.time(my_f(1e5))
+
+# use a parallel version of a function, like parApply instead of apply.
+# In this case, the serial version is faster!
+microbenchmark(apply(mat, 1, median), 
+               parApply(cl, mat, 1, median), 
+               times = 100)
+# stop the cluster
+stopCluster(cl)
+```
+
+### Other Efficiency Tips
+
+Tip #1: Don't allocate memory on the fly.
+
+```{r collapse=TRUE}
+# bad
+fun_bad <- function(n) {
+  x <- NULL 
+  for(i in 1:n) { x <- c(x, rnorm(1)) }
+}
+
+# good
+fun_good <- function(n) {
+  x <- numeric(n)
+  for(i in 1:length(x)) { x[i] <- rnorm(1) }
+}
+
+microbenchmark(fun_bad(1000), fun_good(1000), times = 10)
+```
+
+Tip #2: Use a vectorized solution whenever possible.
+
+```{r eval=FALSE}
+# makes 100 calls to rnorm() and makes 100 assignments to x
+x <- numeric(100)
+for(i in 1:length(x)) { x[i] <- rnorm(1) }
+
+# makes 1 call to rnorm() and 1 assignment to x
+x <- rnorm(100)
+```
+
+Tip #3: Use a matrix instead of a dataframe if possible. Matrix operations are fast because with predefined dimensions, accessing any row, col, or cell is a multiple of a dimension length.
+
+```{r collapse=TRUE}
+# matrix is faster for column selection...
+mat <- mtcars %>% as.matrix()
+df <- mtcars
+microbenchmark(mat[, 1], df[, 1])
+
+# and even faster for row selection (because of variable data types.
+microbenchmark(mat[1, ], df[1, ])
+```
+
+Tip #4: Use `&&` for smarter logical testing - if condition 1 is FALSE, then R will not evaluate condition 2. `&&` only works for single logical values - not vectors.
+
+```{r collapse=TRUE}
+slwr <- function() { 
+  for(i in 1:10000) {
+    x <- rnorm(1); 
+    if(x > .4 & x < .6) {y <- x}
+  }
+}
+fstr <- function() { 
+  for(i in 1:10000) {
+    x <- rnorm(1); 
+    if(x > .4 && x < .6) {y <- x}
+  }
+}
+microbenchmark(slwr, fstr, times = 10)
+```
+
+## Defensive Coding

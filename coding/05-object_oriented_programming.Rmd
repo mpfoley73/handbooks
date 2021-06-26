@@ -1,0 +1,177 @@
+# Object Oriented Programming
+
+```{r include=FALSE}
+library(tidyverse)
+```
+
+This section explains object oriented programming (OOP) in R.^[These notes are from the DataCamp course [Object Oriented Programming with R3 nd R6 in R](https://campus.datacamp.com/courses/object-oriented-programming-with-s3-and-r6-in-r/).] For data analysis, functional programming (**dplyr**-styled data frame > function > data frame) is superior to OOP. Use OOP to build *tools* for data analysis of discrete sets of complex objects.
+
+There are nine ways to code in OOP in R, but only four are in common use: S3, S4, S6, and ReferenceClasses. S3 is a simple framework introduced in the third version of S that implements one OOP feature, function overloading (`summary()` is an example of polymorphism - it produces different output for different object classes). R6 is more powerful, but usually unnecessary. S4 and ReferenceClasses have niche uses, so you may encounter them, but probably never develop with them.
+
+In S3 you will need to know not only the variable's class, but also the type of data within the class. Interrogate R variables with `class()` and `typeof()`. You can use `class()` to declare a variable's class, or print its class. typeof()` will also reveal a function's type: `closure`, `builtin` (e.g., `length()`), or `special` (e.g., `if`).
+
+```{r}
+type_info <- function(x) {
+  c(class = class(x), 
+    typeof = typeof(x), 
+    mode = mode(x), 
+    storage.mode = storage.mode(x))
+}
+
+some_vars <- list(
+  an_integer_vector = rpois(24, lambda = 5),
+  a_numeric_vector = rbeta(24, shape1 = 1, shape2 = 1),
+  an_integer_array = array(rbinom(24, size = 8, prob = 0.5), dim = c(2, 3, 4)),
+  a_numeric_array = array(rweibull(24, shape = 1, scale = 1), dim = c(2, 3, 4)),
+  a_data_frame = data.frame(int = rgeom(24, prob = 0.5), num = runif(24)),
+  a_factor = factor(month.abb),
+  a_formula = y ~ x,
+  a_closure_function = mean,
+  a_builtin_function = length,
+  a_special_function = `if`
+)
+
+# What type of matrix/array?
+lapply(some_vars, type_info) %>% as.data.frame() %>% t()
+```
+
+## S3
+
+The S3 system provides function overloading by splitting functions into two parts: a generic function, and method functions for each class. The generic function is usually defined with a single line calling `UseMethod()`. The `...` allows for variables passed into the generic to flow through into the class functions. The class functions use a naming convention of `generic.class`.
+
+```{r eval=FALSE}
+get_n_elements <- function(x, ...){
+  UseMethod("get_n_elements")
+}
+get_n_elements.data.frame <- function(x, ...) {
+  prod(dim(x))
+}
+get_n_elements(cars)
+```
+
+If possible, define a default catch-all method for the generic class. Use extension `.default` for the function name.
+
+```{r}
+get_n_elements.default <- function(x, ...) {
+  length(unlist(x))
+}
+list(a = cars, b = mtcars) %>% 
+  get_n_elements()
+```
+
+If you want to know what methods are available for a generic function, or for a class variable, use `methods()`.
+
+```{r collapse=TRUE}
+methods(generic.function = "summary")
+methods(class = "glm")
+```
+
+Some R functions are written in C because C performs better. R supports C through its "primitive interface". Examples of primitive functions include `exp()`, `if()`, and `+`. There are about 30 primitive generics, and you can find them with `.S3PrimitiveGenerics`. If a class method does not exist for a primitive generic, the C code will execute by default.
+
+```{r collapse=TRUE}
+.S3PrimitiveGenerics
+
+methods("is.na")
+# There is no `is.na.list()` or `is.na.default()`, so the primative `is.na()` 
+# executes.
+is.na(list(TRUE, FALSE, NA))
+```
+
+Declare inheritance by assigning a vector of class identifiers, specific to generic. 
+
+```{r}
+aeiou <- c("a", "e", "i", "o", "u")
+class(aeiou) <- c("vowels", "letters", "character")
+inherits(aeiou, "letters")
+```
+
+If you have an inherited method and want to chain the functionality of the parent method. Call it through `NextMethod()`.
+
+```{r}
+what_is <- function(x, ...) {
+  UseMethod("what_is")
+}
+what_is.vowels <- function(x, ...) {
+  message(glue::glue("{deparse(substitute(x))} is vowels"))
+  NextMethod(generic = "what_is")
+}
+what_is.letters <- function(x, ...) {
+  message(glue::glue("{deparse(substitute(x))} is letters"))
+  NextMethod(generic = "what_is")
+}
+what_is.character <- function(x, ...) {
+  message(glue::glue("{deparse(substitute(x))} is character"))
+}
+what_is(aeiou)
+```
+
+## R6
+
+In R6, you define a class with the class generator function `R6::R6Class()` then create instances of the class with the class method `new()`. 
+
+```{r}
+library(R6)
+library(assertthat)
+
+microwave_oven_factory <- R6Class(
+  "MicrowaveOven",
+  # Private class variables declared (with default values) in `private` and
+  # passed in as a list(). Private var names should use prefix ".."
+  private = list(
+    ..power_rating_watts = 800,
+    ..power_level_watts = 800,
+    ..door_is_open = FALSE
+  ),
+  # Allow read/write access to private vars with methods declared in `active`
+  active = list(
+    # active binding to access value
+    power_rating_watts = function() {
+      private$..power_rating_watts
+    },
+    # active binding to set value. Values var name should use name "value"
+    power_level_watts = function(value) {
+      if(missing(value)) {
+        private$..power_level_watts
+      } else {
+        is.number(value)
+        private$..power_level_watts <- value
+      }
+    }
+  ),
+  public = list(
+    cook = function(time_seconds) {
+      Sys.sleep(time_seconds)
+      print("Your food is cooked!")
+    },
+    open_door = function() {
+      private$..door_is_open <- TRUE
+    },
+    close_door = function() {
+      private$..door_is_open <- FALSE
+    },
+    # the initialize function, if it exists, runs when new() is called.
+    initialize = function(power_rating_watts, door_is_open) {
+      if(!missing(power_rating_watts)) {
+        private$..power_rating_watts <- power_rating_watts
+      }
+      if(!missing(door_is_open)) {
+        private$..door_is_open <- door_is_open
+      }
+    }
+  )
+)
+
+# Create microwave oven object
+a_microwave_oven <- microwave_oven_factory$new()
+a_microwave_oven_2 <- microwave_oven_factory$new(power_rating_watts = 650, door_is_open = TRUE)
+
+# Call cook method for 1 second
+a_microwave_oven$cook(1)
+a_microwave_oven_2$cook(1)
+
+# Active bindings are called like variables, not functions.
+a_microwave_oven$power_level_watts
+a_microwave_oven$power_level_watts <- 400
+```
+
+### Inheritance
