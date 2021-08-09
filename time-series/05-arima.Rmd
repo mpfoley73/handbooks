@@ -1,0 +1,470 @@
+# ARIMA {#arima}
+
+ARIMA models are another approach to time series forecasting. Exponential smoothing and ARIMA models are the two most widely-used approaches to time series forecasting, and provide complementary approaches to the problem. While exponential smoothing models are based on a description of the trend and seasonality in the data, ARIMA models aim to describe the autocorrelations in the data.
+
+An **autoregressive** (AR) model is a multiple regression with *lagged observations* as predictors.
+
+$$y_t = c + \phi_1 y_{t-1} + \phi_2 y_{t-2} + \dots + \phi_p y_{t-p} + e_t$$
+
+A **moving average** (MA) model is a multiple regression with *lagged errors* as predictors.
+
+$$y_t = c + e_t + \theta_1 y_{t-1} + \theta_2 y_{t-2} + \dots + \theta_p y_{t-q}$$
+
+An **autoregressive moving average** (ARMA) model is a multiple regression with *lagged observations and lagged errors* as predictors.
+
+$$y_t = c + \phi_1 y_{t-1} + \dots + \phi_p y_{t-p} + \theta_1 y_{t-1} + \dots + \theta_p y_{t-q} + e_t$$
+
+An **ARMA model with differencing** (ARIMA(p,d,q)) model is an ARMA model with *d* levels of differencing.
+
+Whereas ETS models can handle non-constant variance with multiplicative errors and seasonality, ARIMA models require that you explicitly transform the data.  There are an infinite number of tranformations.  In increasing strength, there is the square root ($y_t^{.5}$), cube root ($y_t^{.333}$), log ($log(y_t)$), and inverse ($y_t^{-1}$).
+
+Notice below how the various transformations dampen the seasonal fluctuations.  The square root and log transformations are not quite strong enough to even out the error variance, but the inverse transformation is a little too large.  We need a transformation somewhere in between.
+
+```{r}
+# x <- cbind(usmelec,
+#            `lambda = .5` = sqrt(usmelec),
+#            `lambda = log` = log(usmelec),
+#            `lambda = -1` = -usmelec^-1)
+# autoplot(x, facet=TRUE) +
+#   labs(title = "US Net Electricity Generation",
+#        x = "Month", y = "kWh") 
+```
+
+The Box-Cox transformation (described above) can find the optimal transformation.  In this case, the optimal transformation is $w_t = (y_t^\lambda - 1) / \lambda$ where $\lambda = -0.5738$.
+
+```{r}
+# (lambda <- BoxCox.lambda(usmelec))
+# df <- cbind(Raw = usmelec,
+#             BoxCox = BoxCox(usmelec, lambda = lambda))
+# autoplot(df, facet=TRUE) +
+#   xlab("Month") + ylab("kWh") +
+#   ggtitle("Electricity Production: Jan 1956 - Aug 1995")
+
+```
+
+Here is how you would use the transformation in a forecast.  (*This example is contrived because ets models can handle non-constant variance with multiplicative errors and seasonality*).
+
+```{r}
+# usmelec %>% 
+#   ets(lambda = BoxCox.lambda(usmelec)) %>%
+#   forecast(h = 60) %>%
+#   autoplot()
+```
+
+R function `auto.arima()` from the `forecast` package chooses the optimal ARIMA model parameters using the Akaike criterion.^[You can use the Akaike criterion to compare models of the same class, but not different models, so do not use it to compare an ARIMA model to an ETS model.  You cannot use the Akaike criterion for models of different levels of differencing.]
+
+Here is a plot of annual US net electricity generation from the `usnetelec` dataset in the `expsmooth` package.  You can probably guess straight away that this time series will require one level of differencing (*d = 1*).
+
+```{r}
+# autoplot(usnetelec) +
+#   labs(title = "Annual US Net Electricity Generation",
+#        y = "billion kWh",
+#        x = "Year")
+```
+
+The `auto.arima()` function chooses an ARIMA(2,1,2) with drift.
+
+```{r}
+# usnetelec.arima <- auto.arima(usnetelec)
+# summary(usnetelec.arima)
+```
+
+Here is a plot of the forecast.
+
+```{r}
+# usnetelec.arima %>% forecast(h = 10) %>% autoplot()
+```
+
+Explicitly choose a model with the `Arima()` function.
+
+```{r}
+# usnetelec %>% Arima(order = c(2, 1, 2), include.constant = TRUE) %>% forecast() %>% autoplot()
+```
+
+Compare models of different classes with cross-validation.  
+
+```{r}
+# # Set up forecast functions for ETS and ARIMA models
+# fets <- function(x, h) {
+#   forecast(ets(x), h = h)
+# }
+# farima <- function(x, h) {
+#   forecast(auto.arima(x), h = h)
+# }
+# 
+# # Compute CV errors for ETS on austa as e1
+# e1 <- tsCV(austa, fets, h = 1)
+# 
+# # Compute CV errors for ARIMA on austa as e2
+# e2 <- tsCV(austa, farima, h = 1)
+# 
+# # Find MSE of each model class
+# mean(e1^2, na.rm = TRUE)
+# mean(e2^2, na.rm = TRUE)
+# 
+# # Plot 10-year forecasts using the best model class
+# austa %>% farima(h = 10) %>% autoplot()
+```
+
+If the time series includes seasonality, an ARIMA(p,d,q)(P,D,Q)[m] model includes seasonality.
+
+```{r}
+# # Check that the logged h02 data have stable variance
+# h02 %>% log() %>% autoplot()
+# 
+# # Fit a seasonal ARIMA model to h02 with lambda = 0
+# fit <- auto.arima(h02, lambda = 0)
+# 
+# # Summarize the fitted model
+# summary(fit)
+# 
+# # Plot 2-year forecasts
+# fit %>% forecast(h = 24) %>% autoplot()
+```
+
+```{r}
+# # Use 20 years of the qcement data beginning in 1988
+# train <- window(qcement, start = 1988, end = c(2007, 4))
+# 
+# # Fit an ARIMA and an ETS model to the training data
+# fit1 <- auto.arima(train)
+# fit2 <- ets(train)
+# 
+# # Check that both models have white noise residuals
+# checkresiduals(fit1)
+# checkresiduals(fit2)
+# 
+# # Produce forecasts for each model
+# fc1 <- forecast(fit1, h = 1 + 4 * (2013 - 2007))
+# fc2 <- forecast(fit2, h = 1 + 4 * (2013 - 2007))
+# 
+# # Use accuracy() to find better model based on RMSE
+# accuracy(fc1, qcement)
+# accuracy(fc2, qcement)
+# bettermodel <- fit2
+```
+
+
+
+
+
+
+The *White Noise* (WN) model is the simplest example of a stationary process.  It has a fixed mean and variance.  The WN model is one of several autoregressive integrated moving average (ARIMA) models.  An ARIMA(p, d, q) model has three parts, the autoregressive order `p` (number of time lags), the order of integration (or differencing) `d`, and the moving average order `q`.  When two out of the three terms are zeros, the model may be referred to based on the non-zero parameter, dropping "AR", "I" or "MA" from the acronym describing the model. For example, ARIMA (1, 0,0) is AR(1), ARIMA(0,1,0) is I(1), and ARIMA(0,0,1) is MA(1). The WN model is ARIMA(0,0,0).  
+
+Simulate a WN time series using the `arima.sim()` function with argument `model = list(order = c(0, 0, 0))`.  Here is a 50-period WN model with `mean` 100 and standard deviation `sd` of 10.
+
+```{r}
+wn <- arima.sim(model = list(order = c(0, 0, 0)), 
+                n = 50, 
+                mean = 100, 
+                sd = 10)
+ts.plot(wn,
+        xlab = "Period", 
+        ylab = "", 
+        main = "WN Model, mean = 100, sd = 10")
+```
+
+Fit a WN model to a dataset with `arima(x, order = c(0, 0, 0))`.  The model returns the mean, var, and se.  
+
+```{r}
+arima(wn, order = c(0, 0, 0))
+```
+The model mean will be identical to the series mean.  The variance will be close to the series variance.
+
+```{r}
+# mean = intercept
+mean(wn)
+
+# se ~ s.e.
+sqrt(var(wn) / length(wn))
+
+# var ~ sigma^2
+var(wn)
+```
+
+The *Random Walk* (RW) model is a WN model with a strong time dependance, so there is no fixed mean or variance.  It is a non-stationary model.  The random walk model is $Y_t = c + Y_{t-1} + \epsilon_t$ where $c$ is the drift coefficient, an overall slope parameter.  
+
+Simulate a RW time series using the `arima.sim()` function with argument `model = list(order = c(0, 1, 0))`.  Here is a 50-period RW model with `mean` 0.
+
+```{r}
+rw <- arima.sim(model = list(order = c(0, 1, 0)), 
+                n = 50)
+ts.plot(rw,
+        xlab = "Period", 
+        ylab = "", 
+        main = "RW Model, mean = 0")
+```
+
+The first difference of a RW model is just a WN model.
+
+```{r}
+ts.plot(diff(rw),
+        xlab = "Period", 
+        ylab = "", 
+        main = "Diff(RW) = WN")
+```
+
+Specify the drift parameter with `mean`.  The drift parameter is the slope of the RW model.
+
+```{r}
+rw <- arima.sim(model = list(order = c(0, 1, 0)), 
+                n = 100, 
+                mean = 1)
+ts.plot(rw,
+        xlab = "Period", 
+        ylab = "", 
+        main = "RW Model, mean = 1")
+```
+
+Fit a random walk model with drift by first differencing the data, then fitting the WN model to the differenced data.  The `arima()` intercept is the drift variable.
+
+```{r}
+wn.mod <- arima(diff(rw), 
+                order = c(0, 0, 0))
+
+ts.plot(rw)
+abline(a = 0, b = wn.mod$coef)
+
+rw.mod <- arima(rw, 
+                order = c(0, 1, 0))
+points(rw - residuals(rw.mod), type = "l", col = 2, lty = 2)
+```
+
+When dealing with time series data, ask first if it stationary because stationary models are much simpler.  A stationary process oscillates randomly about a fixed mean, a phenomenon called *reversion to the mean*.  In contrast, nonstationary processes have time trends, periodicity, or lack mean reversion.  Even when a process is nonstationary, the *changes* in the series may be approximately stationary.  For example, inflation rates show a pattern over time related to Federal Reserve policy, but the *changes* in interest rates are stationary.
+
+WN processes are stationary, but RW processes (the cumulative sum of the WN process) are not.  Here are plots of a WN process and corresponding RW process using the `cumsum()` of the WN.  Only the WN process is stationary.
+
+```{r}
+# White noise
+wn <- arima.sim(model = list(order = c(0, 0, 0)), 
+                n = 100) 
+
+# Random walk from white noise
+rw <- cumsum(wn)
+  
+plot.ts(cbind(wn, rw),
+        xlab = "Period",
+        main = "WN with Zero Mean, and Corresponding RW")
+```
+
+Here is another WN process with corresponding RW process, this time with a drift parameter of 0.4.
+
+```{r}
+# White noise with mean <> 0
+wn <- arima.sim(model = list(order = c(0, 0, 0)), 
+                n = 100, 
+                mean = 0.4) 
+  
+# Random walk with drift from white noise
+rw <- cumsum(wn)
+
+plot.ts(cbind(wn, rw),
+        xlab = "Period",
+        main = "WN with Nonzero Mean, and Corresponding RW")
+```
+
+
+
+## Autoregression
+
+The autoregressive (AR) model is the most widely used time series model. It shares the familiar interpretation of a simple linear regression, but each observation is regressed on the previous observation. 
+
+$$Y_t - \mu = \phi(Y_{t-1} - \mu) + \epsilon_t$$
+
+where $\epsilon_t \sim WN(0, \sigma_\epsilon^2)$.  The AR model also includes the white noise (WN) and random walk (RW) models as special cases. 
+
+The `arima.sim()` function can simulate data from an AR model by setting the `model` argument equal to `list(ar = phi)` where `phi` is a slope parameter in the interval (-1, 1).  As `phi` approaches 1, the plot smooths.  With negative `phi` values, the plot oscillates.
+
+```{r}
+# small autocorrelation
+x <- arima.sim(model = list(ar = 0.5), n = 100)
+
+# large autocorrelation
+y <- arima.sim(model = list(ar = 0.9), n = 100)
+
+# negative autocorrelation (oscillation)
+z <- arima.sim(model = list(ar = -0.75), n = 100)
+
+plot.ts(cbind(x, y, z))
+```
+
+The plots generated by the `acf()` function provide useful information about each lag. Series `x` (small slope parameter) has positive autocorrelation for the first couple lags, but they quickly decay toward zero. Series `y` (large slope parameter) has positive autocorrelation for many lags. Series `z` (negative slope parameter) has an oscillating pattern. 
+
+```{r}
+par(mfrow = c(2,2))
+acf(x)
+acf(y)
+acf(z)
+```
+
+The stationary AR model has a slope parameter between -1 and 1. The AR model exhibits higher persistence when its slope parameter is closer to 1, but the process reverts to its mean fairly quickly. Its sample ACF also decays to zero at a quick (geometric) rate, meaning values far in the past have little impact on the present value of the process.
+
+Below, the AR model with slope parameter 0.98 exhibits greater persistence than with slope parameter 0.90, but both decay to 0. 
+
+```{r}
+ar90 <- arima.sim(model = list(ar = 0.9), n = 200)
+ar98 <- arima.sim(model = list(ar = 0.98), n = 200)
+
+par(mfrow = c(2,2))
+ts.plot(ar90)
+ts.plot(ar98)
+acf(ar90)
+acf(ar98)
+```
+
+
+By contrast, the random walk (RW) model is a special case of the AR model in which the slope parameter is equal to 1.  The RW model is nonstationary, and shows considerable persistence and relatively little decay in the ACF. 
+
+```{r}
+ar100 <- arima.sim(model = list(order = c(0, 1, 0)), n = 200)
+par(mfrow = c(2,1))
+ts.plot(ar100)
+acf(ar100)
+```
+
+Fit the AR(1) model (autoregressive model with one time lag) using the `arima()` function with `order = c(1, 0, 0)`, meaning 1 time lag, 0 differencing, and 0 order moving average.  
+
+Below is an AR(1) model fit to the `AirPassengers` dataset.  The output of the `arima` function shows $\phi$ as `ar1 = 0.9646`, $\mu$ as `intercept = 278.4649`, and $\hat{\sigma}_\epsilon^2$ as `sigma^2 = 1119`. 
+
+```{r}
+ar1 <- arima(AirPassengers, order = c(1, 0, 0))
+ar1.fit <- AirPassengers - residuals(ar1)
+print(ar1)
+
+par(mfrow = c(2, 1))
+ts.plot(AirPassengers)
+points(ar1.fit, type = "l", col = 2, lty = 2)
+acf(AirPassengers)
+```
+
+Use the ARIMA model to forecast observations with the `predict()` function. Specify the number of periods beyond the last observation with the `n.ahead` parameter.
+
+Below is a forecast of 10 periods (years) beyond the 1871-1970 annual observations in the `Nile` dataset. The relatively wide band of confidence (dotted lines) is a result of the low persistence in the data. 
+
+```{r}
+ar1 <-arima(Nile, order  = c(1, 0, 0))
+print(ar1)
+
+ts.plot(Nile, xlim = c(1871, 1980))
+ar1.fit <- Nile - resid(ar1)
+
+ar.pred <- predict(ar1, n.ahead = 10)$pred
+ar.pred.se <- predict(ar1, n.ahead = 10)$se
+points(ar.pred, type = "l", col = 2)
+points(ar.pred - 2*ar.pred.se, type = "l", col = 2, lty = 2)
+points(ar.pred + 2*ar.pred.se, type = "l", col = 2, lty = 2)
+```
+
+
+## Simple Moving Average
+
+The simple moving average (MA) model is
+
+$$Y_t = \mu + \epsilon_t + \theta\epsilon_{t-1}$$ 
+
+If the slope parameter $\theta$ is zero, $Y_t$ is a white noise process, $Y_t \sim (\mu, \sigma_\epsilon^2)$.  Large $\theta$ indicates large autocorrelation.  Negative $\theta$ indicates an oscillating series.
+
+The MA model is used to account for very short-run autocorrelation. Each observation is regressed on the previous innovation, which is not actually observed. Like the AR model, the MA model includes the white noise (WN) model as special case. 
+
+Simulate the MA model using `arima.sim()` with parameter `list(ma = theta)`, where `theta` is a slope parameter from the interval (-1, 1).  
+
+Here are three MA models.  The first has slope paramter 0.5 and the second has slope parameter 0.9.  The second plot shows more persistance as a result.  THe third plot has a negative slope parameter and oscillates as a result.
+
+```{r}
+x <- arima.sim(model = list(ma = 0.5), n = 100)
+y <- arima.sim(model = list(ma = 0.9), n = 100)
+z <- arima.sim(model = list(ma = -0.5), n = 100)
+
+plot.ts(cbind(x, y, z))
+```
+
+Use the `acf()` function to estimate the autocorrelation functions.  The MA series x with slope = 0.5 has a positive sample autocorrelation at the first lag, but it is approximately zero at other lags. The series y with slope = 0.9 has a larger sample autocorrelation at its first lag, but it is also approximately zero for the others. The series z with slope = -0.5 has a negative sample autocorrelation at the first lag and alternates, but is approximately zero for all higher lags. 
+
+```{r}
+par(mfrow = c(2, 2))
+acf(x)
+acf(y)
+acf(z)
+```
+
+Fit the MA model using the `arima()` function with `order = c(0, 0, 1), meaning 0 time lag, 0 differencing, and 1st order moving average.
+
+Below is an MA model fit to the `Nile` dataset. The output of the arima function shows $\theta$ as ma1 = 0.3783, $\mu$ as intercept = 919.2433, and $\sigma_\epsilon^2$ as sigma^2 = 23272.
+
+```{r}
+ma <- arima(Nile, order = c(0, 0, 1))
+print(ma)
+
+ts.plot(Nile)
+ma.fit <- Nile - resid(ma)
+points(ma.fit, type = "l", col = 2, lty = 2)
+
+```
+
+Use the ARIMA model to forecast observations with the `predict()` function. The MA model can only produce a 1-step forecast. Except for the 1-step forecast, all forecasts from the MA model are equal to the estimated mean (intercept).
+
+Below is a forecast of 10 periods (years) beyond the 1871-1970 annual observations in the  Nile dataset. 
+
+```{r}
+predict(ma, n.ahead = 10)
+
+ts.plot(Nile, xlim = c(1871, 1980))
+ma.pred <- predict(ma, n.ahead = 10)$pred
+ma.pred.se <- predict(ma, n.ahead = 10)$se
+points(ma.pred, type = "l", col = 2)
+points(ma.pred - 2*ma.pred.se, type = "l", col = 2, lty = 2)
+points(ma.pred + 2*ma.pred.se, type = "l", col = 2, lty = 2)
+```
+
+How do you decide which model provides the best fit?  Measure the model fit with the Akaike information criterion (AIC) and/or Bayesian information criterion (BIC). These indicators penalize models with more estimated parameters to avoid overfitting, so smaller indicator values are preferable.
+
+Use the `AIC()` and `BIC()` functions to estimate the indicators.  Below are the AIC and BIC for the AR(1) and MA models.  Although the predictions from both models are similar (they have a correlation coeffiicent of 0.94), both the AIC and BIC indicate that the AR model is a slightly better fit for the `Nile` data. 
+
+```{r}
+cor(ar1.fit, ma.fit)
+
+AIC(ar1)
+AIC(ma)
+
+BIC(ar1)
+BIC(ma)
+
+```
+
+## Dynamic Regression
+
+Dynamic regression is like ordinary regression with explanatory variables, but the error term is now an ARIMA process instead of white noise.
+
+Dataset `uschange` from the `fpp2` package contains growth rates of personal consumption and personal income in the US.  You might want to model consumption as a function of income.  Add parameter `xreq` to the `auto.arima()` function.  `xreg` is a matrix of predictor variables.
+
+```{r}
+fpp2::uschange %>% head()
+# (uschange.arima <- auto.arima(uschange[, "Consumption"],
+#                              xreg = uschange[, "Income"]))
+```
+
+```{r}
+# # Forecast fit as fc
+# uschange.fc <- forecast(uschange.arima, xreg = rep(10, 6))
+# 
+# # Plot fc with x and y labels
+# autoplot(uschange.fc) + xlab("Month") + ylab("Sales")
+```
+
+```{r}
+# Time plots of demand and temperatures
+#autoplot(elec[, c("Demand", "Temperature")], facets = TRUE)
+
+# Matrix of regressors
+#xreg <- cbind(MaxTemp = elec[, "Temperature"], 
+#              MaxTempSq = elec[, "Temperature"]^2, 
+#              Workday = elec[, "Workday"])
+
+# Fit model
+#fit <- auto.arima(elec[, "Demand"], xreg = xreg)
+
+# Forecast fit one day ahead
+#forecast(fit, xreg = cbind(20, 20^2, 1))
+```
+
+

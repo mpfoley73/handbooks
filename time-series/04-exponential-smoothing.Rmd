@@ -1,0 +1,202 @@
+# Exponential Smoothing {#exponential}
+
+Exponential smoothing weights recent observations more heavily than remote observations.  Think of exponential smoothing as a family of methods varying by their *trend* and *seasonal* components. Additionally, the *errors* may be additive or multiplicative. 
+
+* There can be no trend (N), or it can be an additive (A) linear trend from the forecast horizon, or it can be a damped additive (A<sub>d</sub>) trend leveling off from the forecast horizon.
+
+* There can be no seasonality (N), or it can be additive (A), or additive damped (A<sub>d</sub>).
+
+* The errors may be constant over time (A), or increase with the level (M).
+
+The trend and seaonality combinations produce 3 x 3 = 9 possible exponential smoothing methods.  The parameters determining the level, trend, and seasonality of the exponential smoothing model are based on minimization of the sum of square errors (SSE) of the simultaneous equations.  
+
+The two treatment of errors double the number of possible *state space models* to 18.  State space models include error, trend, and seasonality components and are therefore called **ETS models**.  ETS models do not just extend the exponential smoothing models to account for treatment of the error variance.  They also estimate their parameters differently.  ETS models use maximum likelihood estimation.  For models with additive errors, this is equivalent to minimizing the sum of squared errors (SSE). The great advantage of using ETS models is that you can optimize the parameter settings by minimizing the Akaike Information Criterion (AIC<sub>c</sub>).
+
+The sections below describe the basic exponential smoothing models, focusing on the structure and parameters.
+
+## Simple Exponential Smoothing
+
+Simple exponential smoothing models have no seasonal or trend components.  Simple exponential smoothing models are of the form $\hat{y}_{t+h|t} = \alpha y_t + \alpha(1-\alpha)y_{t-1} + \alpha(1-\alpha)^2y_{t-2} \dots$ where $0 < \alpha < 1$ is a weighting parameter.  Exponential smoothing models are commonly expressed in a component form as a regressive model. The first component, the forecast, is the last value of the estimated level.
+
+$$\hat{y}_{t+h|t} = l_t$$
+The second component, the level, describes how the level changes over time.
+
+$$l_t = \alpha y_t + (1 - \alpha)l_{t-1}$$
+
+$l_t$ is the level (or smoothed value) of the series at time $t$.  Expressed this way, it is clear there are two parameters to estimate: $\alpha$ and $l_0$.  Simple exponential smoothing estimates the parameters by minimizing the SSE.  Unlike regression, which returns exact parameter estimates, the SSE for the exponential equation is minimized with nonlinear optimization.  The `ses()` function performs simple exponential smoothing.
+
+Here is simple exponential smoothing applied to the `marathon` dataset to produce a 10-year forecast.  $\alpha = 0.3457$, and $l_0 = 167.1741$.
+
+```{r}
+# marathon.train <- subset(marathon, end = length(marathon) - 10)
+# marathon.test <- subset(marathon, start = length(marathon) - 9)
+# marathon.ses <- ses(marathon.train, h = 10)
+# summary(marathon.ses)
+```
+
+Simple exponential smoothing produces a flat line that is exponentially weighted from the prior values, then extended into the forecast period.
+
+```{r}
+# autoplot(marathon.ses) +
+#   autolayer(marathon, series="Actual") +
+#   autolayer(fitted(marathon.ses), series="Fitted") +
+#   autolayer(marathon.ses$mean, series="Forecast") +
+#   labs(title = "Boston Marathon Winning Times with 10-year Forecast",
+#        subtitle = "Method: Simple Exponential Smoothing",
+#        y = "Minutes",
+#        x = "Year") +
+#   guides(colour=guide_legend(title="Series"), 
+#          fill=guide_legend(title="Prediction interval")) +
+#   scale_color_manual(values = c("black", "red", "blue"))
+```
+
+Check the model assumptions with `checkresiduals()`.  The residuals plot has constant and independent variance, at least after 1930.  The histogram has a normal distribution.  The autocorrelation function (ACF) plot shows spikes all within the insignificance band, yet the Ljung-Box test rejects the null hypothesis of no autocorrelation of the residuals (p = 0.0240).  The forecast might still be useful even with residuals that don't quite pass the white noise test.
+
+```{r}
+# checkresiduals(marathon.ses)
+```
+
+
+
+## Holt
+
+Holt's linear trend model expands simple exponential smoothing with a trend component. The forecast contains both a level and a trend.
+
+$$\hat{y}_{t+h|t} = l_t + hb_t$$
+The level is adjusted for the trend too.  
+
+$$l_t = \alpha y_t + (1 - \alpha)(l_{t-1} + hb_{t-1})$$
+
+A third equation, the trend, describes how the slope changes over time.  $\beta^*$ describes how quickly the slope can change.
+
+$$b_t = \beta^*(l_t - l_{t-1}) + (1 - \beta^*)b_{t-1}$$
+
+Now there are four parameter to estimate, $\alpha$, $\beta^*$, $l_0$, and $b_0$.  Holt estimates the parameters by minimizing the SSE.  The `holt` function performs Holt's linear method.  A variation of Holt's linear trend method is Holt's *damped trend* method.  Whereas Holt's linear trend stays constant over time, the damped trend levels off to a constant.  Add the `damped = TRUE` parameter to `holt()` to use the damped trend method.
+
+Here is Holt's linear trend applied to the `austa` dataset from the `fpp2` package to produce a 10-year forecast.  `austa` contains total annual international visitors to Australia, 1980-2015.
+
+```{r}
+# austa.train <- subset(austa, end = length(austa) - 10)
+# austa.test <- subset(austa, start = length(austa) - 9)
+# austa.holt.lin <- holt(austa.train, h = 10)
+# austa.holt.dmp <- holt(austa.train, h = 10, damped = TRUE)
+# summary(austa.holt.lin)
+```
+
+Holt's linear trend produces a sloped, but straight line.  The forecasted values from the damped trend version are overlaid in green. They just start to even out at the forecast horizon.
+
+```{r}
+# autoplot(austa.holt.lin) +
+#   autolayer(austa, series = "Actual") +
+#   autolayer(fitted(austa.holt.lin), series = "Fitted") +
+#   autolayer(austa.holt.lin$mean, series = "Forecast") +
+#   autolayer(austa.holt.dmp$mean, series = "Forecast (damped)") +
+#   labs(title = "International Visitors to Australia with 10-year Forecast",
+#        subtitle = "Method: Holt's Linear Trend",
+#        y = "Visitors",
+#        x = "Year") +
+#   guides(colour=guide_legend(title = "Series"), 
+#          fill=guide_legend(title = "Prediction interval")) +
+#   scale_color_manual(values = c("black", "red", "blue", "green"))
+```
+
+Check the model assumptions with `checkresiduals`.  The residuals plot looks has constant and independent variance.  The histogram does not really show a normal distribution.  The autocorrelation function (ACF) plot shows spikes all within the insignificance band, and the Ljung-Box test fails to reject the null hypothesis of no autocorrelation of the residuals (p = 0.3253).
+
+```{r}
+# checkresiduals(austa.holt.lin)
+```
+
+## Holt-Winters
+
+The Holt-Winters method adds a seasonality component.  There are two versions of this model, the *additive* and the *multiplicative*.  The additive method assumes the error variance is constant, and the multiplicative version assumes the error variance scales with the level.  Here is the additive version first.  The forecast includes a level, trend, and now also a season.
+
+$$\hat{y}_{t+h|t} = l_t + hb_t + s_{t-m+h_m^+}$$
+
+The level is adjusted for the trend and now the season too.
+
+$$l_t = \alpha(y_t - s_{t-m}) + (1 - \alpha)(l_{t-1} + b_{t-1})$$
+The trend is not affected by the seasonal component.
+$$b_t = \beta^*(l_t - l_{t-1}) + (1 - \beta^*)b_{t-1}$$
+The seasonal compenent changes over time in relation to the $\gamma$ parameter.  $m$ is the period of seasonality.  
+
+$$s_t = \gamma(y_t - l_{t-1} - b_{t-1}) + (1 - \gamma)s_{t-m}$$
+
+There are now three smoothing parameters: $0 \le \alpha \le 1$, $0 \le \beta^* \le 1$, and $0 \le \gamma \le 1-\alpha$.  In the additive version, the seasonal component averages to zero.  In the multiplicative version, the seasonality averages to one.  Use the multiplicative method if the seasonal variation increases with the level.
+$$\hat{y}_{t+h|t} = (l_t + hb_t) s_{t-m+h_m^+}$$
+$$l_t = \alpha\frac{y_t}{s_{t-m}} + (1 - \alpha)(l_{t-1} + b_{t-1})$$
+$$b_t = \beta^*(l_t - l_{t-1}) + (1-\beta*)b_{t-1}$$
+$$s_t = \gamma\frac{y_t}{(l_{t-1} - b_{t-1})} + (1 - \gamma)s_{t-m}$$
+
+Here is the Holt-Winters model applied to the `a10` dataset from the `fpp2` package to produce a 36-month forecast.  `a10` contains monthly anti-diabetic drug sales in Australia, 1991-2008.  The error variance increases with the series level, so the multiplicative method applies.  The model estimates the three smoothing parameters, plus initial states, including 12 initial season states - one for each month in the year.
+
+```{r}
+# a10.train <- subset(a10, end = length(a10) - 36)
+# a10.test <- subset(a10, start = length(a10) - 35)
+# a10.hw <- hw(a10, seasonal = "multiplicative", h = 36)
+# summary(a10.hw)
+```
+
+```{r}
+# autoplot(a10.hw) +
+#   autolayer(a10, series = "Actual") +
+#   autolayer(fitted(a10.hw), series = "Fitted") +
+#   autolayer(a10.hw$mean, series = "Forecast") +
+#   labs(title = "Anti-Diabetic Drug Sales in Australia with 36-month Forecast",
+#        subtitle = "Method: Holt-Winters (multiplicative)",
+#        y = "Scripts",
+#        x = "Month") +
+#   guides(colour=guide_legend(title = "Series"), 
+#          fill=guide_legend(title = "Prediction interval")) +
+#   scale_color_manual(values = c("black", "red", "blue"))
+```
+
+Check the model assumptions with `checkresiduals`. The residuals plot shows some long-term autocorrelation (a long hump), and the variance increases in the latter years. The histogram shows a normal distribution. The autocorrelation function (ACF) plot shows many spikes outside the insignificance band, and the Ljung-Box test rejects the null hypothesis of no autocorrelation of the residuals (p < 0.0001).
+
+```{r}
+# checkresiduals(a10.hw)
+```
+
+Here is a four-week Holt-Winters forecast of the `hyndsight` dataset of daily pageviews on the Hyndsight blog for one year starting April 30, 2014. Create a training dataset consisting of all obserations minus the last four weeks.  Then forecast those four weeks with Holt-Winters.  Use the `additive` method because the variance is not scaling with page volume.  Creae a second forecast with the seasonal naive method as a benchmark.
+
+
+
+Notice that the Ljung-Box test rejects the null hypothesis of no autocorrelation of the residuals.  The forecast might still provide useful information even with residuals that fail the white noise test.
+
+```{r}
+# hyndsight.train <- subset(hyndsight, end = length(hyndsight) - 4*7)
+# 
+# hyndsight.hw <- hw(hyndsight.train, seasonal = "additive", h = 4*7)
+# 
+# hyndsight.sn <- snaive(hyndsight.train, h = 4*7)
+# 
+# checkresiduals(hyndsight.hw)
+```
+
+Compare Holt-Winters to the seasonal naive forecast.  The RMSE of Holt-Winters (201.7656) is smaller than the RMSE of seasonal naive (202.7610), so it is the more accurate forecast.
+
+```{r}
+# accuracy(hyndsight.hw, hyndsight)
+# accuracy(hyndsight.sn, hyndsight)
+```
+
+Here finally is a plot of the forecasted page views.
+
+```{r}
+# autoplot(hyndsight) +
+#   autolayer(hyndsight.hw$mean)
+```
+
+## ETS
+
+The namesake function for finding errors, trend, and seasonality (ETS) provides a completely automatic way of producing forecasts for a wide range of time series.
+
+```{r}
+# fets <- function(y, h) {forecast(ets(y), h = h)}
+# a10.ets <- ets(a10.train)
+# a10.snaive <- snaive(a10.train)
+# a10.ets.cv <- tsCV(a10.train, fets, h = 4)
+# a10.snaive.cv <- tsCV(a10.train, snaive, h = 4)
+# mean(a10.ets.cv^2, na.rm = TRUE)
+# mean(a10.snaive.cv^2, na.rm = TRUE)
+```
+

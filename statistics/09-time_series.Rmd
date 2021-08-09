@@ -96,7 +96,9 @@ prison_tsibble %>%
 
 Consider whether you are fitting a model for explanatory purposes (which factors are important and what is there affect on the outcome) or for predictive purposes (expected future outcomes). If explanation is your goal, you will fit a model, check that assumptions related to inference are met, then summarize the model parameters. If prediction is your goal, you might compare multiple models, cross-validate the results against a hold-out data set, then make predictions.
 
-Fit a model using `fabletools::model()`. You can even fit multiple models. Below, I will fit a simple naive model (projection of last value) to the Google closing stock prices from 2015, then use it to predict values from Jan 2016.
+Fit a model using `fabletools::model()`. You can even fit multiple models. Below, I fit a simple naive model (projection of last value) to the Google closing stock prices from 2015, then use it to predict values from Jan 2016.
+
+Test data sets should be about 20% of the original dataset, or at least as long as the anticipated forecast length. One way to create a test data set is with filter. Another is `group_by()` + `slice()`.
 
 ```{r}
 google_dat <- tsibbledata::gafa_stock %>%
@@ -138,7 +140,8 @@ google_mdl_aug <- google_mdl %>% broom::augment()
 Innovation residuals should be independent random variables normally distributed with mean zero and constant variance. Happily, `feasts` has just what you need.
 
 ```{r warning=FALSE}
-google_mdl %>% gg_tsresiduals()
+google_mdl %>% gg_tsresiduals() +
+  labs(title = "Residuals Analysis")
 ```
 
 The autocorrelation plot supports the independence assumption. The histogram is pretty normal, but the right tail is awfully long. The residuals plot has mean zero and constant variance. You can carry out a  *portmanteau* test test on the autocorrelation assumption. Two common tests are the Box-Pierce and the Ljung-Box. These tests check the likelihood of a combination of autocorrelations at once, without testing any one correlation - kind of like an ANOVA test. The Ljung-Box test statistic is a sum of squared $k$-lagged autocorrelations, $r_k^2$,
@@ -153,36 +156,80 @@ google_mdl_aug %>% features(.var = .innov, features = ljung_box, lag = 10, dof =
 
 The *p*-value is not under .05, so do *not* reject the assumption of autocorrelation - i.e., the assumption of white noise.
 
-Use the `checkresiduals()` function from the `forecast` package to check these assumptions.  The Ljung-Box test should have a p-value >.05 and the histogram should be normal.  The code chunk below tests the naive model on the `goog200` dataset of daily Google stock prices.  The ACF of the residuals show no residuals outside the 95% acceptance region of no-autocorrelation.  The Ljung-Box fails to reject the null hypothesis of no-autocorrelation (*p* = 0.3551).  The histogram is centered on zero and normally distributed (maybe slightly skewed right).  The residuals plot shows constant variance.
+Use the `checkresiduals()` function from the `forecast` package to check these assumptions.  The Ljung-Box test should have a p-value >.05 and the histogram should be normal.  The code chunk below tests the naive model on the `goog200` dataset of daily Google stock prices.  The ACF of the residuals show no residuals outside the 95% acceptance region of no-autocorrelation.  The Ljung-Box fails to reject the null hypothesis of no-autocorrelation (*p* = 0.3551).  The histogram is centered on zero and normally distributed (maybe slightly skewed right).  The residuals plot indicates constant variance.
 
-### Benchmark Forecasting Methods
+### Evaluating Accuracy
 
-Some forecasting methods are extremely simple and surprisingly effective. Here are four.
+#### Benchmarks
 
-The **average method** projects the historical average, $\hat{y}_{T+h|T} = \bar{y}.$ The **naive method** projects the last observation, $\hat{y}_{T+h|T} = y_T.$ The **seasonal naive method** projects the last seasonal observation, $\hat{y}_{T+h|T} = y_{T+h-m(k+1)}.$ The **drift method** projects the straight line from the first and last observation, $\hat{y}_{T+h|T} = y_T + h\left(\frac{y_T - y_1}{T-1}\right).$
+Some forecasting methods are extremely simple and surprisingly effective. The **mean** method projects the historical average, $\hat{y}_{T+h|T} = \bar{y}.$ The **naive** method projects the last observation, $\hat{y}_{T+h|T} = y_T.$ The **seasonal naive** method projects the last seasonal observation, $\hat{y}_{T+h|T} = y_{T+h-m(k+1)}.$ The **drift** method projects the straight line from the first and last observation, $\hat{y}_{T+h|T} = y_T + h\left(\frac{y_T - y_1}{T-1}\right).$
 
 ```{r}
 aus_production %>%
-  filter(Quarter >= yearquarter("1970 Q1") & Quarter <= yearquarter("2004 Q4")) %>%
-  # I know you want to stick to a familiar framework, but tsibble does have a
-  # convenient function for this:
-  # filter_index("1970 Q1" ~ "2004 Q4")
-  model(Mean = MEAN(Bricks),
-        Naive = NAIVE(Bricks),
-        SNaive = SNAIVE(Bricks),
-        RW = RW(Bricks)) %>%
-  forecast(h = 14) %>%
+  # same thing as
+  # filter(Quarter >= yearquarter("1970 Q1") & Quarter <= yearquarter("2004 Q4")) %>%
+  filter_index("1995 Q1" ~ "2007 Q4") %>%
+  model(Mean = MEAN(Beer),
+        Naive = NAIVE(Beer),
+        SNaive = SNAIVE(Beer),
+        Drift = RW(Beer ~ drift())) %>%
+  forecast(h = 8) %>%
   ggplot(aes(x = Quarter)) +
-  geom_line(aes(y = .mean, color = .model)) +
-  # autoplot(level = NULL) +
-  geom_line(data = aus_production %>% filter_index("1970 Q1" ~ "2004 Q4"),
-         aes(y = Bricks)) +
+  geom_line(aes(y = .mean, color = .model), size = 1) +
+  geom_line(data = aus_production %>% filter_index("1995 Q1" ~ "2009 Q4"),
+         aes(y = Beer),
+         color = "darkgrey", size = 1) +
   theme_light() +
   guides(color = guide_legend(title = "Forecast")) +
-  labs(title = "These simple forecast methods are useful benchmarks.",
-       subtitle = "Quarterly brick production.",
-       x = NULL, y = NULL)
+  labs(title = "Simple forecast methods are useful benchmarks.",
+       x = NULL, y = NULL,
+       caption = "Source: Quarterly beer production (ML) from tsibbledata::aus_production.")
 ```
+
+Evaluate the forecast accuracy with the test data (aka, "hold-out set", and "out-of-sample data"). Forecast accuracy can only be determined by how well the model performs on new data. The **forecast error** is the difference between the observed and forecast value, $e_{T+h} = y_{T+h} - \hat{y}_{t+h|T}.$ Forecast errors differ from model residuals in the data (train vs test) and because forecast values are (usually) multi-step forecasts which include prior forecast values as inputs.
+
+There are a few benchmark metrics to evaluate a fit based on the errors. 
+
+* **MAE**.  Mean absolute error, $mean(|e_t|)$
+* **RMSE**.  Root mean squared error, $\sqrt{mean(e_t^2)}$
+* **MAPE**.  Mean absolute percentage error, $mean(|e_t / y_t|) \times 100$
+* **MASE**.  Mean absolute scaled error, $MAE/Q$ where $Q$ is a scaling constant calculated as the average one-period change in the outcome variable (error from a one-step naive forecast).
+
+The MAE and RMSE are on the same scale as the data, so they are only useful for comparing models fitted to the same series.  MAPE is unitless, but does not work for $y_t = 0$, and it assumes a meaningful zero (ratio data). The MASE is most useful for comparing datasets of different units. 
+
+Use `accuracy()` to evaluate a model. Comparing the naive, drift, and mean methods for forecasting the Google stock price, the naive model wins on all measures.
+
+```{r}
+google_mdl <- google_train %>%
+  model(Naive = NAIVE(Close),
+        Drift = RW(Close ~ drift()),
+        Mean = MEAN(Close))
+
+google_fc <- google_mdl %>%
+  forecast(new_data = google_test)
+
+ggplot() +
+  geom_line(data = google_fc, aes(x = trading_day, y = .mean, color = .model)) +
+  geom_line(data = bind_rows(google_train, google_test), aes(x = trading_day, y = Close)) +
+  theme_light() +
+  scale_y_continuous(labels = scales::dollar_format()) +
+  labs(title = "Comparison of three models.",
+       subtitle = "Google stock price predicted over 19 days.",
+       x = "Trading Day", y = "Closing Price", color = "Forecast")
+  
+autoplot(google_fc, bind_rows(google_train, google_test), level = NULL)
+
+accuracy(google_fc, google_dat) %>%
+  select(.model, RMSE, MAE, MAPE, MASE)
+```
+
+There is a better way of evaluating a model than with a single test set.  Time series *cross-validation* break the dataset into multiple training sets by setting the cutoff at varying points and then setting the test set to be a fixed number of steps ahead of the horizon.  Function `tsCV()` returns the errors using time series cross-validation.  Calculate the RMSE by taking the square root of the mean of the squared errors.
+
+```{r}
+# e <- tsCV(oil, forecastfunction = naive, h = 1)
+# sqrt(mean(e^2, na.rm = TRUE))
+```
+
 
 
 
@@ -650,345 +697,7 @@ us_employment_featues %>%
 
 ## Toolbox
 
-This section deals with 
-### Prediction
 
-The *White Noise* (WN) model is the simplest example of a stationary process.  It has a fixed mean and variance.  The WN model is one of several autoregressive integrated moving average (ARIMA) models.  An ARIMA(p, d, q) model has three parts, the autoregressive order `p` (number of time lags), the order of integration (or differencing) `d`, and the moving average order `q`.  When two out of the three terms are zeros, the model may be referred to based on the non-zero parameter, dropping "AR", "I" or "MA" from the acronym describing the model. For example, ARIMA (1, 0,0) is AR(1), ARIMA(0,1,0) is I(1), and ARIMA(0,0,1) is MA(1). The WN model is ARIMA(0,0,0).  
-
-Simulate a WN time series using the `arima.sim()` function with argument `model = list(order = c(0, 0, 0))`.  Here is a 50-period WN model with `mean` 100 and standard deviation `sd` of 10.
-
-```{r}
-wn <- arima.sim(model = list(order = c(0, 0, 0)), 
-                n = 50, 
-                mean = 100, 
-                sd = 10)
-ts.plot(wn,
-        xlab = "Period", 
-        ylab = "", 
-        main = "WN Model, mean = 100, sd = 10")
-```
-
-Fit a WN model to a dataset with `arima(x, order = c(0, 0, 0))`.  The model returns the mean, var, and se.  
-
-```{r}
-arima(wn, order = c(0, 0, 0))
-```
-The model mean will be identical to the series mean.  The variance will be close to the series variance.
-
-```{r}
-# mean = intercept
-mean(wn)
-
-# se ~ s.e.
-sqrt(var(wn) / length(wn))
-
-# var ~ sigma^2
-var(wn)
-```
-
-The *Random Walk* (RW) model is a WN model with a strong time dependance, so there is no fixed mean or variance.  It is a non-stationary model.  The random walk model is $Y_t = c + Y_{t-1} + \epsilon_t$ where $c$ is the drift coefficient, an overall slope parameter.  
-
-Simulate a RW time series using the `arima.sim()` function with argument `model = list(order = c(0, 1, 0))`.  Here is a 50-period RW model with `mean` 0.
-
-```{r}
-rw <- arima.sim(model = list(order = c(0, 1, 0)), 
-                n = 50)
-ts.plot(rw,
-        xlab = "Period", 
-        ylab = "", 
-        main = "RW Model, mean = 0")
-```
-
-The first difference of a RW model is just a WN model.
-
-```{r}
-ts.plot(diff(rw),
-        xlab = "Period", 
-        ylab = "", 
-        main = "Diff(RW) = WN")
-```
-
-Specify the drift parameter with `mean`.  The drift parameter is the slope of the RW model.
-
-```{r}
-rw <- arima.sim(model = list(order = c(0, 1, 0)), 
-                n = 100, 
-                mean = 1)
-ts.plot(rw,
-        xlab = "Period", 
-        ylab = "", 
-        main = "RW Model, mean = 1")
-```
-
-Fit a random walk model with drift by first differencing the data, then fitting the WN model to the differenced data.  The `arima()` intercept is the drift variable.
-
-```{r}
-wn.mod <- arima(diff(rw), 
-                order = c(0, 0, 0))
-
-ts.plot(rw)
-abline(a = 0, b = wn.mod$coef)
-
-rw.mod <- arima(rw, 
-                order = c(0, 1, 0))
-points(rw - residuals(rw.mod), type = "l", col = 2, lty = 2)
-```
-
-When dealing with time series data, ask first if it stationary because stationary models are much simpler.  A stationary process oscillates randomly about a fixed mean, a phenomenon called *reversion to the mean*.  In contrast, nonstationary processes have time trends, periodicity, or lack mean reversion.  Even when a process is nonstationary, the *changes* in the series may be approximately stationary.  For example, inflation rates show a pattern over time related to Federal Reserve policy, but the *changes* in interest rates are stationary.
-
-WN processes are stationary, but RW processes (the cumulative sum of the WN process) are not.  Here are plots of a WN process and corresponding RW process using the `cumsum()` of the WN.  Only the WN process is stationary.
-
-```{r}
-# White noise
-wn <- arima.sim(model = list(order = c(0, 0, 0)), 
-                n = 100) 
-
-# Random walk from white noise
-rw <- cumsum(wn)
-  
-plot.ts(cbind(wn, rw),
-        xlab = "Period",
-        main = "WN with Zero Mean, and Corresponding RW")
-```
-
-Here is another WN process with corresponding RW process, this time with a drift parameter of 0.4.
-
-```{r}
-# White noise with mean <> 0
-wn <- arima.sim(model = list(order = c(0, 0, 0)), 
-                n = 100, 
-                mean = 0.4) 
-  
-# Random walk with drift from white noise
-rw <- cumsum(wn)
-
-plot.ts(cbind(wn, rw),
-        xlab = "Period",
-        main = "WN with Nonzero Mean, and Corresponding RW")
-```
-
-
-
-### Autoregression
-
-The autoregressive (AR) model is the most widely used time series model. It shares the familiar interpretation of a simple linear regression, but each observation is regressed on the previous observation. 
-
-$$Y_t - \mu = \phi(Y_{t-1} - \mu) + \epsilon_t$$
-
-where $\epsilon_t \sim WN(0, \sigma_\epsilon^2)$.  The AR model also includes the white noise (WN) and random walk (RW) models as special cases. 
-
-The `arima.sim()` function can simulate data from an AR model by setting the `model` argument equal to `list(ar = phi)` where `phi` is a slope parameter in the interval (-1, 1).  As `phi` approaches 1, the plot smooths.  With negative `phi` values, the plot oscillates.
-
-```{r}
-# small autocorrelation
-x <- arima.sim(model = list(ar = 0.5), n = 100)
-
-# large autocorrelation
-y <- arima.sim(model = list(ar = 0.9), n = 100)
-
-# negative autocorrelation (oscillation)
-z <- arima.sim(model = list(ar = -0.75), n = 100)
-
-plot.ts(cbind(x, y, z))
-```
-
-The plots generated by the `acf()` function provide useful information about each lag. Series `x` (small slope parameter) has positive autocorrelation for the first couple lags, but they quickly decay toward zero. Series `y` (large slope parameter) has positive autocorrelation for many lags. Series `z` (negative slope parameter) has an oscillating pattern. 
-
-```{r}
-par(mfrow = c(2,2))
-acf(x)
-acf(y)
-acf(z)
-```
-
-The stationary AR model has a slope parameter between -1 and 1. The AR model exhibits higher persistence when its slope parameter is closer to 1, but the process reverts to its mean fairly quickly. Its sample ACF also decays to zero at a quick (geometric) rate, meaning values far in the past have little impact on the present value of the process.
-
-Below, the AR model with slope parameter 0.98 exhibits greater persistence than with slope parameter 0.90, but both decay to 0. 
-
-```{r}
-ar90 <- arima.sim(model = list(ar = 0.9), n = 200)
-ar98 <- arima.sim(model = list(ar = 0.98), n = 200)
-
-par(mfrow = c(2,2))
-ts.plot(ar90)
-ts.plot(ar98)
-acf(ar90)
-acf(ar98)
-```
-
-
-By contrast, the random walk (RW) model is a special case of the AR model in which the slope parameter is equal to 1.  The RW model is nonstationary, and shows considerable persistence and relatively little decay in the ACF. 
-
-```{r}
-ar100 <- arima.sim(model = list(order = c(0, 1, 0)), n = 200)
-par(mfrow = c(2,1))
-ts.plot(ar100)
-acf(ar100)
-```
-
-Fit the AR(1) model (autoregressive model with one time lag) using the `arima()` function with `order = c(1, 0, 0)`, meaning 1 time lag, 0 differencing, and 0 order moving average.  
-
-Below is an AR(1) model fit to the `AirPassengers` dataset.  The output of the `arima` function shows $\phi$ as `ar1 = 0.9646`, $\mu$ as `intercept = 278.4649`, and $\hat{\sigma}_\epsilon^2$ as `sigma^2 = 1119`. 
-
-```{r}
-ar1 <- arima(AirPassengers, order = c(1, 0, 0))
-ar1.fit <- AirPassengers - residuals(ar1)
-print(ar1)
-
-par(mfrow = c(2, 1))
-ts.plot(AirPassengers)
-points(ar1.fit, type = "l", col = 2, lty = 2)
-acf(AirPassengers)
-```
-
-Use the ARIMA model to forecast observations with the `predict()` function. Specify the number of periods beyond the last observation with the `n.ahead` parameter.
-
-Below is a forecast of 10 periods (years) beyond the 1871-1970 annual observations in the `Nile` dataset. The relatively wide band of confidence (dotted lines) is a result of the low persistence in the data. 
-
-```{r}
-ar1 <-arima(Nile, order  = c(1, 0, 0))
-print(ar1)
-
-ts.plot(Nile, xlim = c(1871, 1980))
-ar1.fit <- Nile - resid(ar1)
-
-ar.pred <- predict(ar1, n.ahead = 10)$pred
-ar.pred.se <- predict(ar1, n.ahead = 10)$se
-points(ar.pred, type = "l", col = 2)
-points(ar.pred - 2*ar.pred.se, type = "l", col = 2, lty = 2)
-points(ar.pred + 2*ar.pred.se, type = "l", col = 2, lty = 2)
-```
-
-
-### Simple Moving Average
-
-The simple moving average (MA) model is
-
-$$Y_t = \mu + \epsilon_t + \theta\epsilon_{t-1}$$ 
-
-If the slope parameter $\theta$ is zero, $Y_t$ is a white noise process, $Y_t \sim (\mu, \sigma_\epsilon^2)$.  Large $\theta$ indicates large autocorrelation.  Negative $\theta$ indicates an oscillating series.
-
-The MA model is used to account for very short-run autocorrelation. Each observation is regressed on the previous innovation, which is not actually observed. Like the AR model, the MA model includes the white noise (WN) model as special case. 
-
-Simulate the MA model using `arima.sim()` with parameter `list(ma = theta)`, where `theta` is a slope parameter from the interval (-1, 1).  
-
-Here are three MA models.  The first has slope paramter 0.5 and the second has slope parameter 0.9.  The second plot shows more persistance as a result.  THe third plot has a negative slope parameter and oscillates as a result.
-
-```{r}
-x <- arima.sim(model = list(ma = 0.5), n = 100)
-y <- arima.sim(model = list(ma = 0.9), n = 100)
-z <- arima.sim(model = list(ma = -0.5), n = 100)
-
-plot.ts(cbind(x, y, z))
-```
-
-Use the `acf()` function to estimate the autocorrelation functions.  The MA series x with slope = 0.5 has a positive sample autocorrelation at the first lag, but it is approximately zero at other lags. The series y with slope = 0.9 has a larger sample autocorrelation at its first lag, but it is also approximately zero for the others. The series z with slope = -0.5 has a negative sample autocorrelation at the first lag and alternates, but is approximately zero for all higher lags. 
-
-```{r}
-par(mfrow = c(2, 2))
-acf(x)
-acf(y)
-acf(z)
-```
-
-Fit the MA model using the `arima()` function with `order = c(0, 0, 1), meaning 0 time lag, 0 differencing, and 1st order moving average.
-
-Below is an MA model fit to the `Nile` dataset. The output of the arima function shows $\theta$ as ma1 = 0.3783, $\mu$ as intercept = 919.2433, and $\sigma_\epsilon^2$ as sigma^2 = 23272.
-
-```{r}
-ma <- arima(Nile, order = c(0, 0, 1))
-print(ma)
-
-ts.plot(Nile)
-ma.fit <- Nile - resid(ma)
-points(ma.fit, type = "l", col = 2, lty = 2)
-
-```
-
-Use the ARIMA model to forecast observations with the `predict()` function. The MA model can only produce a 1-step forecast. Except for the 1-step forecast, all forecasts from the MA model are equal to the estimated mean (intercept).
-
-Below is a forecast of 10 periods (years) beyond the 1871-1970 annual observations in the  Nile dataset. 
-
-```{r}
-predict(ma, n.ahead = 10)
-
-ts.plot(Nile, xlim = c(1871, 1980))
-ma.pred <- predict(ma, n.ahead = 10)$pred
-ma.pred.se <- predict(ma, n.ahead = 10)$se
-points(ma.pred, type = "l", col = 2)
-points(ma.pred - 2*ma.pred.se, type = "l", col = 2, lty = 2)
-points(ma.pred + 2*ma.pred.se, type = "l", col = 2, lty = 2)
-```
-
-How do you decide which model provides the best fit?  Measure the model fit with the Akaike information criterion (AIC) and/or Bayesian information criterion (BIC). These indicators penalize models with more estimated parameters to avoid overfitting, so smaller indicator values are preferable.
-
-Use the `AIC()` and `BIC()` functions to estimate the indicators.  Below are the AIC and BIC for the AR(1) and MA models.  Although the predictions from both models are similar (they have a correlation coeffiicent of 0.94), both the AIC and BIC indicate that the AR model is a slightly better fit for the `Nile` data. 
-
-```{r}
-cor(ar1.fit, ma.fit)
-
-AIC(ar1)
-AIC(ma)
-
-BIC(ar1)
-BIC(ma)
-
-```
-
-## Toolbox
-
-
-
-### Error Analysis
-
-Evaluate the forecast accuracy with the test dataset.  Forecast accuracy can only be determined by how well the model performs on new data.  The difference between the forecasted value and the actual observed value $e_{T+h} = y_{T+h} - \hat{y}_{t+h|T}$ is the **forecaset error**.  What distinguishes forecast errors from model residuals is not just the datasets (train vs test). Forecasted values are (usually) multi-step forecasts - they include prior forecasted values as inputs.  
-
-To evaluate forecast accuracy, Split the dataset into a training dataset and a test dataset.  The test dataset should be about 20% of the original dataset, or at least as long as the anticipated forecast length. Construct training and test dataset with either the `window()` function or the `subset()` function.  Here is the `marathon` dataset from the `fpp2` package split into a training and test dataset with the naive forecast model fit to the training dataset and forecasting `h = 20` periods ahead.
-
-```{r}
-# # marathon.train <- subset(marathon, end = length(marathon) - 20)
-# marathon.train <- window(marathon, end = 1996) 
-# 
-# # marathon.test <- subset(marathon, start = length(marathon) - 19)
-# marathon.test <- window(marathon, start = 1997)
-# 
-# marathon.fc <- naive(marathon.train, h = 20)
-# autoplot(marathon.fc) +
-#   autolayer(marathon.fc, series = "Naive Forecast") +
-#   autolayer(marathon.test, series = "Test Data") +
-#   labs(title = "Boston marathon winning times since 1897", 
-#        x = "Year",
-#        y = "Minutes")
-```
-
-There are a few benchmark metrics to evaluate a fit based on the errors. 
-
-* **MAE**.  Mean absolute error, $mean(|e_t|)$
-* **RMSE**.  Root mean squared error, $\sqrt{mean(e_t^2)}$
-* **MAPE**.  Mean absolute percentage error, $mean(|e_t / y_t|) \times 100$
-* **MASE**.  Mean absolute scaled error, $MAE/Q$ where $Q$ is a scaling constant
-
-The MAE and RMSE are on the same scale as the data, so they are only useful for comparing models fitted to the same series.  The MAPE is unitless, but does not work for $y_t = 0$, and it assumes a meaningful zero (ratio data).  The MASE is most useful for comparing datasets of different units.  Use function `accuracy()` to evaluate a model.  Here is a comparison of two methods to forecast the `marathon` dataset.  Since both models use the same training set, the RMSE is a good metric to compare.  The first model (naive) has a lower RMSE, so it is the better model.
-
-```{r}
-# marathon.fc.naive <- naive(marathon.train, h = 24)
-# accuracy(marathon.fc.naive, oil)["Test set", "RMSE"]
-# 
-# marathon.fc.drift <- rwf(marathon.train, drift = TRUE, h = 25)
-# accuracy(marathon.fc.drift, oil)["Test set", "RMSE"]
-# 
-# autoplot(marathon.train) +
-#   autolayer(marathon.fc.naive$mean, series = "Naive") +
-#   autolayer(marathon.fc.drift$mean, series = "Drift") +
-#   autolayer(marathon.test, series = "Test")
-```
-
-There is a better way of evaluating a model than with a single test set.  Time series *cross-validation* break the dataset into multiple training sets by setting the cutoff at varying points and then setting the test set to be a fixed number of steps ahead of the horizon.  Function `tsCV()` returns the errors using time series cross-validation.  Calculate the RMSE by taking the square root of the mean of the squared errors.
-
-```{r}
-# e <- tsCV(oil, forecastfunction = naive, h = 1)
-# sqrt(mean(e^2, na.rm = TRUE))
-```
 
 ### Selecting Predictors
 
@@ -1066,129 +775,128 @@ Here is an example from dataset `uschange` in the `fpp2` package.  `uschange` co
 
 The best model contains all four predictors. However, there is clear separation between the models in the first four rows and the ones below, so Income and Savings are more important than Production and Unemployment. Also, the first two rows have almost identical values of CV, AIC and AICc. So you could possibly drop the Production variable and get similar forecasts. 
 
-
-## Judgmental Forecasts
-
-Use judgmental forecasting when: (i) there is no available data; (ii) data is available, but the statistical forecasts need to be adjusted using judgement; or (iii) data is available, but independent statistical and judgmental forecasts can be combined.  Follow these principals when conducting a judgmental forecast:
-
-* **Set the forecasting task clearly and concisely**.  
-* **Implement a systematic approach**.  Identify and weight information.
-* **Document and justify**.  This reduces bias.
-* **Systematically evaluate forecasts**.  Check forecast peformance after data arrive.
-* **Segregate forecasters and users**.  The forecaster may be deliver a reality check to the user.
-
-The **Delphi method** relies on the key assumption that forecasts from a group are generally more accurate than those from individuals. The method is assemble a panel of experts which makes initial forecasts with justifications. A summary of the forecasts and reasoning is distributed to the experts.  The experts review their forecasts in light of the feedback. This step may be iterated until a satisfactory level of consensus is reached.
-
-A similar method called **forecasting by analogy** constructs the candidate forecasts by relying on analaogous situations.  The experts use their judgment and experience to identify the appropriate analagous situations.
-
-Another method is to construct forecasts based on possible scenarios that may unfold.  
-
-
 ## Time Series Regression
 
-A time series regression forecasts one time series as a linear relationshiop with other time series.
+A time series regression forecasts a time series as a linear relationship with the independent variables.
 
-$$y_t = \beta X + \epsilon_t$$
+$$y_t = X_t \beta + \epsilon_t$$
 
-The linear regression model assumes there is a linear relationship between the forecast variable and the predictor variables.  The errors must have mean zero, otherwise the forecasts are biased (the least squares method guarantees this is true).  The errors must not be autocorrelated, otherwise the forecasts are inefficient because there is more information in the data that can be exploited.  Finally, the errors must not be related to the predictor variables, otherwise there is more information that should be included in the systematic part of the model.  It is also useful to have the errors being normally distributed with a constant variance in order to produce prediction intervals.  Another important assumption is that each predictor is not a random variable. 
+The linear regression model assumes there is a **linear** relationship between the forecast variable and the predictor variables. This implies that the errors must have mean zero, otherwise the forecasts are biased: $E(\epsilon | X_j) = 0$. The least squares method guarantees this condition is met. The residuals must not be autocorrelated, otherwise the forecasts are inefficient because there is more information in the data that can be exploited. To produce reliable inferences and prediction intervals, the residuals must be independent normal random variables with constant variance.
 
-The `tslm()` function fits a linear regression model to time series data. It is similar to the `lm()` function, but also provides additional facilities for handling time series.
+`fable::TSLM()` fits a linear regression model to time series data. `TSLM()` is similar to `lm()` with additional facilities for handling time series.
 
-Here is an example from dataset `uschange` in the `fpp2` package.  `uschange` contains quarterly growth rates of personal consumption, income, and production in the US from 1960 to 2016.  It also contains the unemployment rate.  One could model consumption as 
-
-$$Consumption_t = \beta_0 + \beta_1 Income_t + \beta_2 Production_t + \beta_3 Savings_t + \beta_4 Unemployment_t + \epsilon_t$$
+Data set `fpp3::us_change` contains quarterly US growth rates of personal $\mathrm{Consumption}$, $\mathrm{Income}$, and $\mathrm{Production}$, and the quarterly $\mathrm{Unemployment}$ rate and $\mathrm{Savings}$ rate. 
 
 The scatterplot matrix shows positive relationships with income and industrial production, and negative relationships with savings and unemployment. 
 
 ```{r}
-# corrplot::corrplot(cor(as.data.frame(uschange)), 
-#          method = "number", 
-#          type = "upper")
+fpp3::us_change %>%
+  as_tibble() %>%
+  select(-Quarter) %>%
+  cor() %>%
+  ggcorrplot::ggcorrplot(type = "upper", lab = TRUE, lab_size = 3) +
+  theme_light() +
+  labs(title = "Consumption is correlated with predictors",
+       subtitle = "Correlation plot of US economic indicators.", 
+       caption = "Source: fpp3::us_change.",
+       x = NULL, y = NULL)
+
 ```
 
-Fit the model with `tslm()`.
+Let's fit this model: 
+
+$$\mathrm{Consumption}_t = \beta_0 + \beta_1 \mathrm{Income}_t + \beta_2 \mathrm{Production}_t + \beta_3 \mathrm{Savings}_t + \beta_4 \mathrm{Unemployment}_t + \epsilon_t$$
 
 ```{r}
-# uschange.lm <- tslm(Consumption ~ Income + Production + Savings + Unemployment, data = uschange)
-# summary(uschange.lm)
+us_change_lm <- fpp3::us_change %>%
+  model(TSLM(Consumption ~ Income + Production + Savings + Unemployment))
+
+report(us_change_lm)
 ```
 
-The fitted values follow the actual data fairly closely. The Adjusted $R^2$ is 0.749 and the standard error of the regression is $\hat{\sigma}_\epsilon = 0.329$.  The fitted values to actual values plot has a strong linear relationship.
+The fitted values follow the actual data fairly closely. The modeled $R^2$ is `r us_change_lm %>% broom::glance() %>% pull("r_squared") %>% scales::comma(accuracy = .001)`, the adjusted $R^2$ is `r us_change_lm %>% broom::glance() %>% pull("adj_r_squared") %>% scales::comma(accuracy = .001)`, and the standard error of the regression, $\hat{\sigma}_\epsilon$$ is `r us_change_lm %>% broom::glance() %>% pull(sigma2) %>% sqrt() %>% scales::comma(accuracy = .001)`. The fitted to actual values plot has a strong linear relationship.
 
 ```{r}
-# p1 <- autoplot(uschange[,'Consumption'], series="Data") +
-#   autolayer(fitted(uschange.lm), series="Fitted") +
-#   xlab("Quarter") + ylab("") +
-#   ggtitle("Percent change in US consumption expenditure") +
-#   guides(colour = guide_legend(title=" "))
-# 
-# p2 <- cbind(Data = uschange[,"Consumption"],
-#       Fitted = fitted(uschange.lm)) %>%
-#   as.data.frame() %>%
-#   ggplot(aes(x=Data, y=Fitted)) +
-#     geom_point() +
-#     ylab("Fitted (predicted values)") +
-#     xlab("Data (actual values)") +
-#     ggtitle("Percent change in US consumption expenditure") +
-#     geom_abline(intercept=0, slope=1)
-# 
-# grid.arrange(p1, p2, nrow = 2)
+p1 <- augment(us_change_lm) %>%
+  ggplot(aes(x = Quarter)) +
+  geom_line(aes(y = Consumption), color = "dark gray", size = 1) +
+  geom_line(aes(y = .fitted), color = "goldenrod", size = 1) +
+  theme_light() +
+  labs(subtitle = "Time series")
+p2 <- augment(us_change_lm) %>%
+  ggplot(aes(x = Consumption, y = .fitted)) +
+  geom_point(color = "goldenrod", size = 1) +
+  geom_abline(intercept = 0, slope = 1, linetype = 2, size = 1, color = "dark gray") +
+  theme_light() +
+  labs(subtitle = "Predicted vs actuals")
+
+p1 + p2 +
+  patchwork::plot_annotation(title = "Fitted values plots")
 ```
 
-Evaluate the regression model with a series of diagnostic tests using `checkresiduals()` from the `forecast` package.  
+Evaluate the regression model with the following diagnostics.
 
-The residuals vs time plot shows some heteroscedasticity in the variance. Heteroscedasticity can make prediction intervals inaccurate.
+The residuals vs time plot reveals some heteroscedasticity. Heteroscedasticity can make prediction intervals inaccurate.
 
-The histogram shows that the residuals are slightly skewed.  Non-normality of the residuals can also make the prediction intervals inaccurate.
+The histogram shows that the residuals are slightly skewed. Non-normality of the residuals can also make the prediction intervals inaccurate.
 
-The autocorrelation plot (ACF) shows a significant spike at lag 7.  If autocorrelation exists, forecasts are still unbiased, but the prediction intervals are larger than they need to be.  Another test of autocorrelation in the residuals is the Breusch-Godfrey test for serial correlation up to a specified order. A small p-value indicates there is significant autocorrelation remaining in the residuals. The Breusch-Godfrey test is similar to the Ljung-Box test, but it is specifically designed for use with regression models.  In this case, the spike at lag 7 is not enough for the Breusch-Godfrey to be significant (*p* = 0.062). In any case, the autocorrelation is not particularly large, and at lag 7 it is unlikely to have a noticeable impact on the forecasts or the prediction intervals. 
+The autocorrelation function plot (ACF) finds a significant spike at lag 7. If autocorrelation exists, forecasts are still unbiased, but the prediction intervals are larger than they need to be. Another test of autocorrelation in the residuals is the Breusch-Godfrey test for serial correlation up to a specified order. A small p-value indicates there is significant autocorrelation remaining in the residuals. The Breusch-Godfrey test is similar to the Ljung-Box test, but it is specifically designed for use with regression models. In this case, the spike at lag 7 is not enough for the Breusch-Godfrey to be significant (*p* = 0.062). In any case, the autocorrelation is not particularly large, and at lag 7 it is unlikely to have a noticeable impact on the forecasts or the prediction intervals. 
 
 ```{r}
-# checkresiduals(uschange.lm)
+gg_tsresiduals(us_change_lm)
 ```
 
-The residuals should be independent of each of the explanatory variables *and* independent of candidate variables not used in the model.  In this case, the residuals show a random pattern in each of the plots.
+The residuals should be independent of each of the explanatory variables *and* independent of candidate variables not used in the model. In this case, the residuals show a random pattern in each of the plots.
 
 ```{r}
-# df <- as.data.frame(uschange)
-# df[,"Residuals"]  <- as.numeric(residuals(uschange.lm))
-# p1 <- ggplot(df, aes(x=Income, y=Residuals)) +
-#   geom_point()
-# p2 <- ggplot(df, aes(x=Production, y=Residuals)) +
-#   geom_point()
-# p3 <- ggplot(df, aes(x=Savings, y=Residuals)) +
-#   geom_point()
-# p4 <- ggplot(df, aes(x=Unemployment, y=Residuals)) +
-#   geom_point()
-# gridExtra::grid.arrange(p1, p2, p3, p4, nrow=2)
+us_change %>%
+  left_join(residuals(us_change_lm), by = "Quarter") %>%
+  pivot_longer(Income:Unemployment, names_to = "regressor", values_to = "x") %>%
+  ggplot(aes(x = x, y = .resid, color = regressor)) +
+  geom_point(show.legend = FALSE) +
+  facet_wrap(vars(regressor), scales = "free_x") +
+  labs(title = "There is no relationship between residuals and individual regressors.",
+       subtitle = "otherwise the relationship may be nonlinear.",
+       x = NULL) +
+  theme_light() +
+  ggthemes::scale_color_few()
 ```
 
-A plot of the residuals against the fitted values should also show no pattern. 
+A second check on the homoscedastity assumption is a plot of the residuals against the fitted values. Again, there should be no pattern. 
 
 ```{r}
+augment(us_change_lm) %>%
+  ggplot(aes(x = .fitted, y = .resid)) +
+  geom_point() +
+  labs(title = "There is no relationship between residuals and fitted values.",
+       subtitle = "otherwise the response variable may require transformation.",
+       y = "Residuals", x = "Fitted") +
+  theme_light()
 # cbind(Fitted = fitted(uschange.lm),
 #       Residuals = residuals(uschange.lm)) %>%
 #   as.data.frame() %>%
 #   ggplot(aes(x=Fitted, y=Residuals)) + geom_point()
 ```
 
-Check for outliers and influential observations in the data and take remedial action if the data are spurious.  For multiple linear regression models there is no straight-forward visual diagnostic like the simple linear regression scatterplot. 
+Check for *outliers*, *leverage points*, and *influential points*. For multiple linear regression models there is no straight-forward visual diagnostic like the simple linear regression scatter plot. Recall, an outlier is a point far from the others (in either the x or y direction); a leverage point is far from the others in the x direction, potentially affecting the measured slope; and influential point is a leverage point that *does* affect the slope.
 
-The "hat matrix" $H$ identifies leverage points.  Recall that in the linear regression model $\hat{y} = X \hat{\beta}$ the slope coefficients are estimated by $\hat{\beta} = (X'X)^{-1}X'y$.  Substituting, $\hat{y} = X(X'X)^{-1}X'y$, or $\hat{y} = Hy$, where 
+The "hat matrix" $H$ identifies leverage points. Recall that in the linear regression model $\hat{y} = X \hat{\beta}$ the slope coefficients are estimated by $\hat{\beta} = (X'X)^{-1}X'y$. Substituting, $\hat{y} = X(X'X)^{-1}X'y$, or $\hat{y} = Hy$, where 
 
 $$H = X(X'X)^{-1}X'.$$ 
 
-$H$ is called the hat matrix because $H$ puts the hat on $y$.  $H$ is an $n \times n$ matrix.  The diagonal elements $H_{ii}$ are a measure of the distances between each observation $i$'s predictor variables $X_i$ and the average of the entire data set predictor variables $\bar{X}$.  $H_{ii}$ are the leverage that the observed responses $y_i$ exert on the predicted responses $\hat{y}_i$.  Each $H_{ii}$ is in the unit interval [0, 1] and the values sum to the number of regression parameters (including the intercept) $\sum{H_{ii}} = p$.  A common rule is to research any observation whose leverage value is more than 3 times larger than the mean leverage value, which since the sum of the leverage values is $p$, equals 
+$H$ is called the hat matrix because $H$ puts the hat on $y$. $H$ is an $n \times n$ matrix.  The diagonal elements $H_{ii}$ are a measure of the distances between each observation $i$'s predictor variables $X_i$ and the average of the entire data set predictor variables $\bar{X}$. $H_{ii}$ are the leverage that the observed responses $y_i$ exert on the predicted responses $\hat{y}_i$. Each $H_{ii}$ is in the unit interval [0, 1] and the values sum to the number of regression parameters (including the intercept) $\sum{H_{ii}} = k + 1$.  A common rule is to research any observation whose leverage value is more than 3 times larger than the mean leverage value, which since the sum of the leverage values is $k + 1$, equals 
 
-$$H_{ii} > 3 \frac{p}{n}.$$
+$$H_{ii} > 3 \frac{k + 1}{n}.$$
 
-There are multiple methods to identify influential points.  One is Cook's distance.  Cook's distance for observation $i$ is defined 
+There are multiple methods to identify influential points. One is Cook's distance. Cook's distance for observation $i$ is defined 
 
 $$D_i = \frac{(y_i - \hat{y}_i)^2}{p \times MSE} \frac{H_{ii}}{(1 - H_{ii})^2}.$$
 
-$D_i$ directly summarizes how much all of the fitted values change when the ith observation is deleted. A data point with $D_i > 1$ is probably influential.  $D_i > 0.5$ is at least worth investigating.
+$D_i$ directly summarizes how much all of the fitted values change when the ith observation is deleted. A data point with $D_i > 1$ is probably influential. $D_i > 0.5$ is at least worth investigating.
 
 ```{r}
+car::influenceIndexPlot(us_change_lm)
+cooks.distance(us_change_lm)
 # autoplot(cooks.distance(uschange.lm)) +
 #   geom_hline(yintercept = 0.5, linetype="dashed") +
 #   labs(title = "Cook's Distance",
@@ -1592,6 +1300,292 @@ If the time series includes seasonality, an ARIMA(p,d,q)(P,D,Q)[m] model include
 # bettermodel <- fit2
 ```
 
+
+
+
+
+
+The *White Noise* (WN) model is the simplest example of a stationary process.  It has a fixed mean and variance.  The WN model is one of several autoregressive integrated moving average (ARIMA) models.  An ARIMA(p, d, q) model has three parts, the autoregressive order `p` (number of time lags), the order of integration (or differencing) `d`, and the moving average order `q`.  When two out of the three terms are zeros, the model may be referred to based on the non-zero parameter, dropping "AR", "I" or "MA" from the acronym describing the model. For example, ARIMA (1, 0,0) is AR(1), ARIMA(0,1,0) is I(1), and ARIMA(0,0,1) is MA(1). The WN model is ARIMA(0,0,0).  
+
+Simulate a WN time series using the `arima.sim()` function with argument `model = list(order = c(0, 0, 0))`.  Here is a 50-period WN model with `mean` 100 and standard deviation `sd` of 10.
+
+```{r}
+wn <- arima.sim(model = list(order = c(0, 0, 0)), 
+                n = 50, 
+                mean = 100, 
+                sd = 10)
+ts.plot(wn,
+        xlab = "Period", 
+        ylab = "", 
+        main = "WN Model, mean = 100, sd = 10")
+```
+
+Fit a WN model to a dataset with `arima(x, order = c(0, 0, 0))`.  The model returns the mean, var, and se.  
+
+```{r}
+arima(wn, order = c(0, 0, 0))
+```
+The model mean will be identical to the series mean.  The variance will be close to the series variance.
+
+```{r}
+# mean = intercept
+mean(wn)
+
+# se ~ s.e.
+sqrt(var(wn) / length(wn))
+
+# var ~ sigma^2
+var(wn)
+```
+
+The *Random Walk* (RW) model is a WN model with a strong time dependance, so there is no fixed mean or variance.  It is a non-stationary model.  The random walk model is $Y_t = c + Y_{t-1} + \epsilon_t$ where $c$ is the drift coefficient, an overall slope parameter.  
+
+Simulate a RW time series using the `arima.sim()` function with argument `model = list(order = c(0, 1, 0))`.  Here is a 50-period RW model with `mean` 0.
+
+```{r}
+rw <- arima.sim(model = list(order = c(0, 1, 0)), 
+                n = 50)
+ts.plot(rw,
+        xlab = "Period", 
+        ylab = "", 
+        main = "RW Model, mean = 0")
+```
+
+The first difference of a RW model is just a WN model.
+
+```{r}
+ts.plot(diff(rw),
+        xlab = "Period", 
+        ylab = "", 
+        main = "Diff(RW) = WN")
+```
+
+Specify the drift parameter with `mean`.  The drift parameter is the slope of the RW model.
+
+```{r}
+rw <- arima.sim(model = list(order = c(0, 1, 0)), 
+                n = 100, 
+                mean = 1)
+ts.plot(rw,
+        xlab = "Period", 
+        ylab = "", 
+        main = "RW Model, mean = 1")
+```
+
+Fit a random walk model with drift by first differencing the data, then fitting the WN model to the differenced data.  The `arima()` intercept is the drift variable.
+
+```{r}
+wn.mod <- arima(diff(rw), 
+                order = c(0, 0, 0))
+
+ts.plot(rw)
+abline(a = 0, b = wn.mod$coef)
+
+rw.mod <- arima(rw, 
+                order = c(0, 1, 0))
+points(rw - residuals(rw.mod), type = "l", col = 2, lty = 2)
+```
+
+When dealing with time series data, ask first if it stationary because stationary models are much simpler.  A stationary process oscillates randomly about a fixed mean, a phenomenon called *reversion to the mean*.  In contrast, nonstationary processes have time trends, periodicity, or lack mean reversion.  Even when a process is nonstationary, the *changes* in the series may be approximately stationary.  For example, inflation rates show a pattern over time related to Federal Reserve policy, but the *changes* in interest rates are stationary.
+
+WN processes are stationary, but RW processes (the cumulative sum of the WN process) are not.  Here are plots of a WN process and corresponding RW process using the `cumsum()` of the WN.  Only the WN process is stationary.
+
+```{r}
+# White noise
+wn <- arima.sim(model = list(order = c(0, 0, 0)), 
+                n = 100) 
+
+# Random walk from white noise
+rw <- cumsum(wn)
+  
+plot.ts(cbind(wn, rw),
+        xlab = "Period",
+        main = "WN with Zero Mean, and Corresponding RW")
+```
+
+Here is another WN process with corresponding RW process, this time with a drift parameter of 0.4.
+
+```{r}
+# White noise with mean <> 0
+wn <- arima.sim(model = list(order = c(0, 0, 0)), 
+                n = 100, 
+                mean = 0.4) 
+  
+# Random walk with drift from white noise
+rw <- cumsum(wn)
+
+plot.ts(cbind(wn, rw),
+        xlab = "Period",
+        main = "WN with Nonzero Mean, and Corresponding RW")
+```
+
+
+
+### Autoregression
+
+The autoregressive (AR) model is the most widely used time series model. It shares the familiar interpretation of a simple linear regression, but each observation is regressed on the previous observation. 
+
+$$Y_t - \mu = \phi(Y_{t-1} - \mu) + \epsilon_t$$
+
+where $\epsilon_t \sim WN(0, \sigma_\epsilon^2)$.  The AR model also includes the white noise (WN) and random walk (RW) models as special cases. 
+
+The `arima.sim()` function can simulate data from an AR model by setting the `model` argument equal to `list(ar = phi)` where `phi` is a slope parameter in the interval (-1, 1).  As `phi` approaches 1, the plot smooths.  With negative `phi` values, the plot oscillates.
+
+```{r}
+# small autocorrelation
+x <- arima.sim(model = list(ar = 0.5), n = 100)
+
+# large autocorrelation
+y <- arima.sim(model = list(ar = 0.9), n = 100)
+
+# negative autocorrelation (oscillation)
+z <- arima.sim(model = list(ar = -0.75), n = 100)
+
+plot.ts(cbind(x, y, z))
+```
+
+The plots generated by the `acf()` function provide useful information about each lag. Series `x` (small slope parameter) has positive autocorrelation for the first couple lags, but they quickly decay toward zero. Series `y` (large slope parameter) has positive autocorrelation for many lags. Series `z` (negative slope parameter) has an oscillating pattern. 
+
+```{r}
+par(mfrow = c(2,2))
+acf(x)
+acf(y)
+acf(z)
+```
+
+The stationary AR model has a slope parameter between -1 and 1. The AR model exhibits higher persistence when its slope parameter is closer to 1, but the process reverts to its mean fairly quickly. Its sample ACF also decays to zero at a quick (geometric) rate, meaning values far in the past have little impact on the present value of the process.
+
+Below, the AR model with slope parameter 0.98 exhibits greater persistence than with slope parameter 0.90, but both decay to 0. 
+
+```{r}
+ar90 <- arima.sim(model = list(ar = 0.9), n = 200)
+ar98 <- arima.sim(model = list(ar = 0.98), n = 200)
+
+par(mfrow = c(2,2))
+ts.plot(ar90)
+ts.plot(ar98)
+acf(ar90)
+acf(ar98)
+```
+
+
+By contrast, the random walk (RW) model is a special case of the AR model in which the slope parameter is equal to 1.  The RW model is nonstationary, and shows considerable persistence and relatively little decay in the ACF. 
+
+```{r}
+ar100 <- arima.sim(model = list(order = c(0, 1, 0)), n = 200)
+par(mfrow = c(2,1))
+ts.plot(ar100)
+acf(ar100)
+```
+
+Fit the AR(1) model (autoregressive model with one time lag) using the `arima()` function with `order = c(1, 0, 0)`, meaning 1 time lag, 0 differencing, and 0 order moving average.  
+
+Below is an AR(1) model fit to the `AirPassengers` dataset.  The output of the `arima` function shows $\phi$ as `ar1 = 0.9646`, $\mu$ as `intercept = 278.4649`, and $\hat{\sigma}_\epsilon^2$ as `sigma^2 = 1119`. 
+
+```{r}
+ar1 <- arima(AirPassengers, order = c(1, 0, 0))
+ar1.fit <- AirPassengers - residuals(ar1)
+print(ar1)
+
+par(mfrow = c(2, 1))
+ts.plot(AirPassengers)
+points(ar1.fit, type = "l", col = 2, lty = 2)
+acf(AirPassengers)
+```
+
+Use the ARIMA model to forecast observations with the `predict()` function. Specify the number of periods beyond the last observation with the `n.ahead` parameter.
+
+Below is a forecast of 10 periods (years) beyond the 1871-1970 annual observations in the `Nile` dataset. The relatively wide band of confidence (dotted lines) is a result of the low persistence in the data. 
+
+```{r}
+ar1 <-arima(Nile, order  = c(1, 0, 0))
+print(ar1)
+
+ts.plot(Nile, xlim = c(1871, 1980))
+ar1.fit <- Nile - resid(ar1)
+
+ar.pred <- predict(ar1, n.ahead = 10)$pred
+ar.pred.se <- predict(ar1, n.ahead = 10)$se
+points(ar.pred, type = "l", col = 2)
+points(ar.pred - 2*ar.pred.se, type = "l", col = 2, lty = 2)
+points(ar.pred + 2*ar.pred.se, type = "l", col = 2, lty = 2)
+```
+
+
+### Simple Moving Average
+
+The simple moving average (MA) model is
+
+$$Y_t = \mu + \epsilon_t + \theta\epsilon_{t-1}$$ 
+
+If the slope parameter $\theta$ is zero, $Y_t$ is a white noise process, $Y_t \sim (\mu, \sigma_\epsilon^2)$.  Large $\theta$ indicates large autocorrelation.  Negative $\theta$ indicates an oscillating series.
+
+The MA model is used to account for very short-run autocorrelation. Each observation is regressed on the previous innovation, which is not actually observed. Like the AR model, the MA model includes the white noise (WN) model as special case. 
+
+Simulate the MA model using `arima.sim()` with parameter `list(ma = theta)`, where `theta` is a slope parameter from the interval (-1, 1).  
+
+Here are three MA models.  The first has slope paramter 0.5 and the second has slope parameter 0.9.  The second plot shows more persistance as a result.  THe third plot has a negative slope parameter and oscillates as a result.
+
+```{r}
+x <- arima.sim(model = list(ma = 0.5), n = 100)
+y <- arima.sim(model = list(ma = 0.9), n = 100)
+z <- arima.sim(model = list(ma = -0.5), n = 100)
+
+plot.ts(cbind(x, y, z))
+```
+
+Use the `acf()` function to estimate the autocorrelation functions.  The MA series x with slope = 0.5 has a positive sample autocorrelation at the first lag, but it is approximately zero at other lags. The series y with slope = 0.9 has a larger sample autocorrelation at its first lag, but it is also approximately zero for the others. The series z with slope = -0.5 has a negative sample autocorrelation at the first lag and alternates, but is approximately zero for all higher lags. 
+
+```{r}
+par(mfrow = c(2, 2))
+acf(x)
+acf(y)
+acf(z)
+```
+
+Fit the MA model using the `arima()` function with `order = c(0, 0, 1), meaning 0 time lag, 0 differencing, and 1st order moving average.
+
+Below is an MA model fit to the `Nile` dataset. The output of the arima function shows $\theta$ as ma1 = 0.3783, $\mu$ as intercept = 919.2433, and $\sigma_\epsilon^2$ as sigma^2 = 23272.
+
+```{r}
+ma <- arima(Nile, order = c(0, 0, 1))
+print(ma)
+
+ts.plot(Nile)
+ma.fit <- Nile - resid(ma)
+points(ma.fit, type = "l", col = 2, lty = 2)
+
+```
+
+Use the ARIMA model to forecast observations with the `predict()` function. The MA model can only produce a 1-step forecast. Except for the 1-step forecast, all forecasts from the MA model are equal to the estimated mean (intercept).
+
+Below is a forecast of 10 periods (years) beyond the 1871-1970 annual observations in the  Nile dataset. 
+
+```{r}
+predict(ma, n.ahead = 10)
+
+ts.plot(Nile, xlim = c(1871, 1980))
+ma.pred <- predict(ma, n.ahead = 10)$pred
+ma.pred.se <- predict(ma, n.ahead = 10)$se
+points(ma.pred, type = "l", col = 2)
+points(ma.pred - 2*ma.pred.se, type = "l", col = 2, lty = 2)
+points(ma.pred + 2*ma.pred.se, type = "l", col = 2, lty = 2)
+```
+
+How do you decide which model provides the best fit?  Measure the model fit with the Akaike information criterion (AIC) and/or Bayesian information criterion (BIC). These indicators penalize models with more estimated parameters to avoid overfitting, so smaller indicator values are preferable.
+
+Use the `AIC()` and `BIC()` functions to estimate the indicators.  Below are the AIC and BIC for the AR(1) and MA models.  Although the predictions from both models are similar (they have a correlation coeffiicent of 0.94), both the AIC and BIC indicate that the AR model is a slightly better fit for the `Nile` data. 
+
+```{r}
+cor(ar1.fit, ma.fit)
+
+AIC(ar1)
+AIC(ma)
+
+BIC(ar1)
+BIC(ma)
+
+```
 
 ## Dynamic Regression
 

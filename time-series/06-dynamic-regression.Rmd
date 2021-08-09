@@ -1,0 +1,77 @@
+# Dynamic Harmonic Regression {#dynamic}
+
+Dynamic harmonic regression is based on the principal that a combination of sine and cosine funtions can approximate any periodic function.  
+
+$$y_t = \beta_0 + \sum_{k=1}^{K}[\alpha_k s_k(t) + \gamma_k c_k(t)] + \epsilon_t$$
+
+where $s_k(t) = sin(\frac{2\pi k t}{m})$ and $c_k(t) = cos(\frac{2\pi k t}{m})$, $m$ is the seasonal period, $\alpha_k$ and $\gamma_k$ are regression coefficients, and $\epsilon_t$ is modeled as a non-seasonal ARIMA process.
+
+The optimal model has the lowest *AICc*, so start with *K=1* and increase until the *AICc* is no longer decreasing.  *K* cannot be greater than $m/2$.
+
+With weekly data, it is difficult to handle seasonality using ETS or ARIMA models as the seasonal length is too large (approximately 52). Instead, you can use harmonic regression which uses sines and cosines to model the seasonality. 
+
+The fourier() function makes it easy to generate the required harmonics. The higher the order (*K*), the more "wiggly" the seasonal pattern is allowed to be. With *K=1*, it is a simple sine curve. You can select the value of *K* by minimizing the AICc value. Function `fourier()` takes in a required time series, required number of Fourier terms to generate, and optional number of rows it needs to forecast.
+
+```{r}
+# # Set up harmonic regressors of order 13
+# harmonics <- fourier(gasoline, K = 13)
+# 
+# # Fit a dynamic regression model to fit. Set xreg equal to harmonics and seasonal to FALSE because seasonality is handled by the regressors.
+# fit <- auto.arima(gasoline, xreg = harmonics, seasonal = FALSE)
+# 
+# # Forecasts next 3 years
+# newharmonics <- fourier(gasoline, K = 13, h = 3*52)
+# fc <- forecast(fit, xreg = newharmonics)
+# 
+# # Plot forecasts fc
+# autoplot(fc)
+```
+
+Harmonic regressions are also useful when time series have multiple seasonal patterns. For example, taylor contains half-hourly electricity demand in England and Wales over a few months in the year 2000. The seasonal periods are 48 (daily seasonality) and 7 x 48 = 336 (weekly seasonality). There is not enough data to consider annual seasonality. 
+
+```{r}
+# # Fit a harmonic regression using order 10 for each type of seasonality
+# fit <- tslm(taylor ~ fourier(taylor, K = c(10, 10)))
+# 
+# # Forecast 20 working days ahead
+# fc <- forecast(fit, newdata = data.frame(fourier(taylor, K = c(10, 10), h = 20*48)))
+# 
+# # Plot the forecasts
+# autoplot(fc)
+# 
+# # Check the residuals of fit
+# checkresiduals(fit)
+```
+
+Another time series with multiple seasonal periods is calls, which contains 20 consecutive days of 5-minute call volume data for a large North American bank. There are 169 5-minute periods in a working day, and so the weekly seasonal frequency is 5 x 169 = 845. The weekly seasonality is relatively weak, so here you will just model daily seasonality. 
+
+The residuals in this case still fail the white noise tests, but their autocorrelations are tiny, even though they are significant. This is because the series is so long. It is often unrealistic to have residuals that pass the tests for such long series. The effect of the remaining correlations on the forecasts will be negligible.
+
+```{r}
+# # Plot the calls data
+# autoplot(calls)
+# 
+# # Set up the xreg matrix
+# xreg <- fourier(calls, K = c(10, 0))
+# 
+# # Fit a dynamic regression model
+# fit <- auto.arima(calls, xreg = xreg, seasonal = FALSE, stationary = TRUE)
+# 
+# # Check the residuals
+# checkresiduals(fit)
+# 
+# # Plot forecasts for 10 working days ahead
+# fc <- forecast(fit, xreg =  fourier(calls, c(10, 0), h = 169*8))
+# autoplot(fc)
+```
+
+## TBATS Model
+
+Thte TBATS model (Trigonometric terms for seasonality, Box-Cox transformations for hetergeneity, ARMA errors for short-term dynamics, Trend (possibly damped), and Seasonal (including multiple and non-integer periods)).
+
+```{r}
+# gasoline %>% tbats() %>% forecast() %>% autoplot()
+```
+
+TBATS is easy to use, but the prediction intervals are often too wide, and it can be quite slow with large time series.  TBATS returns output similar to this: TBATS(1, {0,0}, -, {<51.18,14>}), meaning 1=Box-Cox parameter, {0,0} = ARMA error, - = damping parameter, {<51.18,14>} = seasonal period and Fourier terms.
+

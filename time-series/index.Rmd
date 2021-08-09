@@ -1,0 +1,47 @@
+--- 
+title: "Time Series Analysis"
+author: "Michael Foley"
+date: "`r Sys.Date()`"
+site: bookdown::bookdown_site
+output:
+  bookdown::html_book:
+    toc: TRUE
+    toc_depth: 3
+    toc_float: TRUE
+    highlight: tango
+    fig_caption: true
+    lib_dir: assets
+    split_by: section
+    config:
+      toc:
+        collapse: subsection
+        scroll_highlight: yes
+        before: null
+        after: null
+      toolbar:
+        position: static
+documentclass: book
+bibliography: [book.bib, packages.bib]
+biblio-style: apalike
+link-citations: yes
+description: "Time series analysis using R."
+---
+
+# Preface {-}
+
+These notes are based on the [Time Series with R](https://www.datacamp.com/tracks/time-series-with-r) skill track at DataCamp and Rob Hyndman's **Forecasting: Principles and Practice** [@Hyndman2021]. I organized them into a section on working with a `tsibble` (time series tibble) (chapter \@ref(toolbox)), a section on data exploration (chapter \@ref(exporation)), and then four sections on models. 
+
+Forecasts aren't necessarily based on time series models - you can perform a cross-sectional regression analysis of features, possibly including time-related features such as month of year (chapter \@ref(regression)). *Time series* forecasts are a specific type of forecast based, at least in part, on the assumption that future outcomes are functionally dependent upon prior outcomes. In most cases the objective of a time series forecast is to project a time series. In these cases, the forecast either decomposes a time series into trend and seasonality components (exponential smoothing models, chapter \@ref(exponential)) or describes the autocorrelation within the data (ARIMA models, chapter \@ref(arima)). There may also be cases where you include other predictor variables (dynamic models, chapter \@ref(dynamic)).
+
+In addition to the standard packages, these notes use the `tsibble`, `feasts`, `fable`, and `tsibbledata` packages.
+
+```{r warning=FALSE, message=FALSE}
+library(tidyverse)
+library(lubridate)
+library(patchwork) #  arranging plots
+library(glue)
+library(tsibble)
+library(feasts) # feature extraction and statistics
+library(fable) # forecasting
+library(tsibbledata)
+```

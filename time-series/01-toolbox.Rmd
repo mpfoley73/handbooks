@@ -1,0 +1,281 @@
+# Toolbox {#toolbox}
+
+```{r include=FALSE}
+library(tidyverse)
+library(lubridate)
+library(tsibble)
+library(feasts) # feature extraction and statistics
+library(fable) # forecasting
+```
+
+This section deals with fundamental concepts in time series analysis. Time series analysis typically uses different data structures than the standard `data.frame` and `tibble` of other analyses. The `fable` package provides a framework for piped "tidy" modeling that improves on the conventional `lm(formula, data)` framework. The subsequent modeling chapters make use of standard benchmarking methods, prediction intervals, and accuracy evaluation methods presented here.
+
+## R Structures
+
+Use a `tsibble` object to work with time series data. A `tsibble`, from the package of the same name, is a time-series `tibble`. Unlike the older, more common `ts`, `zoo`, and `xts` objects, a `tsibble` preserves the time index, making heterogeneous data structures possible. For example, you can re-index a `tsibble` from monthly to yearly analysis, or include one or more features per time element. Since the `tsibble` is relatively new, you will encounter the other frameworks and should at least be familiar with them.
+
+Let's work with the `prison_population.csv` file accompanying [Hyndman's text](https://otexts.com/fpp3/tsibbles.html) to create time series structures with each framework. The data set is quarterly prison population counts grouped by several features. In essence, it is several time series (`State` x `Gender` x `Legal` x `Indigenous`) within one file.
+
+```{r message=FALSE, collapse=TRUE}
+prison <- readr::read_csv("https://OTexts.com/fpp3/extrafiles/prison_population.csv")
+head(prison)
+dim(prison)
+```
+
+### ts, zoo, and xts {-}
+
+**ts** is the base R time series package. The `ts` object is essentially a matrix of observations indexed by a chronological identifier. Because it is a matrix, any descriptive attributes need to enter as numeric, perhaps by one-hot encoding, or pivoting the data (yuck). But since there is only *one row per time observation*, the descriptive attributes cannot really act as grouping variables. Another limitation of a `ts` is that it does not recognize irregularly spaced time series.
+
+Define a `ts` object with `ts(x, start, frequency)` where `frequency` is the number of observations in the seasonal pattern: 7 for daily observations with a week cycle; 5 for weekday observations in a week cycle; 24 for hourly observations in a day cycle, 24x7 for hourly observations in a week cycle, etc. `prison` is quarterly observations starting with 2005 Q1. Had the series started at 2005 Q2, you'd specify `start = c(2005, 2)`. I'll pull a single time series from the file with a `filter()` statement.
+
+```{r}
+prison_ts <- prison %>% 
+  filter(State == "ACT" & Gender == "Male" & Legal == "Remanded" & Indigenous == "ATSI") %>%
+  arrange(Date) %>%
+  select(Count) %>%
+  ts(start = 2005, frequency = 4)
+
+str(prison_ts)
+```
+
+**zoo** (Zeileis's ordered observations) provides methods similar to those in **ts**, but also supports irregular time series. A `zoo` object contains an array of data values and an index attribute to provide information about the data ordering. **zoo** was introduced in 2014.
+
+**xts** (extensible time series) extends **zoo**. `xts` objects are more flexible than `ts` objects while imposing reasonable constraints to make them truly time-based. An `xts` object is essentially a matrix of observations indexed by a time *object*. Create an `xts` object with `xts(x, order.by)` where `order.by` is a vector of dates/times to index the data. You can also add metadata to the `xts` object by declaring name-value pairs such as `born = as.POSIXct("1899-05-08").`
+
+```{r message=FALSE}
+library(xts)
+
+x <- prison %>%
+  filter(State == "ACT" & Gender == "Male" & Legal == "Remanded" & Indigenous == "ATSI") %>%
+  arrange(Date)
+
+prison_xts <- xts(x$Count, order.by = x$Date, 
+                  State = "ACT", Gender = "Male", Legal = "Remanded", Indigenous = "ATSI")
+str(prison_xts)
+```
+
+### tsibble {-}
+
+A `tsibble` object is a tibble uniquely defined by `key` columns plus a date `index` column. This structure accommodates multiple series, and descriptive attribute columns. The date index can be a `Date`, `period`, etc. (*see* `tsibble() help file`). Express weekly time series with `yearweek()`, monthly time series with `yearmonth()`, or quarterly (like here) with `yearquarter()`. 
+
+```{r}
+prison_tsibble <- prison %>% 
+  mutate(Date = yearquarter(Date)) %>%
+  rename(Qtr = Date) %>%
+  tsibble(key = c(State, Gender, Legal, Indigenous), index = Qtr)
+
+head(prison_tsibble)
+```
+
+A `tsibble` behaves like a `tibble`, so you can use *tidyverse** verbs. The only thing that will trip you up is that `tsibble` objects are grouped by the index - `group_by()` operations only group non-index columns while retaining the index. Use `index_by()` if you need to summarize at a new time level (e.g., year). 
+
+```{r collapse=TRUE}
+# Group by State retains the Qtr index column.
+prison_tsibble %>%
+  group_by(State) %>%
+  summarize(sum_Count = sum(Count))
+
+# But you can change the Qtr index aggregation level with index_by()
+prison_tsibble %>%
+  index_by(Year = ~ year(.)) %>%
+  group_by(State) %>%
+  summarise(sum_Count = sum(Count))
+
+# Add group_by_key() to retain the key
+prison_tsibble %>% 
+  group_by_key() %>% 
+  index_by(Year = ~ year(.)) %>%
+  summarize(sum_Count = sum(Count))
+
+# If you don't care about the time index, convert the tsibble back to a tibble.
+prison_tsibble %>% 
+  as_tibble() %>%
+  group_by(State) %>%
+  summarize(sum_Count = sum(Count))
+```
+
+## Fitting Models
+
+Consider whether you are fitting a model for explanatory variable inference or for predictive purposes. If explanation is your goal, your workflow will be fitting a model, verifying the model assumptions related to inference, then summarizing the model parameters. If prediction is your goal, your workflow will be comparing multiple models by cross-validating the results against a hold-out data set, then making predictions.
+
+Fit a model using `fabletools::model()`.^[Loading the **fable** package automatically loads **fabletools** as well.] You can even fit multiple models at once. Let's fit a simple model using the GAFA stock prices data set in **tsibbledata**. GAFA is daily stock prices from 2014-2018 for several companies. We'll work with Google. The data is indexed by date, but we'll re-index to "trading day" since the trading days are irregularly spaced.
+
+```{r collapse=TRUE}
+goog <- tsibbledata::gafa_stock %>%
+  filter(Symbol == "GOOG", year(Date) >= 2015) %>%
+  # re-index on trading day since markets not open on weekends, holidays
+  arrange(Date) %>%
+  mutate(trading_day = row_number()) %>%
+  update_tsibble(index = trading_day, regular = TRUE)
+
+head(goog)
+dim(goog)
+```
+
+Let's fit a *naive* model (projection of last value) to Google's `Close` from 2015, then predict values from Jan 2016. We'll create an 80:20 train-test split (`test` should be ~20% or at least as long as the anticipated forecast.).
+
+```{r}
+# Segment with `filter()`, or `group_by()` + `slice()`.
+goog_train <- goog %>% filter(year(Date) == 2015)
+goog_test <- goog %>% filter(yearmonth(Date) == yearmonth("2016 Jan"))
+
+# Train model
+goog_mdl <- goog_train %>%
+  model(mdl_naive = NAIVE(Close))
+
+# Generate predictions (forecast)
+goog_fc <- goog_mdl %>%
+  forecast(new_data = goog_test)
+```
+
+The `autoplot()` and `autolayer()` functions take a lot of the headache out of plotting the results, especially since `forecast()` tucks away the confidence intervals in a `distribution` list object.
+
+```{r}
+# Consider using autoplot() + autolayer()...
+# goog_fc %>%
+#   autoplot(color = "goldenrod") +
+#   autolayer(goog_train, Close, color = "goldenrod")
+
+goog_fc_2 <- goog_fc %>%
+  mutate(mu = map_dbl(Close, ~pluck(.x, "mu")),
+         sigma = map_dbl(Close, ~pluck(.x, "sigma")),
+         ci_025 = qnorm(.025, mu, sigma),
+         ci_100 = qnorm(.100, mu, sigma),
+         ci_900 = qnorm(.900, mu, sigma),
+         ci_975 = qnorm(.975, mu, sigma)) %>%
+  select(trading_day, Date, Close, mu, sigma, ci_025:ci_975) 
+
+bind_rows(goog_train, goog_test) %>%
+  ggplot(aes(x = Date)) +
+  geom_line(aes(y = Close), color = "goldenrod") +
+  geom_line(data = goog_fc_2, aes(y = mu), color = "goldenrod", size = 1) +
+  geom_ribbon(data = goog_fc_2, 
+              aes(ymin = ci_025, ymax = ci_975), 
+              fill = "goldenrod", alpha = .2) +
+  geom_ribbon(data = goog_fc_2, 
+              aes(ymin = ci_100, ymax = ci_900), 
+              fill = "goldenrod", alpha = .2) +
+  theme_light() +
+  theme(legend.position = "none") +
+  labs(title = "20d naive forecast from model fit to CY-2015",
+       caption = "Shaded area is 80%- and 95% confidence interval.",
+       x = "Trading Day", y = "Closing Price")
+```
+
+## Evaluating Models
+
+Evaluate the model fit with residuals diagnostics.^[Residuals and errors are *not* the same thing. The *residual* is the difference between the observed and fitted value in the *training* data set. The *error* is the difference between the observed and fitted value in the *test* data set.] `broom::augment()` adds three columns to the model cols: `.fitted`, `.resid`, and `.innov`. `.innov` is the residual from the transformed data (if no transformation, it just equals `.resid`).
+
+```{r}
+goog_mdl_aug <- goog_mdl %>% broom::augment()
+```
+
+Innovation residuals should be independent random variables normally distributed with mean zero and constant variance (the normality and variance conditions are only required for inference and prediction intervals). Happily, `feasts` has just what you need.
+
+```{r warning=FALSE}
+goog_mdl %>% gg_tsresiduals() +
+  labs(title = "Residuals Analysis")
+```
+
+The autocorrelation plot above supports the independence assumption. The histogram plot tests normality (it is pretty normal, but the right tail is long). The residuals plot tests mean zero and constant variance. You can carry out a  *portmanteau* test test on the autocorrelation assumption. Two common tests are the Box-Pierce and the Ljung-Box. These tests check the likelihood of a combination of autocorrelations at once, without testing any one correlation - kind of like an ANOVA test. The Ljung-Box test statistic is a sum of squared $k$-lagged autocorrelations, $r_k^2$,
+
+$$Q^* = T(T+2) \sum_{k=1}^l(T-k)^{-1}r_k^2.$$
+
+The test statistic has a $\chi^2$ distribution with $l - K$ degrees of freedom (where $K$ is the number of parameters in the model). Use $l = 10$ for non-seasonal data and $l = 2m$ for seasonal data. If your model has no explanatory variables, $K = 0.$
+
+```{r}
+goog_mdl_aug %>% features(.var = .innov, features = ljung_box, lag = 10, dof = 0)
+```
+
+The *p*-value is not under .05, so do *not* reject the assumption of no autocorrelation - i.e., the assumption of white noise.
+
+## Evaluating Accuracy
+
+Some forecasting methods are extremely simple and surprisingly effective. The **mean** method projects the historical average, $\hat{y}_{T+h|T} = \bar{y}.$ The **naive** method projects the last observation, $\hat{y}_{T+h|T} = y_T.$ The **seasonal naive** method projects the last seasonal observation, $\hat{y}_{T+h|T} = y_{T+h-m(k+1)}.$ The **drift** method projects the straight line from the first and last observation, $\hat{y}_{T+h|T} = y_T + h\left(\frac{y_T - y_1}{T-1}\right).$ The plot below of `tsibbledata::aus_production` shows the four forecast benchmarks.
+
+```{r}
+tsibbledata::aus_production %>%
+  # same thing as
+  # filter(Quarter >= yearquarter("1970 Q1") & Quarter <= yearquarter("2004 Q4")) %>%
+  filter_index("1995 Q1" ~ "2007 Q4") %>%
+  model(Mean = MEAN(Beer),
+        Naive = NAIVE(Beer),
+        SNaive = SNAIVE(Beer),
+        Drift = RW(Beer ~ drift())) %>%
+  forecast(h = 8) %>%
+  ggplot(aes(x = Quarter)) +
+  geom_line(aes(y = .mean, color = .model), size = 1) +
+  geom_line(data = tsibbledata::aus_production %>% filter_index("1995 Q1" ~ "2009 Q4"),
+         aes(y = Beer),
+         color = "darkgrey", size = 1) +
+  theme_light() +
+  guides(color = guide_legend(title = "Forecast")) +
+  labs(title = "Simple forecast methods are useful benchmarks.",
+       x = NULL, y = NULL,
+       caption = "Source: Quarterly beer production (ML) from tsibbledata::aus_production.")
+```
+
+Evaluate the forecast accuracy with the test data (aka, "hold-out set", and "out-of-sample data"). The **forecast error** is the difference between the observed and forecast value, $e_{T+h} = y_{T+h} - \hat{y}_{t+h|T}.$ Forecast errors differ from model residuals in the data (train vs test) and because forecast values are (usually) multi-step forecasts which include prior forecast values as inputs.
+
+There are a few benchmark metrics to evaluate a fit based on the errors. 
+
+* **MAE**.  Mean absolute error, $mean(|e_t|)$
+* **RMSE**.  Root mean squared error, $\sqrt{mean(e_t^2)}$
+* **MAPE**.  Mean absolute percentage error, $mean(|e_t / y_t|) \times 100$
+* **MASE**.  Mean absolute scaled error, $MAE/Q$ where $Q$ is a scaling constant calculated as the average one-period change in the outcome variable (error from a one-step naive forecast).
+
+The MAE and RMSE are on the same scale as the data, so they are only useful for comparing models fitted to the same series.  MAPE is unitless, but does not work for $y_t = 0$, and it assumes a meaningful zero (ratio data). The MASE is most useful for comparing data sets of different units. 
+
+Use `accuracy()` to evaluate a model. Comparing the naive, drift, and mean methods for forecasting the Google stock price, the naive model wins on all measures.
+
+```{r}
+goog_mdl <- goog_train %>%
+  model(Naive = NAIVE(Close),
+        Drift = RW(Close ~ drift()),
+        Mean = MEAN(Close))
+
+goog_fc <- goog_mdl %>%
+  forecast(new_data = goog_test)
+
+ggplot() +
+  geom_line(data = goog_fc, aes(x = trading_day, y = .mean, color = .model)) +
+  geom_line(data = bind_rows(goog_train, goog_test), aes(x = trading_day, y = Close)) +
+  theme_light() +
+  scale_y_continuous(labels = scales::dollar_format()) +
+  labs(title = "Comparison of three models.",
+       subtitle = "Google stock price predicted over 19 days.",
+       x = "Trading Day", y = "Closing Price", color = "Forecast")
+
+# Or just this.  
+# autoplot(goog_fc, bind_rows(goog_train, goog_test), level = NULL)
+
+accuracy(goog_fc, goog) %>%
+  select(.model, RMSE, MAE, MAPE, MASE)
+```
+
+There is a better way of evaluating a model than with a single test set.  Time series *cross-validation* breaks the dataset into multiple training sets by setting the cutoff at varying points and then setting the test set to be a single steps ahead of the horizon.  Function `stretch_tsibble()` creates a tsibble of initial size `.init` then appends additional data sets of increasing size `.step`.
+
+```{r warning=FALSE}
+goog_train_cv <- goog %>%
+  filter(year(Date) == 2015) %>%
+  stretch_tsibble(.init = 3, .step = 1) %>%
+  # move .id next to the other key col
+  relocate(Date, Symbol, .id)
+
+# 250 keys!
+goog_train_cv
+
+goog_fc <- goog_train_cv %>%
+  # Fit a model for each key
+  model(RW(Close ~ drift())) %>%
+  # 8 forecast rows per model = 250 * 8 = 2,000 rows
+  forecast(h = 8) %>%
+  # Capture the forecast period for comparison
+  group_by(.id) %>%
+  mutate(h = row_number()) %>%
+  ungroup()
+
+goog_fc %>%
+  accuracy(goog %>% filter(year(Date) == 2015), by = c("h", ".model")) %>%
+  select(h, RMSE)
+```

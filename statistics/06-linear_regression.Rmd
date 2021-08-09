@@ -21,20 +21,19 @@ These notes cover *linear regression*.
 
 ## Linear Regression Model
 
-The population regression model $E(Y) = X \beta$ summarizes the trend between the predictors and the mean responses.  The individual responses vary about the population regression, $y_i = X_i \beta + \epsilon_i$ with assumed mean structure $y_i \sim N(\mu_i, \sigma^2)$ and assumed constant variance $\sigma^2$.  Equivalently, the model presumes a linear relationship between $y$ and $X$ with residuals $\epsilon$ that are independent normal random variables with mean zero and constant variance $\sigma^2$.  Estimate the population regression model coefficients as $\hat{y} = X \hat{\beta}$, and the population variance as $\hat{\sigma}^2$.  The most common method of estimating the $\beta$ coefficients and $\sigma$ is ordinary least squares (OLS).  OLS minimizes the sum of squared residuals from a random sample.  The individual predicted values vary about the actual value, $e_i = y_i - \hat{y}_i$, where $\hat{y}_i = X_i \hat{\beta}$.
+The population regression model $E(Y) = X \beta$ summarizes the trend between the predictors and the mean responses.  The individual responses are assumed to be normally distributed about the population regression, $y_i = X_i \beta + \epsilon_i$ with varying mean, but constant variance, $y_i \sim N(\mu_i, \sigma^2).$  Equivalently, the model presumes a linear relationship between $y$ and $X$ with residuals $\epsilon$ that are independent normal random variables with mean zero and constant variance $\sigma^2$.  Estimate the population regression model coefficients as $\hat{y} = X \hat{\beta}$, and the population variance as $\hat{\sigma}^2$.  The most common method of estimating the $\beta$ coefficients and $\sigma$ is ordinary least squares (OLS).  OLS minimizes the sum of squared residuals from a random sample.  The individual predicted values vary about the actual value, $e_i = y_i - \hat{y}_i$, where $\hat{y}_i = X_i \hat{\beta}$.
 
-The OLS model is the best linear unbiased estimator (BLUE) if the residuals are independent random variables normally distributed with mean zero and constant variance $\sigma^2$.  Recall these conditions with the LINE pneumonic: **L**inear, **I**ndependent, **N**ormal, and **E**qual.
+The OLS model is the best linear unbiased estimator (BLUE) if the residuals are independent random variables normally distributed with mean zero and constant variance. Recall these conditions with the LINE pneumonic: **L**inear, **I**ndependent, **N**ormal, and **E**qual.
 
-**Linearity**.  The explanatory variables are each linearly related to the response variable: $E(\epsilon | X_j) = 0$.  
+**Linearity**. The explanatory variables are each linearly related to the response variable: $E(\epsilon | X_j) = 0$.  
 
-**Independence**.  The residuals are unrelated to each other.  Independence is violated when repeated measurements are taken, or when there is a temporal component in the model. 
+**Independence**. The residuals are unrelated to each other. Independence is violated by repeated measurements and temporal regressors. 
 
-**Normality**.  The residuals are normally distributed: $\epsilon|X \sim N(0, \sigma^2I)$.  
+**Normality**. The residuals are normally distributed: $\epsilon|X \sim N(0, \sigma^2I)$.  
 
-**Equal Variances**.  The variance of the residuals is constant (homoscedasticity): $E(\epsilon \epsilon' | X) = \sigma^2I$
+**Equal Variances**. The variance of the residuals is constant (homoscedasticity): $E(\epsilon \epsilon' | X) = \sigma^2I$
 
 Additionally, you should make sure you model has "little" or no **multicollinearity** among the variables.
-
 
 ## Parameter Estimation
 
@@ -127,7 +126,7 @@ matrix(round(se_beta_hat, 5), dimnames = list(names(se_beta_hat), "Std. Error"))
 
 ## Model Assumptions
 
-The linear regression model assumes the relationship between the predictors and the response is linear with the residuals that are independent random variables normally distributed with mean zero and constant variance.
+The linear regression model assumes the relationship between the predictors and the response is linear and the residuals are independent random variables normally distributed with mean zero and constant variance.
 
 Additionally, you will want to check for multicollinearity in the predictors because it can produce unreliable coefficient estimates and predicted values.
 
@@ -599,9 +598,9 @@ The most common measures of model fit are R-squared, RMSE, RSE, MAE, Adjusted R-
 
 The coefficient of determination (**R-squared**) is the percent of total variation in the response variable that is explained by the regression line.  
 
-$$R^2 = 1 - \frac{SSE}{SST}$$
+$$R^2 = \frac{RSS}{SST} = 1 - \frac{SSE}{SST}$$
 
-where $SSE = \sum_{i=1}^n{(y_i - \hat{y}_i)^2}$ is the sum squared differences between the predicted and observed value, $SST = \sum_{i = 1}^n{(y_i - \bar{y})^2}$ is the sum of squared differences between the observed and overall mean value, and $RSS = \sum_{i=1}^n{(\hat{y}_i - \bar{y})^2}$ is the sum of squared differences between the predicted and overall mean "no-relationship line" value.  At the extremes, $R^2 = 1$ means all data points fall perfectly on the regression line - the predictors account for *all* variation in the response; $R^2 = 0$ means the regression line is horizontal at $\bar{y}$ - the predictors account for *none* of the variation in the response.  In the simple case of a single predictor variable, $R^2$ equals the squared correlation between $x$ and $y$, $r = Cor(x,y)$.
+where $SSE = \sum_{i=1}^n{(y_i - \hat{y}_i)^2}$ is the sum squared differences between the predicted and observed value, $SST = \sum_{i = 1}^n{(y_i - \bar{y})^2}$ is the sum of squared differences between the observed and overall mean value, and $RSS = \sum_{i=1}^n{(\hat{y}_i - \bar{y})^2}$ is the sum of squared differences between the predicted and overall mean "no-relationship line" value.  At the extremes, $R^2 = 1$ means all data points fall perfectly on the regression line - the predictors account for *all* variation in the response; $R^2 = 0$ means the regression line is horizontal at $\bar{y}$ - the predictors account for *none* of the variation in the response.  In the simple case of a single predictor variable, $R^2$ equals the squared correlation between $x$ and $y$, $Cor(x,y)$. 
 
 ```{r}
 ssr <- sum((m$fitted.values - mean(d$mpg))^2)
@@ -609,8 +608,9 @@ sse <- sum(m$residuals^2)
 sst <- sum((d$mpg - mean(d$mpg))^2)
 (r2 <- ssr / sst)
 (r2 <- 1 - sse / sst)
-summary(m)$r.squared
+(r2 <- summary(m)$r.squared)
 ```
+
 The sums of squares are the same thing as the variances multiplied by the degrees of freedom.
 
 ```{r}
