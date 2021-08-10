@@ -1,14 +1,25 @@
 # Time Series Regression {#regression}
 
+```{r include=FALSE}
+library(tidyverse)
+library(lubridate)
+library(tsibble)
+library(feasts) # feature extraction and statistics
+library(fable) # forecasting
+library(patchwork) # arranging plots
+# library(glue)
+# library(fpp3)
+```
+
 A time series regression forecasts a time series as a linear relationship with the independent variables.
 
 $$y_t = X_t \beta + \epsilon_t$$
 
 The linear regression model assumes there is a **linear** relationship between the forecast variable and the predictor variables. This implies that the errors must have mean zero, otherwise the forecasts are biased: $E(\epsilon | X_j) = 0$. The least squares method guarantees this condition is met. The residuals must not be autocorrelated, otherwise the forecasts are inefficient because there is more information in the data that can be exploited. To produce reliable inferences and prediction intervals, the residuals must be independent normal random variables with constant variance.
 
-`fable::TSLM()` fits a linear regression model to time series data. `TSLM()` is similar to `lm()` with additional facilities for handling time series.
+Let's learn by example. Data set `fpp3::us_change` contains quarterly US growth rates of personal $\mathrm{Consumption},$ $\mathrm{Income},$ and $\mathrm{Production},$ and the quarterly $\mathrm{Unemployment}$ rate and $\mathrm{Savings}$ rate. 
 
-Data set `fpp3::us_change` contains quarterly US growth rates of personal $\mathrm{Consumption}$, $\mathrm{Income}$, and $\mathrm{Production}$, and the quarterly $\mathrm{Unemployment}$ rate and $\mathrm{Savings}$ rate. 
+## Exploratory Analysis
 
 The scatterplot matrix shows positive relationships with income and industrial production, and negative relationships with savings and unemployment. 
 
@@ -23,21 +34,28 @@ fpp3::us_change %>%
        subtitle = "Correlation plot of US economic indicators.", 
        caption = "Source: fpp3::us_change.",
        x = NULL, y = NULL)
-
 ```
 
-Let's fit this model: 
+## Fit Model
+
+We'll fit this model: 
 
 $$\mathrm{Consumption}_t = \beta_0 + \beta_1 \mathrm{Income}_t + \beta_2 \mathrm{Production}_t + \beta_3 \mathrm{Savings}_t + \beta_4 \mathrm{Unemployment}_t + \epsilon_t$$
 
+`fable::TSLM()` fits a linear regression model to time series data. `TSLM()` is similar to `lm()` with additional facilities for handling time series. `TSLM() -> `report()` is identical to `lm() %>% summary()`.
+
 ```{r}
+# us_change_lm <- lm(Consumption ~ Income + Production + Savings + Unemployment, 
+#                    data = fpp3::us_change)
+# summary(x)
+
 us_change_lm <- fpp3::us_change %>%
   model(TSLM(Consumption ~ Income + Production + Savings + Unemployment))
 
 report(us_change_lm)
 ```
 
-The fitted values follow the actual data fairly closely. The modeled $R^2$ is `r us_change_lm %>% broom::glance() %>% pull("r_squared") %>% scales::comma(accuracy = .001)`, the adjusted $R^2$ is `r us_change_lm %>% broom::glance() %>% pull("adj_r_squared") %>% scales::comma(accuracy = .001)`, and the standard error of the regression, $\hat{\sigma}_\epsilon$$ is `r us_change_lm %>% broom::glance() %>% pull(sigma2) %>% sqrt() %>% scales::comma(accuracy = .001)`. The fitted to actual values plot has a strong linear relationship.
+The fitted values follow the actual data fairly closely. The modeled $R^2$ is `r us_change_lm %>% broom::glance() %>% pull("r_squared") %>% scales::comma(accuracy = .001)`, the adjusted $R^2$ is `r us_change_lm %>% broom::glance() %>% pull("adj_r_squared") %>% scales::comma(accuracy = .001)`, and the standard error of the regression, $\hat{\sigma}_\epsilon,$ is `r us_change_lm %>% broom::glance() %>% pull(sigma2) %>% sqrt() %>% scales::comma(accuracy = .001)`. The fitted to actual values plot has a strong linear relationship.
 
 ```{r}
 p1 <- augment(us_change_lm) %>%
@@ -57,22 +75,31 @@ p1 + p2 +
   patchwork::plot_annotation(title = "Fitted values plots")
 ```
 
-Evaluate the regression model with the following diagnostics.
+## Model Evaluation
 
-The residuals vs time plot reveals some heteroscedasticity. Heteroscedasticity can make prediction intervals inaccurate.
-
-The histogram shows that the residuals are slightly skewed. Non-normality of the residuals can also make the prediction intervals inaccurate.
-
-The autocorrelation function plot (ACF) finds a significant spike at lag 7. If autocorrelation exists, forecasts are still unbiased, but the prediction intervals are larger than they need to be. Another test of autocorrelation in the residuals is the Breusch-Godfrey test for serial correlation up to a specified order. A small p-value indicates there is significant autocorrelation remaining in the residuals. The Breusch-Godfrey test is similar to the Ljung-Box test, but it is specifically designed for use with regression models. In this case, the spike at lag 7 is not enough for the Breusch-Godfrey to be significant (*p* = 0.062). In any case, the autocorrelation is not particularly large, and at lag 7 it is unlikely to have a noticeable impact on the forecasts or the prediction intervals. 
+Evaluate the regression model with diagnostic plots.
 
 ```{r}
 gg_tsresiduals(us_change_lm)
 ```
 
+With time series data, observed vales are usually are related to prior observations. That shows up in diagnostic plots as autocorrelation in the residuals. Autocorrelation in the residuals increases the prediction intervals, making forecasts less efficient (although still unbiased). The autocorrelation function plot (ACF) finds a significant spike at lag 7. 
+
+Another test of autocorrelation in the residuals is the Breusch-Godfrey test for serial correlation up to a specified order. A small p-value indicates there is significant autocorrelation remaining in the residuals. The Breusch-Godfrey test is similar to the Ljung-Box test, but it is specifically designed for use with regression models. I believe Breusch-Godfrey would return an insignificant result here, but I cannot find support for the test. Using Ljung-Box, the spike at lag 7 _is_ enough for a significant finding (*p* = `r augment(us_change_lm) %>% features(.innov, ljung_box, lag = 10, dof = 5) %>% pull(lb_pvalue) %>% scales::number(accuracy = .0001)`). The autocorrelation is not particularly large, and at lag 7 it is unlikely to have a noticeable impact on the forecasts or the prediction intervals. 
+
+```{r}
+augment(us_change_lm) %>%
+  features(.innov, ljung_box, lag = 10, dof = 5)
+```
+
+The residuals vs time plot reveals some heteroscedasticity. Heteroscedasticity can make prediction intervals inaccurate.
+
+The histogram shows that the residuals are slightly skewed. Non-normality of the residuals can also make the prediction intervals inaccurate.
+
 The residuals should be independent of each of the explanatory variables *and* independent of candidate variables not used in the model. In this case, the residuals show a random pattern in each of the plots.
 
 ```{r}
-us_change %>%
+fpp3::us_change %>%
   left_join(residuals(us_change_lm), by = "Quarter") %>%
   pivot_longer(Income:Unemployment, names_to = "regressor", values_to = "x") %>%
   ggplot(aes(x = x, y = .resid, color = regressor)) +
@@ -95,13 +122,11 @@ augment(us_change_lm) %>%
        subtitle = "otherwise the response variable may require transformation.",
        y = "Residuals", x = "Fitted") +
   theme_light()
-# cbind(Fitted = fitted(uschange.lm),
-#       Residuals = residuals(uschange.lm)) %>%
-#   as.data.frame() %>%
-#   ggplot(aes(x=Fitted, y=Residuals)) + geom_point()
 ```
 
-Check for *outliers*, *leverage points*, and *influential points*. For multiple linear regression models there is no straight-forward visual diagnostic like the simple linear regression scatter plot. Recall, an outlier is a point far from the others (in either the x or y direction); a leverage point is far from the others in the x direction, potentially affecting the measured slope; and influential point is a leverage point that *does* affect the slope.
+### Outliers, Leverage Points, and Influential Points
+
+Check for *outliers*, *leverage points*, and *influential points*. An outlier is a point far from the others (in either the x or y direction); a leverage point is far from the others in the x direction, potentially affecting the measured slope; and influential point is a leverage point that *does* affect the slope. For multiple linear regression models there is no straight-forward visual diagnostic like the simple linear regression scatter plot. 
 
 The "hat matrix" $H$ identifies leverage points. Recall that in the linear regression model $\hat{y} = X \hat{\beta}$ the slope coefficients are estimated by $\hat{\beta} = (X'X)^{-1}X'y$. Substituting, $\hat{y} = X(X'X)^{-1}X'y$, or $\hat{y} = Hy$, where 
 
@@ -117,20 +142,44 @@ $$D_i = \frac{(y_i - \hat{y}_i)^2}{p \times MSE} \frac{H_{ii}}{(1 - H_{ii})^2}.$
 
 $D_i$ directly summarizes how much all of the fitted values change when the ith observation is deleted. A data point with $D_i > 1$ is probably influential. $D_i > 0.5$ is at least worth investigating.
 
-```{r}
-# car::influenceIndexPlot(us_change_lm)
-# cooks.distance(us_change_lm)
-# autoplot(cooks.distance(uschange.lm)) +
-#   geom_hline(yintercept = 0.5, linetype="dashed") +
-#   labs(title = "Cook's Distance",
-#        subtitle = "Investigate distances > 0.5.",
-#        x = "Observation Number",
-#        y = "Cook's")
+```{r warning=FALSE}
+# Cannot find anything in fabletools to support this. Could use a standard lm().
+# lm(Consumption ~ Income + Production + Savings + Unemployment, 
+#    data = fpp3::us_change) %>%
+#   car::influenceIndexPlot()
+
+# making my own
+x <- fpp3::us_change
+x$cooks_d <- lm(Consumption ~ Income + Production + Savings + Unemployment, 
+                data = fpp3::us_change) %>% cooks.distance()
+x <- x %>% mutate(id = row_number())
+
+x %>% ggplot(aes(x = id, y = cooks_d)) + 
+  geom_point() +
+  geom_text(aes(label = if_else(cooks_d > .25, id, NA_integer_)), nudge_y = -.01, size = 3) +
+  theme_light() +
+  labs(title = "Cook's Distance", subtitle = "Investigate if D > .5", y = NULL)
 ```
 
-There are several predictor variables that you may add to a time series regression model.  
+## Time Predictors
 
-The **trend** is the slope of $y_t = \beta_0 + \beta_1 t + \epsilon_t$.  The **season** is a factor indicating the season (month, quarter, etc.) based on the frequency of the data.  The time series trend and seasaon is calculated on the fly in the `tslm()` function as variables `trend` and season.  Here is an example using the Autralian beer production dataset `ausbeer`.  This model includes both a trend variable and a seasonal variable.
+There are several predictor variable options that reduce autocorrelation.
+
+You can add the time column as a predictor. In `TSLM()`, include the `trend()` special function.
+
+```{r}
+# In lm(), transform time var into an int and include in model.
+# lm(Beer ~ id, data = tsibbledata::aus_production %>% 
+#      filter(year(Quarter) >= 1992) %>% 
+#      mutate(id = row_number()))
+
+# Or, use trend() special function in TSLM()
+us_change_lm_2 <- tsibbledata::aus_production %>%
+  filter(year(Quarter) >= 1992) %>%
+  model(TSLM(Beer ~ trend()))
+```
+
+The **season** is a factor indicating the season (month, quarter, etc.) based on the frequency of the data.  The time series trend and seasaon is calculated on the fly in the `tslm()` function as variables `trend` and season.  Here is an example using the Autralian beer production dataset `ausbeer`.  This model includes both a trend variable and a seasonal variable.
 
 $$y_t = \beta_0 + \beta_1 t + \beta_2 S2 + \beta_3 S3 + \beta_4 S4$$
 
@@ -176,7 +225,7 @@ Ex-post forecasts require assumptions (scenarios) about future values.
 
 
 
-## Selecting Predictors
+## Variable Selection
 
 There are many strategies to choose regression model predictors when there are many to choose from.  There are five common measures of predictive accuracy: $\bar{R}^2$, CV, AIC, AICc, and BIC. They can be calculated using the `CV()` (cross-validation) function from the `forecast` package.
 
