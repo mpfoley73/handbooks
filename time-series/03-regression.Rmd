@@ -17,14 +17,15 @@ $$y_t = X_t \beta + \epsilon_t$$
 
 The linear regression model assumes there is a **linear** relationship between the forecast variable and the predictor variables. This implies that the errors must have mean zero, otherwise the forecasts are biased: $E(\epsilon | X_j) = 0$. The least squares method guarantees this condition is met. The residuals must not be autocorrelated, otherwise the forecasts are inefficient because there is more information in the data that can be exploited. To produce reliable inferences and prediction intervals, the residuals must be independent normal random variables with constant variance.
 
-Let's learn by example. Data set `fpp3::us_change` contains quarterly US growth rates of personal $\mathrm{Consumption},$ $\mathrm{Income},$ and $\mathrm{Production},$ and the quarterly $\mathrm{Unemployment}$ rate and $\mathrm{Savings}$ rate. 
+Let's learn by example. Data set `tsibbledata::aus_production` contains quarterly estimates of selected indicators of manufacturing production in Australia: `Beer`, `Gas`, `Electricity`, and `Cement`. (`Tobacco` and `Bricks` too, but they are incomplete data series). We'll look at `Beer` production.
 
 ## Exploratory Analysis
 
-The scatterplot matrix shows positive relationships with income and industrial production, and negative relationships with savings and unemployment. 
+The scatterplot matrix shows `Beer` is negatively correlated with `Gas`, `Electricity`, and `Cement`. 
 
 ```{r}
-fpp3::us_change %>%
+tsibbledata::aus_production %>%
+  filter(year(Quarter) >= 1992) %>%
   as_tibble() %>%
   select(-Quarter) %>%
   cor() %>%
@@ -32,76 +33,101 @@ fpp3::us_change %>%
   theme_light() +
   labs(title = "Consumption is correlated with predictors",
        subtitle = "Correlation plot of US economic indicators.", 
-       caption = "Source: fpp3::us_change.",
+       caption = "Source: tsibbledata::aus_production.",
        x = NULL, y = NULL)
 ```
 
+You would probably want to explore the data further, but this is a minimal example.
+
 ## Fit Model
 
-We'll fit this model: 
+Consider this kitchen-sink model: 
 
-$$\mathrm{Consumption}_t = \beta_0 + \beta_1 \mathrm{Income}_t + \beta_2 \mathrm{Production}_t + \beta_3 \mathrm{Savings}_t + \beta_4 \mathrm{Unemployment}_t + \epsilon_t$$
+$$\mathrm{Beer}_t = \beta_0 + \beta_1 \mathrm{Gas}_t + \beta_2 \mathrm{Elecricity}_t + \beta_3 \mathrm{Cement}_t + \epsilon_t$$
 
-`fable::TSLM()` fits a linear regression model to time series data. `TSLM()` is similar to `lm()` with additional facilities for handling time series. `TSLM() -> `report()` is identical to `lm() %>% summary()`.
+Use `fable::TSLM()` to fit a linear regression model to tsibble time series data. `fable::TSLM()` is similar to `lm()` with additional facilities for handling time series. `TSLM() %>% report()` is identical to `lm() %>% summary()`. **fable** is part of the [tidyverts](https://tidyverts.org/) group of time series packages. One nice feature of the **tidyverts** is piping.
 
 ```{r}
-# us_change_lm <- lm(Consumption ~ Income + Production + Savings + Unemployment, 
-#                    data = fpp3::us_change)
-# summary(x)
+ausprod_fmla <- formula(Beer ~ Gas + Electricity + Cement)
 
-us_change_lm <- fpp3::us_change %>%
-  model(TSLM(Consumption ~ Income + Production + Savings + Unemployment))
+ausprod_lm <- tsibbledata::aus_production %>%
+  filter(year(Quarter) >= 1992) %>%
+  model(TSLM(ausprod_fmla))
 
-report(us_change_lm)
+report(ausprod_lm)
 ```
 
-The fitted values follow the actual data fairly closely. The modeled $R^2$ is `r us_change_lm %>% broom::glance() %>% pull("r_squared") %>% scales::comma(accuracy = .001)`, the adjusted $R^2$ is `r us_change_lm %>% broom::glance() %>% pull("adj_r_squared") %>% scales::comma(accuracy = .001)`, and the standard error of the regression, $\hat{\sigma}_\epsilon,$ is `r us_change_lm %>% broom::glance() %>% pull(sigma2) %>% sqrt() %>% scales::comma(accuracy = .001)`. The fitted to actual values plot has a strong linear relationship.
+The modeled $R^2$ is `r ausprod_lm %>% broom::glance() %>% pull("r_squared") %>% scales::comma(accuracy = .001)`, the adjusted $R^2$ is `r ausprod_lm %>% broom::glance() %>% pull("adj_r_squared") %>% scales::comma(accuracy = .001)`, and the standard error of the regression^[The residual standard error, $\hat{\sigma} = \sqrt{}$, is actually the standard _deviation_ of the residuals. See discussion on [StackExchange](https://stats.stackexchange.com/questions/144433/why-do-we-say-residual-standard-error?noredirect=1&lq=1). Is the name related to the fact that $\hat{\sigma}$ is part of the formula for the standard error of the coefficient estimates, $SE\left(\hat{\beta}\right) = \sqrt{\hat{\sigma}^2(X'X)^{-1}}$? See [my regression notes](https://bookdown.org/mpfoley1973/data-sci/parameter-estimation.html).], $\hat{\sigma}_\epsilon,$ is `r ausprod_lm %>% broom::glance() %>% pull(sigma2) %>% sqrt() %>% scales::comma(accuracy = .001)`. The fitted values follow the actual data okay. The fitted to actuals plot has a moderate linear relationship.
 
 ```{r}
-p1 <- augment(us_change_lm) %>%
+ausprod_aug <- augment(ausprod_lm) 
+sqrt(sum(ausprod_aug$.resid * ausprod_aug$.resid) / 70)
+stats::sd(ausprod_aug$.resid) / sqrt(nrow(ausprod_aug))
+lm(Beer ~ Cement, data = tsibbledata::aus_production) %>% summary()
+```
+
+
+```{r}
+p1 <- augment(ausprod_lm) %>%
   ggplot(aes(x = Quarter)) +
-  geom_line(aes(y = Consumption), color = "dark gray", size = 1) +
+  geom_line(aes(y = Beer), color = "dark gray", size = 1) +
   geom_line(aes(y = .fitted), color = "goldenrod", size = 1) +
   theme_light() +
   labs(subtitle = "Time series")
-p2 <- augment(us_change_lm) %>%
-  ggplot(aes(x = Consumption, y = .fitted)) +
+p2 <- augment(ausprod_lm) %>%
+  ggplot(aes(x = Beer, y = .fitted)) +
   geom_point(color = "goldenrod", size = 1) +
   geom_abline(intercept = 0, slope = 1, linetype = 2, size = 1, color = "dark gray") +
   theme_light() +
-  labs(subtitle = "Predicted vs actuals")
+  labs(subtitle = "Fitted vs actuals")
 
 p1 + p2 +
   patchwork::plot_annotation(title = "Fitted values plots")
 ```
 
+Time series regressions usually suffer from autocorrelation, so you need to control for trend and seasonality by adding time and seasonal dummy variables. Do this in `TSLM()` by including the `trend()` and `season()` helper functions in the formula. These are the **tidyverts** equivalent to introducing a row sequence and seasonal dummies as predictors in base R.
+
+```{r exec, eval=FALSE}
+ausprod_fmla <- update(ausprod_fmla, . ~ . + trend() + season())
+
+ausprod_lm <- tsibbledata::aus_production %>%
+  filter(year(Quarter) >= 1992) %>%
+  model(TSLM(ausprod_fmla))
+```
+
+Much better. The modeled $R^2$ is `r ausprod_lm %>% broom::glance() %>% pull("r_squared") %>% scales::comma(accuracy = .001)`, the adjusted $R^2$ is `r ausprod_lm %>% broom::glance() %>% pull("adj_r_squared") %>% scales::comma(accuracy = .001)`, and the standard error of the regression, $\hat{\sigma}_\epsilon,$ is `r ausprod_lm %>% broom::glance() %>% pull(sigma2) %>% sqrt() %>% scales::comma(accuracy = .001)`. The fitted to actuals plot has a moderate linear relationship.
+
 ## Model Evaluation
 
-Evaluate the regression model with diagnostic plots.
+Evaluate the regression model with diagnostic plots. Use tidyverts function `feasts::gg_tsresiduals()`.
 
 ```{r}
-gg_tsresiduals(us_change_lm)
+gg_tsresiduals(ausprod_lm)
 ```
 
-With time series data, observed vales are usually are related to prior observations. That shows up in diagnostic plots as autocorrelation in the residuals. Autocorrelation in the residuals increases the prediction intervals, making forecasts less efficient (although still unbiased). The autocorrelation function plot (ACF) finds a significant spike at lag 7. 
+Time series observations are usually related to prior observations. That shows up in diagnostic plots as autocorrelation in the residuals. Autocorrelation in the residuals increases the prediction intervals, making forecasts less efficient (although still unbiased). The autocorrelation function plot (ACF) finds a significant negative spike at lag 1 and a positive spike at lag 12. 
 
-Another test of autocorrelation in the residuals is the Breusch-Godfrey test for serial correlation up to a specified order. A small p-value indicates there is significant autocorrelation remaining in the residuals. The Breusch-Godfrey test is similar to the Ljung-Box test, but it is specifically designed for use with regression models. I believe Breusch-Godfrey would return an insignificant result here, but I cannot find support for the test. Using Ljung-Box, the spike at lag 7 _is_ enough for a significant finding (*p* = `r augment(us_change_lm) %>% features(.innov, ljung_box, lag = 10, dof = 5) %>% pull(lb_pvalue) %>% scales::number(accuracy = .0001)`). The autocorrelation is not particularly large, and at lag 7 it is unlikely to have a noticeable impact on the forecasts or the prediction intervals. 
+Another test of autocorrelation in the residuals is the Breusch-Godfrey test for serial correlation up to a specified order. A small p-value indicates there is significant autocorrelation remaining in the residuals. The Breusch-Godfrey test is similar to the Ljung-Box test, but it is specifically designed for use with regression models. I cannot find support for the Breusch-Godfrey test. 
 
 ```{r}
-augment(us_change_lm) %>%
-  features(.innov, ljung_box, lag = 10, dof = 5)
+(ausprod_lm_lb <- ausprod_lm %>%
+   augment() %>%
+   features(.innov, ljung_box, lag = 12, dof = 4))
 ```
 
-The residuals vs time plot reveals some heteroscedasticity. Heteroscedasticity can make prediction intervals inaccurate.
+Using Ljung-Box, the spike at lag 1 _is_ significant (*p* = `r ausprod_lm_lb %>% pull(lb_pvalue) %>% scales::number(accuracy = .0001)`). The autocorrelation is not particularly large and is unlikely to have a noticeable impact on the forecasts or the prediction intervals. 
 
-The histogram shows that the residuals are slightly skewed. Non-normality of the residuals can also make the prediction intervals inaccurate.
+The residuals vs time plot diagnostic plot revealed no heteroscedasticity (although there might be an outlier). Heteroscedasticity can make prediction intervals inaccurate.
+
+The histogram shows that the residuals are slightly left-skewed. Non-normality of the residuals can also make the prediction intervals inaccurate.
 
 The residuals should be independent of each of the explanatory variables *and* independent of candidate variables not used in the model. In this case, the residuals show a random pattern in each of the plots.
 
 ```{r}
-fpp3::us_change %>%
-  left_join(residuals(us_change_lm), by = "Quarter") %>%
-  pivot_longer(Income:Unemployment, names_to = "regressor", values_to = "x") %>%
+tsibbledata::aus_production %>%
+  filter(year(Quarter) >= 1992) %>%
+  left_join(residuals(ausprod_lm), by = "Quarter") %>%
+  pivot_longer(Cement:Gas, names_to = "regressor", values_to = "x") %>%
   ggplot(aes(x = x, y = .resid, color = regressor)) +
   geom_point(show.legend = FALSE) +
   facet_wrap(vars(regressor), scales = "free_x") +
@@ -115,7 +141,7 @@ fpp3::us_change %>%
 A second check on the homoscedastity assumption is a plot of the residuals against the fitted values. Again, there should be no pattern. 
 
 ```{r}
-augment(us_change_lm) %>%
+augment(ausprod_lm) %>%
   ggplot(aes(x = .fitted, y = .resid)) +
   geom_point() +
   labs(title = "There is no relationship between residuals and fitted values.",
@@ -142,88 +168,7 @@ $$D_i = \frac{(y_i - \hat{y}_i)^2}{p \times MSE} \frac{H_{ii}}{(1 - H_{ii})^2}.$
 
 $D_i$ directly summarizes how much all of the fitted values change when the ith observation is deleted. A data point with $D_i > 1$ is probably influential. $D_i > 0.5$ is at least worth investigating.
 
-```{r warning=FALSE}
-# Cannot find anything in fabletools to support this. Could use a standard lm().
-# lm(Consumption ~ Income + Production + Savings + Unemployment, 
-#    data = fpp3::us_change) %>%
-#   car::influenceIndexPlot()
-
-# making my own
-x <- fpp3::us_change
-x$cooks_d <- lm(Consumption ~ Income + Production + Savings + Unemployment, 
-                data = fpp3::us_change) %>% cooks.distance()
-x <- x %>% mutate(id = row_number())
-
-x %>% ggplot(aes(x = id, y = cooks_d)) + 
-  geom_point() +
-  geom_text(aes(label = if_else(cooks_d > .25, id, NA_integer_)), nudge_y = -.01, size = 3) +
-  theme_light() +
-  labs(title = "Cook's Distance", subtitle = "Investigate if D > .5", y = NULL)
-```
-
-## Time Predictors
-
-There are several predictor variable options that reduce autocorrelation.
-
-You can add the time column as a predictor. In `TSLM()`, include the `trend()` special function.
-
-```{r}
-# In lm(), transform time var into an int and include in model.
-# lm(Beer ~ id, data = tsibbledata::aus_production %>% 
-#      filter(year(Quarter) >= 1992) %>% 
-#      mutate(id = row_number()))
-
-# Or, use trend() special function in TSLM()
-us_change_lm_2 <- tsibbledata::aus_production %>%
-  filter(year(Quarter) >= 1992) %>%
-  model(TSLM(Beer ~ trend()))
-```
-
-The **season** is a factor indicating the season (month, quarter, etc.) based on the frequency of the data.  The time series trend and seasaon is calculated on the fly in the `tslm()` function as variables `trend` and season.  Here is an example using the Autralian beer production dataset `ausbeer`.  This model includes both a trend variable and a seasonal variable.
-
-$$y_t = \beta_0 + \beta_1 t + \beta_2 S2 + \beta_3 S3 + \beta_4 S4$$
-
-where $S2$, $S3$, and $S4$ are seasonal (quarterly) dummiess, with season 1 as the reference.  The model is concisely formulated in `tslm()`.  There is a downward trend of 0.34 megalitres per quarter. On average, Q2 production is lower than Q1 by 34.7 megalitres, Q3 production is lower than Q1 by 17.8 megalitres, and Q4 production is higher than Q1 by 72.8 megalitres.
-
-```{r}
-# y <- window(ausbeer, start = 1992)
-# summary(ausbeer.lm <- tslm(y ~ trend + season))
-# autoplot(y, series = "Data") +
-#   autolayer(forecast(ausbeer.lm, h=20), series = "Forecast") +
-#   autolayer(fitted(ausbeer.lm), series = "Fitted") +
-#   labs( x = "Quarter",
-#         y = "Megalitres",
-#         title = "Quarterly Beer Production",
-#         subtitle = "Linear time series regression with trend and seasonal dummies.")
-```
-
-You can also create dummy variables to flag holidays and outliers.
-
-Predict future values with ex-ante forecasts or ex-post forecasts.  An ex-ante forecasts are possible when the model is based only on calendar effects.
-
-```{r}
-# y <- window(ausbeer, start = 1992)
-# ausbeer.lm <- tslm(y ~ trend + season)
-# ausbeer.fcst <- forecast(ausbeer.lm, h = 8)
-# autoplot(ausbeer.fcst) +
-#   ggtitle("Time Series Regression with Forecast")
-```
-
-Ex-post forecasts require assumptions (scenarios) about future values.
-
-```{r}
-# uschange.lm <- tslm(Consumption ~ Income + Savings + Unemployment,
-#                     data = uschange)
-# newdata = data.frame(
-#     Income = c(1, 1, 1, 1),
-#     Savings = c(0.5, 0.5, 0.5, 0.5),
-#     Unemployment = c(0, 0, 0, 0))
-# uschange.fcst <- forecast(uschange.lm, newdata = newdata)
-# autoplot(uschange.fcst) +
-#   ggtitle("US Change in Consumption, ex-post Model")
-```
-
-
+> I cannot find any support for Cook's distance in fable.
 
 ## Variable Selection
 
