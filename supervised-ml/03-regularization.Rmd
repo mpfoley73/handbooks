@@ -1,0 +1,232 @@
+# Regularization
+
+These notes are from this [tutorial](https://www.datacamp.com/community/tutorials/tutorial-ridge-lasso-elastic-net) on DataCamp, the [Machine Learning Toolbox](https://campus.datacamp.com/courses/machine-learning-toolbox) DataCamp class, and Interpretable Machine Learning [@Molner2020].
+
+Regularization is a set of methods that manage the bias-variance trade-off problem in linear regression. 
+
+The linear regression model is $Y = X \beta + \epsilon$, where $\epsilon \sim N(0, \sigma^2)$. OLS estimates the coefficients by minimizing the loss function
+
+$$L = \sum_{i = 1}^n \left(y_i - x_i^{'} \hat\beta \right)^2.$$
+
+The resulting estimate for the coefficients is 
+
+$$\hat{\beta} = \left(X'X\right)^{-1}\left(X'Y\right).$$
+
+There are two important characteristics of any estimator: its *bias* and its *variance*.  For OLS, these are
+
+$$Bias(\hat{\beta}) = E(\hat{\beta}) - \beta = 0$$
+and
+
+$$Var(\hat{\beta}) = \sigma^2(X'X)^{-1}$$
+
+where the unknown population variance $\sigma^2$ is estimated from the residuals
+
+$$\hat\sigma^2 = \frac{\epsilon' \epsilon}{n - k}.$$
+
+The OLS estimator is unbiased, but can have a large variance when the predictor variables are highly correlated with each other, or when there are many predictors (notice how $\hat{\sigma}^2$ increases as $k \rightarrow n$).  Stepwise selection balances the trade-off by eliminating variables, but this throws away information.  *Regularization* keeps all the predictors, but reduces coefficient magnitudes to reduce variance at the expense of some bias.
+
+In the sections below, I'll use the `mtcars` data set to predict `mpg` from the other variables using the `caret::glmnet()` function.  `glmnet()` uses penalized maximum likelihood to fit generalized linear models such as ridge, lasso, and elastic net.  I'll compare the model performances by creating a training and validation set, and a common `trainControl` object to make sure the models use the same observations in the cross-validation folds.
+
+```{r warning=FALSE, message=FALSE}
+library(tidyverse)
+library(caret)
+
+data("mtcars")
+
+set.seed(123)
+partition <- createDataPartition(mtcars$mpg, p = 0.8, list = FALSE)
+training <- mtcars[partition, ]
+testing <- mtcars[-partition, ]
+
+train_control <- trainControl(
+  method = "repeatedcv",
+  number = 5,  
+  repeats = 5,
+  savePredictions = "final"  # saves predictions from optimal tuning parameters
+)
+```
+
+
+## Ridge
+
+Ridge regression estimates the linear model coefficients by minimizing an augmented loss function which includes a term, $\lambda$, that penalizes the magnitude of the coefficient estimates,
+
+$$L = \sum_{i = 1}^n \left(y_i - x_i^{'} \hat\beta \right)^2 + \lambda \sum_{j=1}^k \hat{\beta}_j^2.$$
+
+The resulting estimate for the coefficients is 
+
+$$\hat{\beta} = \left(X'X + \lambda I\right)^{-1}\left(X'Y \right).$$
+
+As $\lambda \rightarrow 0$, ridge regression approaches OLS.  The bias and variance for the ridge estimator are
+
+$$Bias(\hat{\beta}) = -\lambda \left(X'X + \lambda I \right)^{-1} \beta$$
+$$Var(\hat{\beta}) = \sigma^2 \left(X'X + \lambda I \right)^{-1}X'X \left(X'X + \lambda I \right)^{-1}$$
+
+The estimator bias increases with $\lambda$ and the estimator variance decreases with $\lambda$.  The optimal level for $\lambda$ is the one that minimizes the root mean squared error (RMSE) or the Akaike or Bayesian Information Criterion (AIC or BIC), or R-squared.
+
+
+#### Example {-}
+
+Specify `alpha = 0` in a tuning grid for ridge regression (the following sections reveal how alpha distinguishes ridge, lasso, and elastic net). Note that I standardize the predictors in the `preProcess` step - ridge regression requires standardization.
+
+```{r}
+set.seed(1234)
+mdl_ridge <- train(
+  mpg ~ .,
+  data = training,
+  method = "glmnet",
+  metric = "RMSE",  # Choose from RMSE, RSquared, AIC, BIC, ...others?
+  preProcess = c("center", "scale"),
+  tuneGrid = expand.grid(
+    .alpha = 0,  # optimize a ridge regression
+    .lambda = seq(0, 5, length.out = 101)
+  ),
+  trControl = train_control
+  )
+mdl_ridge
+```
+
+The model printout shows the RMSE, R-Squared, and mean absolute error (MAE) values at each lambda specified in the tuning grid.  The final three lines summarize what happened. It did not tune alpha because I held it at 0 for ridge regression; it optimized using RMSE; and the optimal tuning values (at the minimum RMSE) were alpha = 0 and lambda = 2.75.  You plot the model to see the tuning results.
+
+```{r}
+ggplot(mdl_ridge) +
+  labs(title = "Ridge Regression Parameter Tuning", x = "lambda")
+```
+
+`varImp()` ranks the predictors by the absolute value of the coefficients in the tuned model. The most important variables here were `wt`, `disp`, and `am`.
+
+```{r}
+plot(varImp(mdl_ridge))
+```
+
+## Lasso
+
+Lasso stands for “least absolute shrinkage and selection operator”.  Like ridge, lasso adds a penalty for coefficients, but instead of penalizing the sum of squared coefficients (L2 penalty), lasso penalizes the sum of absolute values (L1 penalty). As a result, for high values of $\lambda$, coefficients can be zeroed under lasso.
+
+The loss function for lasso is
+
+$$L = \sum_{i = 1}^n \left(y_i - x_i^{'} \hat\beta \right)^2 + \lambda \sum_{j=1}^k \left| \hat{\beta}_j \right|.$$
+
+#### Example {-}
+
+Continuing with prediction of `mpg` from the other variables in the `mtcars` data set, follow the same steps as before, but with ridge regression.  This time specify parameter `alpha = 1` for ridge regression (it was 0 for ridge, and for elastic net it will be something in between and require optimization).
+
+```{r}
+set.seed(1234)
+mdl_lasso <- train(
+  mpg ~ .,
+  data = training,
+  method = "glmnet",
+  metric = "RMSE",
+  preProcess = c("center", "scale"),
+  tuneGrid = expand.grid(
+    .alpha = 1,  # optimize a lasso regression
+    .lambda = seq(0, 5, length.out = 101)
+  ),
+  trControl = train_control
+  )
+mdl_lasso$bestTune
+```
+
+The summary output shows the model did not tune alpha because I held it at 1 for lasso regression. The optimal tuning values (at the minimum RMSE) were alpha = 1 and lambda = 0.65.  You can see the RMSE minimum on the the plot.
+
+```{r}
+ggplot(mdl_ridge) +
+  labs(title = "Lasso Regression Parameter Tuning", x = "lambda")
+```
+
+## Elastic Net
+
+Elastic Net combines the penalties of ridge and lasso to get the best of both worlds. The loss function for elastic net is
+
+$$L = \frac{\sum_{i = 1}^n \left(y_i - x_i^{'} \hat\beta \right)^2}{2n} + \lambda \frac{1 - \alpha}{2}\sum_{j=1}^k \hat{\beta}_j^2 + \lambda \alpha\left| \hat{\beta}_j \right|.$$
+
+In this loss function, new parameter $\alpha$ is a "mixing" parameter that balances the two approaches.  If $\alpha$ is zero, you are back to ridge regression, and if $\alpha$ is one, you are back to lasso.
+
+
+#### Example {-}
+
+Continuing with prediction of `mpg` from the other variables in the `mtcars` data set, follow the same steps as before, but with elastic net regression there are two parameters to optimize: $\lambda$ and $\alpha$.
+
+```{r}
+set.seed(1234)
+mdl_elnet <- train(
+  mpg ~ .,
+  data = training,
+  method = "glmnet",
+  metric = "RMSE",
+  preProcess = c("center", "scale"),
+  tuneGrid = expand.grid(
+    .alpha = seq(0, 1, length.out = 10),  # optimize an elnet regression
+    .lambda = seq(0, 5, length.out = 101)
+  ),
+  trControl = train_control
+  )
+mdl_elnet$bestTune
+```
+
+The optimal tuning values (at the mininum RMSE) were alpha = 0.0 and lambda = 2.75, so the mix is 100% ridge, 0% lasso.  You can see the RMSE minimum on the the plot.  Alpha is on the horizontal axis and the different lambdas are shown as separate series.  
+
+```{r}
+ggplot(mdl_elnet) +
+  labs(title = "Elastic Net Regression Parameter Tuning", x = "lambda")
+```
+
+
+## Model Summary {-}
+
+Make predictions on the validation data set for each of the three models.
+
+```{r}
+pr_ridge <- postResample(pred = predict(mdl_ridge, newdata = testing), obs = testing$mpg)
+pr_lasso <- postResample(pred = predict(mdl_lasso, newdata = testing), obs = testing$mpg)
+pr_elnet <- postResample(pred = predict(mdl_elnet, newdata = testing), obs = testing$mpg)
+```
+
+```{r}
+rbind(pr_ridge, pr_lasso, pr_elnet)
+```
+
+It looks like ridge/elnet was the big winner today based on RMSE and MAE.  Lasso had the best Rsquared though.  On average, ridge/elnet will miss the true value of `mpg` by 3.75 mpg (RMSE) or 2.76 mpg (MAE).  The model explains about 90% of the variation in `mpg`. 
+
+You can also compare the models by resampling.  
+
+```{r}
+model.resamples <- resamples(list(Ridge = mdl_ridge,
+                                  Lasso = mdl_lasso,
+                                  ELNet = mdl_elnet))
+summary(model.resamples)
+```
+
+You want the smallest mean RMSE, and a small range of RMSEs.  Ridge/elnet had the smallest mean, and a relatively small range.  Boxplots are a common way to visualize this information.  
+
+```{r}
+bwplot(model.resamples, metric = "RMSE", main = "Model Comparison on Resamples")
+```
+
+Now that you have identified the optimal model, capture its tuning parameters and refit the model to the entire data set.
+
+```{r}
+set.seed(123)
+mdl_final <- train(
+  mpg ~ .,
+  data = training,
+  method = "glmnet",
+  metric = "RMSE",
+  preProcess = c("center", "scale"),
+  tuneGrid = data.frame(
+    .alpha = mdl_ridge$bestTune$alpha,  # optimized hyperparameters
+    .lambda = mdl_ridge$bestTune$lambda),  # optimized hyperparameters
+  trControl = train_control
+  )
+mdl_final
+```
+
+The model is ready to predict on new data! Here are some final conclusions on the models.
+
+* Lasso can set some coefficients to zero, thus performing variable selection.
+* Lasso and Ridge address multicollinearity differently: in ridge regression, the coefficients of correlated predictors are similar; In lasso, one of the correlated predictors has a larger coefficient, while the rest are (nearly) zeroed.
+* Lasso tends to do well if there are a small number of significant parameters and the others are close to zero. Ridge tends to work well if there are many large parameters of about the same value.
+* In practice, you don't know which will be best, so run cross-validation pick the best.
+
+

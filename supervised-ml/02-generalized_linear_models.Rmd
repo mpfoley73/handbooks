@@ -52,15 +52,26 @@ Logistic regression estimates the probability of a particular level of a categor
 
 The *binary* logistic regression model is
 
-$$y = logit(\pi) = \ln \left( \frac{\pi}{1 - \pi} \right) = X \beta$$
+$$y = \mathrm{logit}(\pi) = \ln \left( \frac{\pi}{1 - \pi} \right) = X \beta$$
 
-where $\pi$ is the event probability. The model predicts the *log odds* of the response variable.  The maximum likelihood estimator maximizes the likelihood function
+where $\pi$ is the response level's probability. The model predicts the *log odds* of the response level. Why do this? The range of outcomes need to be between 0 and 1. A sigmoid function, $f(y) = 1 / \left(1 + e^y \right)$, does that. So if the _log odds_ of the response level equal $X\beta$, then the _odds_ of the response level equal $e^{X\beta}$. You can solve the odds formula for $\pi$ to get $\pi = \mathrm{odds} / (\mathrm{odds} + 1)$. Substituting, $\pi = e^{X\beta} / (e^{X\beta} + 1)$ which you can simplify to $\pi = 1 / (1 + e^{-X\beta})$, a sigmoid function. The upshot is $X\beta$ is the functional relationship between the independent variables and _a function of the response_, not the response itself.
+
+The model parameters are estimated either by _iteratively reweighted least squares optimization_ or by _maximum likelihood estimation_ (MLE). Here is how MLE works^[Notes from [Machine Learning Mastery](https://machinelearningmastery.com/logistic-regression-with-maximum-likelihood-estimation/)]. MLE maximizes the probability produced by a set of parameters $\beta$ given a data set and probability distribution. In logistic regression the probability distribution is the binomial and each observation is the outcome of a single Bernoulli trial. 
 
 $$L(\beta; y, X) = \prod_{i=1}^n \pi_i^{y_i}(1 - \pi_i)^{(1-y_i)} = \prod_{i=1}^n\frac{\exp(y_i X_i \beta)}{1 + \exp(X_i \beta)}.$$
 
-There is no closed-form solution, so GLM estimates coefficients with interatively reweighted least squares.  
+In practice, multiplying many small probabilities can be unstable, so the log of the likelihood is optimized instead. 
 
-Here is a case study to illustrate the points.  Dataset `donner` contains observations of 45 members of the Donner party with response variable (`surv`) an explanatory variables `age` and `sex`.
+$$\begin{align}
+l(\beta; y, X) &= \sum_{i = 1}^n \left(y_i \log(\pi_i) + (1 - y_i) \log(1 - \pi_i) \right) \\
+               &= \sum_{i = 1}^n \left(y_i X_i \beta - \log(1 + e^{X_i\beta}) \right)
+\end{align}$$
+
+Sometimes you will see the _cost function_ optimized. This is the negative of of the log likelihood function.
+
+### Case Study
+
+Dataset `donner` contains _n_ = 45 observations of survival status (`surv`) of the members of the Donner party with explanatory variables `age` and `sex`.
 
 ```{r include=FALSE}
 donner <- tribble(
@@ -121,69 +132,68 @@ donner <- tribble(
 glimpse(donner)
 ```
 
-```{r, fig.height=3.5}
+```{r, fig.height=3.5, echo=FALSE}
 donner %>%  
   ggplot(aes(x = age, y = as.integer(surv)-1, color = sex)) +
   geom_jitter(height = 0, alpha = 0.6) +
   geom_smooth(aes(y = as.integer(surv) - 1),
               method = "glm", method.args = list(family = "binomial"), formula = "y ~ x") +
   scale_y_continuous(breaks = c(0,1), labels = c("Died", "Lived")) +
-  labs(title = "Donner Party Survivorship", color = NULL, y = NULL) +
-  theme_minimal() +
-  theme(legend.position = "top")
+  labs(title = "Survival odds varied by age and gender.", 
+       subtitle = glue::glue("{nrow(donner)} outcomes from Donner party."),
+       color = NULL, y = NULL) +
+  theme_light() +
+  theme(legend.position = "right")
 ```
 
-Fit a logistic regression $surv = sex + age + sex:age$.
+### Fit the Model
+
+Fit a logistic regression $\mathrm{surv} = \mathrm{sex} + \mathrm{age} + \mathrm{sex:age}$. The reference case based on the factor definition is `sex` = "F", and `age` = `r median(donner$age)` (the median age).
 
 ```{r}
-m <- glm(surv ~ sex*age, data = donner, family = binomial(link = logit))
+donner_centered <- donner %>%
+  mutate(age = age - median(donner$age))
+m <- glm(surv ~ sex*age, 
+         data = donner_centered, 
+         family = binomial(link = logit))
 summary(m)
 ```
 
-The "z value" in the Coefficients table is the Wald z statistic, $z = \hat{\beta} / SE(\hat{\beta})$, which if squared is the Wald chi-squared statistic, $z^2$.  The p.value is the area to the right of $z^2$ in the $\chi_1^2$ density curve:
+The "z value" and "Pr(>|z|)" statistics follow directly from the "Estimate" and "Std. Error". The "z value" is the Wald $z$ statistic, $z = \hat{\beta} / SE(\hat{\beta})$. Its square, $z^2$, is the Wald chi-squared statistic. The _p_-value is the area to the right of $z^2$ in the $\chi_1^2$ density curve:
 
-```{r collapse=TRUE}
+```{r}
 m %>% tidy() %>% 
   mutate(
     z = estimate / std.error, 
     p_z2 = pchisq(z^2, df = 1, lower.tail = FALSE)
-  )
+  ) %>%
+  select(term, z, p_z2)
 ```
 
-Below the Coefficients table, the "dispersion parameter" refers to overdispersion, a common issue with GLM.  For a logistic regression, the response variable should be distributed $y_i \sim Bin(n_i, \pi_i)$ with $\mu_i = n_i \pi_i$ and $\sigma^2 = \pi (1 - \pi)$.  Overdispersion means the data shows evidence of variance greater than $\sigma^2$.
+Below the Coefficients table, the "dispersion parameter" refers to overdispersion, a common issue with GLM. For a logistic regression, the response variable should be distributed $y_i \sim \mathrm{Bin}(n_i, \pi_i)$ with $\mu_i = n_i \pi_i$ and $\sigma^2 = \pi (1 - \pi)$.  Overdispersion means the data shows evidence of variance greater than $\sigma^2$.
 
-"Fisher scoring" is a method for ML estimation. Logistic regression uses an iterative procedure to fit the model, so this section indicates whether the algorithm converged.
+"Fisher scoring" is a method for ML estimation. Logistic regression uses interatively reweighted least squares to fit the model, so this section indicates whether the algorithm converged.
 
-The null deviance is the likelihood ratio $G^2 = 61.827$ of the intercept-only model.  The residual deviance is the likelihood ratio $G^2 = 47.346$ after including all model covariates.  $G^2$ is large, so reject the null hypothesis of no age and sex effects.  The ANOVA table shows the change in deviance from adding each variable successively to the model.
+The null deviance is the likelihood ratio $G^2$ = `r scales::number(summary(m)$null.deviance, accuracy = .001)` of the intercept-only model. The residual deviance is the likelihood ratio $G^2$ = `r scales::number(summary(m)$deviance, accuracy = .001)` after including the model covariates. $G^2$ is large, so reject the null hypothesis of no age or sex effects. An ANOVA table shows the change in deviance from successively adding each variable to the model.
 
 ```{r}
 anova(m)
 ```
 
-```{r}
-glance(m)
-```
+### Interpret Results
 
-Plug in values to interpret the model.  The log odds of a 24 year-old female surviving is $\hat{y} = 2.59$.  The log odds of a 24 year-old male surviving is $\hat{y} = -0.46$.
+Plug in values to interpret the model. The log odds of a 24 year-old female surviving is $\hat{y}$ = `r predict(m, newdata = data.frame(sex = "F", age = 24)) %>% scales::number(accuracy = .01)`.  The log odds of a 24 year-old male surviving is $\hat{y}$ = `r predict(m, newdata = data.frame(sex = "M", age = 24)) %>% scales::number(accuracy = .01)`.
 
-```{r results=FALSE}
-coef(m)["(Intercept)"] + coef(m)["sexM"]*0 + coef(m)["age"]*24 +
-  coef(m)["sexM:age"]*0*24
-coef(m)["(Intercept)"] + coef(m)["sexM"]*1 + coef(m)["age"]*24 +
-  coef(m)["sexM:age"]*1*24
-
-# Or use predict()
+```{r collapse=TRUE}
 (lo_f <- predict(m, newdata = data.frame(sex = "F", age = 24)))
 (lo_m <- predict(m, newdata = data.frame(sex = "M", age = 24)))
 ```
 
-Log odds are not easy to interpet.  Exponentiate the log odds to get the **odds**.
+Log odds are not easy to interpret. Exponentiate the log odds to get the **odds**.
 
-$$odds(\hat{y}) = \exp (\hat{y}) = \frac{\pi}{1 - \pi}.$$
+$$\mathrm{odds}(\hat{y}) = \exp (\hat{y}) = \frac{\pi}{1 - \pi}.$$
 
-The odds of a 24 year-old female surviving is $\exp(\hat{y}) = 13.31$.  The odds of a 24 year-old male surviving is $\exp(\hat{y}) = 0.63$.
-
-```{r results=FALSE}
+```{r collapse=TRUE}
 exp(lo_f)
 exp(lo_m)
 ```
@@ -192,70 +202,99 @@ Solve for $\pi$ to get the **probability**.
 
 $$\pi = \frac{\exp (\hat{y})}{1 + \exp (\hat{y})}$$
 
-The probability of a 24 year-old female surviving is $\pi = 0.93$.  The probability of a female of average age surviving is $\pi = 0.39$.  The `predict()` function for a logistic model returns log-odds, but can also return $\pi$ by specifying parameter `type = "response"`.
+You can do the math, or use `predict(type = "response")`.
 
-```{r results=FALSE}
-exp(lo_f) / (1 + exp(lo_f))
-exp(lo_m) / (1 + exp(lo_m))
-
-# Or use predict(..., type = "response")
+```{r collapse=TRUE}
 (p_f <- predict(m, newdata = data.frame(sex = "F", age =24), type = "response"))
 (p_m <- predict(m, newdata = data.frame(sex = "M", age =24), type = "response"))
 ```
 
-Interpret the *coefficient* estimates using the **odds ratio**, the ratio of the odds before and after an increment to the predictors.  The odds ratio is how much the odds would be multiplied after a $\delta = X_1 - X_0$ unit increase in $X$.
+Interpret the coefficient estimates as the change in the log odds of $y$ due to a $\delta = x_1 - x_0$ unit change in $x$.
 
-$$\theta = \frac{\pi / (1 - \pi) |_{X = X_1}}{\pi / (1 - \pi) |_{X = X_0}} = \frac{\exp (X_1 \hat{\beta})}{\exp (X_0 \hat{\beta})} = \exp ((X_1-X_0) \hat{\beta}) = \exp (\delta \hat{\beta})$$
+$$\log \left(\pi / (1 - \pi) |_{X = X_1} \right) - \log \left(\pi / (1 - \pi) |_{X = X_0} \right) = \log \left( \frac{\pi / (1 - \pi) |_{X = X_1}}{\pi / (1 - \pi) |_{X = X_0}} \right) = \delta \hat{\beta}$$
 
-The odds of a female surviving are multiplied by a factor of $\exp(1 \cdot (-0.19)) = 0.824$ per additional year of age (or the odds fall by $1 - 0.824 = 17.6\%$). The odds of a male surviving are multiplied by a factor of $\exp(1 \cdot (-0.161-0.19)) = 0.968$ per additional year of age.   
+Better yet, interpret the exponential of the coefficient estimates as the change in the _odds_ of $y$ due to a $\delta$ unit change in $x$.
 
-```{r results=FALSE}
-exp(1 * (coef(m)["age"] + 0*coef(m)["sexM:age"]))  # female
-exp(1 * (coef(m)["age"] + 1*coef(m)["sexM:age"]))  # male
+$$\mathrm{odds}(y) = e^{\delta \hat{\beta}}$$
+
+The reference case is `sex` = "F" and `age` = 0 (centered on median age, `r median(donner$age)`). 
+
+```{r include=FALSE}
+odds_f_28 <- exp(coef(m)["(Intercept)"])
+odds_f_18 <- exp(coef(m)["(Intercept)"] + coef(m)["age"] * (-10))
+odds_m_28 <- exp(coef(m)["(Intercept)"] + coef(m)["sexM"])
+odds_m_18 <- exp(coef(m)["(Intercept)"] + coef(m)["sexM"] + coef(m)["age"] * (-10) + coef(m)["sexM:age"]*(-10))
+
+prob_f_28 <- odds_f_28 / (1 + odds_f_28)
+prob_f_18 <- odds_f_18 / (1 + odds_f_18)
+prob_m_28 <- odds_m_28 / (1 + odds_m_28)
+prob_m_18 <- odds_m_18 / (1 + odds_m_18)
+
+odds_f_28_fmt <- scales::number(odds_f_28, accuracy = .1)
+odds_f_18_fmt <- scales::number(odds_f_18, accuracy = .1)
+odds_m_28_fmt <- scales::number(odds_m_28, accuracy = .1)
+odds_m_18_fmt <- scales::number(odds_m_18, accuracy = .1)
 ```
+
+* The survival odds of a `r median(donner$age)` year old female are $\hat{y} = e^{(Intercept)}$ = `r odds_f_28_fmt`. The expected probability of surviving is `r glue::glue("{odds_f_28_fmt} / (1 + {odds_f_28_fmt}) = {scales::number(prob_f_28 * 100, accuracy = 1)}")`%.
+* The survival odds of a `r median(donner$age) - 10` female are $\hat{y} = e^{(Intercept) -10 \cdot \mathrm{age}}$ = `r odds_f_18_fmt`. The expected probability of surviving is `r glue::glue("{odds_f_18_fmt} / (1 + {odds_f_18_fmt}) = {scales::number(prob_f_18 * 100, accuracy = 1)}")`%.
+* The survival odds of a `r median(donner$age)` male are $\hat{y} = e^{(Intercept) + sexM}$ = `r odds_m_28_fmt`. The expected probability of surviving is `r glue::glue("{odds_m_28_fmt} / (1 + {odds_m_28_fmt}) = {scales::number(prob_m_28 * 100, accuracy = 1)}")`%.
+* The survival odds of a `r median(donner$age) - 10` male are $\hat{y} = e^{(Intercept) -10 \cdot \mathrm{age} -10 \cdot \mathrm{sex} -10 \cdot \mathrm{sexM:age}}$ = `r odds_m_18_fmt`. The expected probability of surviving is `r glue::glue("{odds_m_18_fmt} / (1 + {odds_m_18_fmt}) = {scales::number(prob_m_18 * 100, accuracy = 1)}")`%.
+* A female's survival odds are multiplied by a factor of $e^{(1 \cdot \mathrm{age})}$ = `r scales::number(exp(coef(m)["age"]), accuracy = .001)` per additional year of age (i.e. the odds _fall_ by `r scales::number((1 - exp(coef(m)["age"]))*100, accuracy = 1)`%).
+* A male's survival odds are multiplied by a factor of $e^{1 \cdot \mathrm{age}} e^{1 \cdot \mathrm{sexM:age}}$ = `r scales::number(exp(coef(m)["age"]) * exp(coef(m)["sexM:age"]), accuracy = .001)` per additional year of age (i.e. the odds _fall_ by `r scales::number((1 - exp(coef(m)["age"]) * exp(coef(m)["sexM:age"]))*100, accuracy = 1)`%).
+* A `r median(donner$age)` year old female's survival odds are multiplied by a factor of $e^{1 \cdot \mathrm{sex}}$ = `r scales::number(exp(coef(m)["sexM"]), accuracy = .001)` if she were instead a male. (i.e. the odds _fall_ by `r scales::number((1 - exp(coef(m)["sexM"]))*100, accuracy = 1)`%)
 
 `oddsratio::or_glm()` calculates the odds ratio from an increment in the predictor values.
 
 ```{r}
-oddsratio::or_glm(donner, m, incr = list(age = 1))
+oddsratio::or_glm(donner_centered, m, incr = list(age = 1))
 ```
 
-The predicted values can also be expressed as the probabilities $\pi$.  This produces the familiar signmoidal shape of the binary relationship.
+Expressing the predicted values as probabilities produces the familiar signmoidal shape of the binary relationship.
 
 ```{r fig.height=3.5}
 augment(m, type.predict = "response") %>%
-  ggplot(aes(x = age)) +
-  geom_point(aes(y = surv)) +
+  ggplot(aes(x = age, color = sex)) +
+  geom_point(aes(y = as.integer(surv))) +
   geom_line(aes(y = .fitted+1)) +
-  labs(x = "AGE",
-       y = "Probability of SURVIVE",
-       title = "Binary Fitted Line Plot")
+  labs(x = "Age (relative to median)",
+       y = NULL,
+       title = "Binary Fitted Line Plot") +
+  scale_y_continuous(breaks = c(1,2), labels = c("Died", "Lived")) +
+  theme_light() +
+  theme(legend.position = "right")
 ```
+
+### Assess Model Fit
 
 Evaluate a logistic regression using a [Gain curve or ROC curve](https://community.tibco.com/wiki/gains-vs-roc-curves-do-you-understand-difference). 
 
-In the **gain curve**, the x-axis is the fraction of items seen when sorted by the predicted value, and the y-axis is the cumulative summed true outcome. The "wizard" curve is the gain curve when the data is sorted by the true outcome.  If the model's gain curve is close to the wizard curve, then the model predicted the response variable well. The grey area is the "gain" over a random prediction.
+#### Gain Curve {-}
 
-20 of the 45 members of the Donner party survived. 
+In the **gain curve**, the x-axis is the fraction of items seen when sorted by the predicted value, and the y-axis is the cumulative summed true outcome. The "wizard" curve is the gain curve when the data is sorted by the true outcome.  If the model's gain curve is close to the wizard curve, then the model predicts the response well. The gray area is the "gain" over a random prediction.
+
+`r sum(donner$surv == "Lived")` of the `r nrow(donner)` members of the Donner party survived. 
 
 * The gain curve encountered 10 survivors (50%) within the first 12 observations (27%).  It encountered all 20 survivors on the 37th observation.
 * The bottom of the grey area is the outcome of a random model.  Only half the survivors would be observed within 50% of the observations.  
 * The top of the grey area is the outcome of the perfect model, the "wizard curve".  Half the survivors would be observed in 10/45=22% of the observations.
 
 ```{r, fig.height=3.5}
-options(yardstick.event_first = FALSE)  # set the second level as success
 augment(m, type.predict = "response") %>%
-yardstick::gain_curve(surv, .fitted) %>%
+  # event_level = "second" sets the second level as success
+  yardstick::gain_curve(surv, .fitted, event_level = "second") %>%
   autoplot() +
   labs(title = "Gain Curve")
 ```
 
+#### ROC Curve {-}
+
 The ROC (Receiver Operating Characteristics) curve plots sensitivity vs specificity at different cut-off values for the probability, ranging cut-off from 0 to 1.
 
 ```{r, fig.height=3.5}
-options(yardstick.event_first = FALSE)  # set the second level as success
 augment(m, type.predict = "response") %>%
-yardstick::roc_curve(surv, .fitted) %>%
+  # event_level = "second" sets the second level as success
+  yardstick::roc_curve(surv, .fitted, event_level = "second") %>%
   autoplot() +
   labs(title = "ROC Curve")
 ```
@@ -265,7 +304,7 @@ yardstick::roc_curve(surv, .fitted) %>%
 
 The following notes rely on the [PSU STAT 504 course notes](https://online.stat.psu.edu/stat504/node/171/.
 
-Multinomial logistic regression models the odds the multinomial response variable $Y \sim Mult(n, \pi)$ is in level $j$ relative to baseline category $j^*$ for all pairs of categories as a function of $k$ explanatory variables, $X = (X_1, X_2, ... X_k)$. 
+Multinomial logistic regression models the odds the multinomial response variable $y \sim Mult(n, \pi)$ is in level $j$ relative to baseline category $j^*$ for all pairs of categories as a function of $k$ explanatory variables, $X = (X_1, X_2, ... X_k)$. 
 
 $$\log \left( \frac{\pi_{ij}}{\pi_{ij^*}} \right) = x_i^T \beta_j, \hspace{5mm} j \ne j^2$$
 
