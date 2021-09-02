@@ -20,7 +20,7 @@ description: "Background and tutorial on text mining (topic modeling, sentiment 
 
 # Intro {-}
 
-I compiled these notes on text mining while learning from the following resources:
+These notes consolidate several resources I've encountered while working on text mining projects:
 
 * Text Mining with R [@Silge2017]
 * [Introduction to Natural Language Processing in R](https://campus.datacamp.com/courses/introduction-to-natural-language-processing-in-r) (DataCamp)
