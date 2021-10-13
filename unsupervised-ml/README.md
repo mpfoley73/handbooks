@@ -1,0 +1,1 @@
+This handbook, published in [bookdown](https://github.com/rstudio/bookdown), is a compilation of theory and methods for unsupervised machine learning, including dimensionality reducion and cluster analysis.

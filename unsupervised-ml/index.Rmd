@@ -1,0 +1,30 @@
+--- 
+title: "Unsupervised Machine Learning"
+subtitle: "My handbook"
+author: "Michael Foley"
+date: "`r Sys.Date()`"
+site: bookdown::bookdown_site
+documentclass: book
+bibliography: [book.bib, packages.bib]
+url: https://bookdown.org/yihui/bookdown
+cover-image: images/spontaneous-order.jpg
+description: |
+  These are my personal notes related to unsupervised machine 
+  learning techniques.
+link-citations: yes
+github-repo: rstudio/bookdown-demo
+---
+
+# Intro {-}
+
+Machine learning (ML) develops algorithms to identify patterns in data (unsupervised ML) or make predictions and inferences (supervised ML). 
+
+Unsupervised machine learning searches for structure in unlabeled data (data without a response variable).  The goal of unsupervised learning is clustering into homogenous subgroups, and dimensionality reduction.  Examples of cluster analysis are k-means clustering, hierarchical cluster analysis (HCA), and PCA (others [here](https://theappsolutions.com/blog/development/unsupervised-machine-learning/#:~:text=Unsupervised%20learning%20is%20a%20type%20of%20machine%20learning,in%20the%20dataset.%20The%20term%20%E2%80%9Cunsupervised%E2%80%9D%20refers%20to)). 
+
+
+```{r include=FALSE}
+# automatically create a bib database for R packages
+knitr::write_bib(c(
+  .packages(), 'bookdown', 'knitr', 'rmarkdown'
+), 'packages.bib')
+```

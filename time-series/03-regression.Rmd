@@ -140,8 +140,8 @@ augment(x) %>%
   geom_point(aes(y = .fitted), color = "steelblue", size = 2) +
   geom_point(aes(y = Beer), color = "goldenrod", size = 1) +
   theme_light() +
-  labs(title = "trend() is equivalent to adding time sequence to model.",
-       subtitle = "Beer ~ trend()")
+  labs(title = "season() is equivalent to adding seasonal dummy variables to model.",
+       subtitle = "Beer ~ season()")
 ```
 
 There are other special variables you might consider. If an exogenous event has a one period effect or level effect, model it with an _intervention_ dummy. If the intervention has a trend effect, use a _piecewise linear trend_.
@@ -243,7 +243,7 @@ Classical leave-one-out cross-validation (**CV**) measures the predictive abilit
 
 $$CV = MSE = \frac{1}{T} \sum_{t=1}^T \left[\frac{e_t}{1 - h_t}\right]^2$$
 
-where $h_t$ are the diagonal values of the hat-matrix $H$ from $\hat{y} = X\beta = X(X`X)^{-1}X'y = Hy$ and $e_t$ is the residual obtained from fitting the model to all $T$ observations.  
+where $h_t$ are the diagonal values of the hat-matrix $H$ from $\hat{y} = X\beta = X(X'X)^{-1}X'y = Hy$ and $e_t$ is the residual obtained from fitting the model to all $T$ observations.  
 
 Closely related to CV is Akaike's Information Criterion (**AIC**), defined as
 
@@ -257,9 +257,9 @@ $$AIC_c = AIC + \frac{2(k+2)(k + 3)}{T - k - 3}$$
 
 **BIC** is similar to AIC, but penalizes the number of parameters more heavily than the AIC. For large values of $T$, minimizing BIC is similar to leave-*v*-out cross-validation when $v = T[1 − 1/\log(T) - 1]$.
 
-$$BIC = T \log(\frac{SSE}{T}) + (k + 2)\log(T)$$
+$$BIC = T \log\left(\frac{SSE}{T}\right) + (k + 2)\log(T)$$
 
-There are two common methods for using these measures: **best subsets regression** and **stepwise regression**.  In best subsets regression, you fit all possible models then choose the one with the best metric value (e.g., lowest AIC). If there are too many candidate models (40 predictors would yield $2^40$ models!), use stepwise regression.  In *backwards stepwise regression*, include *all* candidate predictors initially, then check whether leaving any one predictor out improves the evaluation metric.  If any leave-one-out model is better, then choose the best leave-one-out model. Repeat until no leave-one-out model is better.
+There are two common methods for using these measures: **best subsets regression** and **stepwise regression**.  In best subsets regression, you fit all possible models then choose the one with the best metric value (e.g., lowest AIC). If there are too many candidate models (40 predictors would yield $2^{40}$ models!), use stepwise regression.  In *backwards stepwise regression*, include *all* candidate predictors initially, then check whether leaving any one predictor out improves the evaluation metric.  If any leave-one-out model is better, then choose the best leave-one-out model. Repeat until no leave-one-out model is better.
 
 Let's use the best subsets method to evaluate the possible models for the `ausprod_gas` data set. The 3 candidate predictors yield $2^3 = 8$ possible models. I don't know how to do this in **caret**, so I'll just do it manually.
 
@@ -268,7 +268,6 @@ x <- formula(Beer ~ trend() + season())
 
 fmla <- tribble(
   ~Gas, ~Electricity, ~Cement, ~fmla,
-  1, 1, 1, update(x, ~ . + Gas + Electricity + Cement),
   1, 1, 1, update(x, ~ . + Gas + Electricity + Cement),
   1, 1, 0, update(x, ~ . + Gas + Electricity),
   1, 0, 1, update(x, ~ . + Gas + Cement),

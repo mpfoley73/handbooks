@@ -1,0 +1,10 @@
+# PCA {#pca}
+
+```{r}
+x <- 1:3
+x_bar <- mean(x)
+y <- 6
+mean(c(x, y))
+x_bar + 1/ 4 * (y - x_bar)
+```
+
