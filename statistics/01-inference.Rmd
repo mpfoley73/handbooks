@@ -1,0 +1,53 @@
+# Inference
+
+```{r include=FALSE}
+library(tidyverse)
+```
+
+Statistical inference is the use of a sample distribution to describe the population distribution. Hypothesis tests, confidence intervals, and effect size estimates are all examples of statistical inference. 
+
+We wary of published study results. Identical studies might produce both significant and non-significant results, yet it is likely that only the significant result reaches publication (publication bias). The researchers has flexibility in the data analysis methods and may have tortured the data until they found statistically significant result. Studies often suffer from low statistical power. Applying principles of inference can mitigate these problems.
+
+There are different approaches to establishing statistical inference. The *path of action* rejects a null hypothesis using Neyman-Pearson *p*-values on the basis that, in the long run, the rejection is probably correct. The *path of knowledge* compares the observed data to the likelihoods of the various hypothesized realities. The *path of belief* uses uses a observed data to update the prior belief.
+
+## *P*-Values
+
+*P*-values express how surprising the data is given the null hypothesis (H0). It says nothing about the probability that the hypothesis is true. For that, you need Bayesian statistics. Never draw a conclusion about the theory based on a *p*-value ("*p* < .05, so our theory..."). Instead, draw a conclusion about how the data relates to the theory ("*p* < .05, so our data is compatible with the theory...").
+
+You can draw four possible conclusions from a hypothesis test. Two are valid and two are invalid. It is helpful to think about a test for human lifespan. The default assumption (H0) may be that lifespans have not changed from the 60 year expectation of 100 years ago. Then you evaluate the *p*-value from the measured lifespan of a sample of humans.
+
+* If *p* < $\alpha$ you reject H0. $\alpha$ is your expected error rate from concluding a measurement this extreme did not happen by chance alone. I.e., $\alpha$ is your expected *false positive* rate. You collect a random sample of humans a bazillion times and you get gobs of mean lifespans that different from 60 years based on a *p* < $\alpha$ criteria. In each of these cases you conclude lifespans really have changed. $\alpha$ * 100 percent of those conclusions were probably wrong.
+
+* If *p* < $\alpha$ you reject H0, but you might accept your alternative H1. 
+
+* If *p* > $\alpha$ you do not reject H0. You may be wrong. 1 - $\alpha$ is your expected *false negative* rate. In your test on a bazillion samples scads 
+
+The inference made from a hypothesis test has four possible outcomes. You can correctly reject H0 (a true positive conclusion) or incorrectly reject H0 (a false positive). You can correctly accept H0 (true positive) or incorrectly accept H1 (false negative). $\alpha$ and $\beta$ are statistical thresholds that characterize the probabilities.
+
+|                        |H0 True                       |H1 True                      |
+|------------------------|------------------------------|-----------------------------|
+|Significant Finding     | False Positive ($\alpha$)    | True Positive (1 - $\beta$) |
+|Non-Significant Finding | True Negative (1 - $\alpha$) | False Negative ($\beta$)    |
+
+* $\alpha$ is a tolerance level for incorrectly rejecting H0 (*Type I error*). The population distribution has values at the extremes, so your extreme measurement may just be one of them. Rejecting H0 that $\mu = \mu_0$ if *p* is less than $\alpha$ acknowledges that in the limit, drawing this conclusion would be wrong $\alpha$*100 percent of the time.
+
+Type I errors reject H0 when they shouldn't. It's the probability of staking an innocent person. Alpha is the probability of a significant result when H0 is true (there is no true effect). It is the type I error rate.
+
+Type II errors fail to reject H0 when they should. It's the probability of refraining from staking an actual vampire. Beta is the probability of a non-significant result when H1 is true. It is the type II error rate.
+
+1 - beta is the probability of a significant result when H1 is true. I.e,, it's the probability of a true positive.
+
+* $\alpha$ is the false positive rate.
+* $\beta$ is the false negative rate.
+* $1 - \alpha$ is the true negative rate
+* $1 - \beta$ is the true positive rate
+
+
+
+  H0 True   H1 True
+sig   False Positive (alpha)    True Positive (1-beta)
+nonsig    True Negative (1-alpha)   False negative (beta)
+
+## Example one
+
+## Example two

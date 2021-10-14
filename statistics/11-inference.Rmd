@@ -1,8 +1,0 @@
-# Inference
-
-Statistical inference is the use of sample data to describe the distribution of the population. Hypothesis tests, confidence intervals, and effect size estimates are all examples of statistical inference. 
-
-Published studies suffer from publication bias, flexibility in the data analysis methods (torturing the data), and low statistical power in the studies (*p*-values are a function of the power of the test and *n* sizes are often too low). Applying the principles of inference can mitigate these problems.
-
-There is more than one approach to statistical inference. The **path of action** uses Neyman-Pearson *p*-values to decide whether to reject a null hypothesis, knowing in the long run your are usually right. The **path of knowledge** compares observed data to the likelihood of the various possible realities. The **path of belief** uses uses a observed data to update your prior belief.
-
