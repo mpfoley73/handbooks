@@ -142,3 +142,9 @@ benchmarks
 tab:unnamed-chunk-37
 tab:unnamed-chunk-38
 p-values
+fig:unnamed-chunk-3
+type-i-and-ii-errors
+p-values-1
+statistical-power
+an-exercise-in-p-values
+further-reading
