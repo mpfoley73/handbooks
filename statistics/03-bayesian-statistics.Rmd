@@ -1,4 +1,4 @@
-# Bayesian Inference
+# Bayesian Statistics
 
 ```{r include=FALSE}
 library(tidyverse)
@@ -6,7 +6,7 @@ library(patchwork)
 library(glue)
 ```
 
-Bayesian inference estimates the probability, $\theta$, that an hypothesis is true. It differs from frequentist inference in its insistence that *all* uncertainties be described by probabilities. Bayesian inference updates the prior probability distribution in light of new information.
+Bayesian inference estimates the probability, $\theta$, that an hypothesis is true. It differs from Frequentist inference in its insistence that *all* uncertainties be described by probabilities. Bayesian inference updates the prior probability distribution in light of new information.
 
 Bayesian inference builds on Bayes' Law, so let's start there.
 
@@ -18,19 +18,19 @@ $$P(\theta|D) = \frac{P(D|\theta)P(\theta)}{P(D)}.$$
 
 * $P(\theta)$ is the strength of your belief in $\theta$ *prior* to considering the data $D$.
 
-* $P(D|\theta)$ is the *likelihood* of observing $D$ from a generative model with parameter $\theta$. Note that likelihood is the probability density, and is not quite the same as probability. For a continuous variable, likelihoods can sum to greater than 1. E.g., *`dbinom(seq(1, 100, 1), 100, .5)` sums to 1, but `dnorm(seq(0,50,.001), 10, 10)` sums to 841.
+* $P(D|\theta)$ is the *likelihood* of observing $D$ from a generative model with parameter $\theta$. Note that likelihood is the probability density, and is not quite the same as probability. For a continuous variable, likelihoods can sum to greater than 1. E.g., `dbinom(seq(1, 100, 1), 100, .5)` sums to `r sum(dbinom(seq(1, 100, 1), 100, .5))`, but `dnorm(seq(0,50,.001), 10, 10)` sums to `r scales::number(sum(dnorm(seq(0,50,.001), 10, 10)), accuracy = 1)`.
 
 * $P(D)$ is the likelihood of observing $D$ from *any* prior. It is the *marginal distribution*, or *prior predictive distribution* of $D$. The likelihood divided by the marginal distribution is the proportional adjustment made to the prior in light of the data.
 
 * $P(\theta|D)$ is the strength of your belief in $\theta$ *posterior* to considering $D$.
 
-Bayes' Law is useful for evaluating medical tests. A test's *sensitivity* is its probability of observing positive test result $D$ when medical condition $\theta$ exists. The numerator of Bayes' Law, the joint probability of $D$ and $\theta$, $P(D \theta)$, is the test sensitivity multiplied by the prior probability, $\mathrm{sens\times prior}$. A test's *specificity* is the probability of observing negative test result $\hat{s}$ when the condition does not exist, $\hat{\theta}$. The specificity is the compliment of a *false positive* test result, $P(\hat{D} | \hat{\theta}) = 1 - P(D | \hat{\theta})$. The denominator of Bayes' Law is the overall probability of a positive test result, $P(D) = P(D|\theta)P(\theta) + P(D|\hat\theta)P(\hat\theta)$ or in terms of sensitivity and specificity, $P(D) = \mathrm{(sens \times prior) + (1 - spec)(1 - prior)}$.
+Bayes' Law is useful for evaluating medical tests. A test's *sensitivity* is its probability of yielding a positive result $D$ when condition $\theta$ exists. $P(D|\theta)$ is a test sensitivity, $\mathrm{sens}$. $P(\theta)$ is the probability of $\theta$ prior to the test (e.g., the general rate in society), $\mathrm{prior}$. The numerator of Bayes' Law, the joint probability $P(D \theta) = P(D|\theta)P(\theta)$, is $\mathrm{sens\times prior}$. A test's *specificity* is the probability of observing negative test result $\hat{D}$ when the condition does not exist, $\hat{\theta}$. The specificity is the compliment of a *false positive* test result, $P(\hat{D} | \hat{\theta}) = 1 - P(D | \hat{\theta})$. The denominator of Bayes' Law is the overall probability of a positive test result, $P(D) = P(D|\theta)P(\theta) + P(D|\hat\theta)P(\hat\theta)$ or in terms of sensitivity and specificity, $P(D) = \mathrm{(sens \times prior) + (1 - spec)(1 - prior)}$.
 
 **Example.** Suppose E. Coli is typically present in 4.5% of samples, and an E. Coli screen has a sensitivity of 0.95 and a specificity of 0.99. Given a positive test result, what is the probability that E. Coli is actually present?
 
 $$P(\theta|D) = \frac{.95\cdot .045}{.95\cdot .045 + (1 - .99)(1 - .045)} = \frac{.04275}{.04275 + .00955} = \frac{.04275}{.05230} = 81.7\%.$$
 
-The Bayes' Law logic is apparent from the contingency table. The first row is the positive test result.
+The elements of Bayes' Law come directly from the contingency table. The first row is the positive test result. The probability of E. Coli is the joint probability of E. coli and a positive test divided by the probability of a positive test
 
 |      |E. Coli|Safe   |Total  |
 |------|-------|-------|-------|
@@ -57,20 +57,20 @@ It is helpful to look first at discrete priors, a list of competing priors to se
 
 ## Discrete Cases
 
-Suppose you have a string of numbers $[1,1,1,1,0,0,1,1,1,0]$ (seven 1s and three 0s) produced by a Bernoulli random number generator. What parameter $p$ was used in the Bernoulli function?^[Example borrowed from [chris' sandbox](http://chrisstrelioff.ws/sandbox/2014/12/11/inferring_probabilities_with_a_beta_prior_a_third_example_of_bayesian_calculations.html)]
+Suppose you have a string of numbers $[1,1,1,1,0,0,1,1,1,0]$ (7 ones and 3 zeros) produced by a Bernoulli random number generator. What parameter $p$ was used in the Bernoulli function?^[Example borrowed from [chris' sandbox](http://chrisstrelioff.ws/sandbox/2014/12/11/inferring_probabilities_with_a_beta_prior_a_third_example_of_bayesian_calculations.html)]
 
 ```{r}
 D <- c(1, 1, 1, 1, 0, 0, 1, 1, 1, 0)
 ```
 
-Your best guess is $p = 0.7$, but how confident are you? Posit eleven competing priors, $\theta = [.0, .1, \ldots,1.0]$ with equal prior probabilities, $P(\theta) = [1/11, \ldots]$.
+Your best guess is $p = 0.7$, but how confident are you? Posit eleven competing priors, $\theta = [.0, .1, \ldots, 1]$ with equal prior probabilities, $P(\theta) = [1/11, \ldots]$.
 
 ```{r}
 theta <- seq(0, 1, by = 0.1)
 prior <- rep(1/11, 11)
 ```
 
-Using a Bernoulli generative model, the likelihoods of observing seven 1s and three 0s are $P(D|\theta) = \theta^7 + (1-\theta)^3.$
+Using a Bernoulli generative model, the likelihood of observing 7 ones and 3 zeros are $P(D|\theta) = \theta^7 + (1-\theta)^3.$
 
 ```{r fig.height=2.5}
 likelihood <- theta^7 * (1 - theta)^3
@@ -89,9 +89,11 @@ data.frame(theta, likelihood) %>%
 
 The posterior probability is the likelihood divided by the marginal probability of observing $D$ multiplied by the prior, $P(\theta|D) = \frac{P(D|\theta)}{P(D)}\cdot P(\theta).$ In this case, the marginal probability is straight-forward to calculate: it is the sum-product of the priors and their associated likelihoods.
 
-```{r fig.height=3}
+```{r}
 posterior <- likelihood / sum(likelihood * prior) * prior
+```
 
+```{r fig.height=3, echo=FALSE}
 data.frame(theta, prior, posterior) %>% 
   pivot_longer(cols = c(prior, posterior), values_to = "pi") %>%
   ggplot() +
@@ -107,10 +109,12 @@ data.frame(theta, prior, posterior) %>%
 
 What would the posterior look like if we started with an educated guess on $P(\theta)$ that more heavily weights $\theta = 0.7$?
 
-```{r fig.height=3}
+```{r}
 prior <- c(.05, .05, .05, .05, .05, .10, .15, .20, .15, .10, .05)
-likelihood <- theta^7 * (1 - theta)^3
 posterior <- likelihood / sum(likelihood * prior) * prior
+```
+
+```{r fig.height=3, echo=FALSE}
 data.frame(theta, prior, posterior) %>% 
   pivot_longer(cols = c(prior, posterior), values_to = "pi") %>%
   ggplot() +
@@ -123,12 +127,15 @@ data.frame(theta, prior, posterior) %>%
        color = NULL, x = expression(theta), y = "P")
 ```
 
-What if we now employ a larger data set? To see, generate a sample of 100 $\mathrm{Bernouli}(.7)$ observations.
+What if we now employ a larger data set? To see, generate a sample of 100 Bernoulli(.7) observations.
 
-```{r fig.height=3}
-s <- rbernoulli(100, p = 0.7) %>% as.numeric()
-likelihood <- theta^sum(D) * (1 - theta)^(length(D)-sum(D))
+```{r}
+D100 <- rbernoulli(100, p = 0.7) %>% as.numeric()
+likelihood <- theta^sum(D100) * (1 - theta)^(length(D100)-sum(D100))
 posterior <- likelihood / sum(likelihood * prior) * prior
+```
+
+```{r fig.height=3, echo=FALSE}
 data.frame(theta, prior, posterior) %>% 
   pivot_longer(cols = c(prior, posterior), values_to = "pi") %>%
   ggplot() +
@@ -138,16 +145,19 @@ data.frame(theta, prior, posterior) %>%
   theme_minimal() +
   theme(panel.grid.minor = element_blank()) +
   labs(title = "More observations tighten the posterior distribution.",
-       color = NULL, x = expression(theta), y = expression(pi))
+       color = NULL, x = expression(theta), y = "P")
 ```
 
 What would it look like if it also had more competing hypotheses, $\theta \in (0, .01, .02, \ldots, 1)$.
 
-```{r fig.height=3}
+```{r}
 theta <- seq(0, 1, by = .01)
 prior <- rep(1/100, 101)
-likelihood <- theta^sum(D) * (1 - theta)^(length(D)-sum(D))
+likelihood <- theta^sum(D100) * (1 - theta)^(length(D100)-sum(D100))
 posterior <- likelihood / sum(likelihood * prior) * prior
+```
+
+```{r fig.height=3, echo=FALSE}
 data.frame(theta, prior, posterior) %>% 
   pivot_longer(cols = c(prior, posterior), values_to = "pi") %>%
   ggplot() +
@@ -168,26 +178,27 @@ When prior beliefs are best described in continuous distributions, express them 
 
 $$P(\theta|D,\alpha,\beta) = \frac{f_\theta(D) P(\theta|\alpha,\beta)}{\int_0^1 f_\theta(D)P(\theta|\alpha, \beta)d\theta}$$
 
-As with the discrete case, the numerator equals the likelihood of observing $s$ if $\theta$ is true multiplied by the prior probability, but now the prior is a $\mathrm{Beta}(\alpha,\beta)$ distribution. The denominator is the marginal probability of $s$.
+As with the discrete case, the numerator is the likelihood of observing $D$ if $\theta$ is true multiplied by the prior probability, but now the prior is a Beta($\alpha$, $\beta$) distribution. The denominator, sometimes called the *evidence*, is the marginal probability of $D$.
 
-The likelihood is
+The likelihood of observing $D$ = $a$ successes and $b$ non-successes given a success probability of $p$ = $\theta$ is
 
 $$f_\theta(D) = \theta^a(1-\theta)^b$$
-where $a$ and $b$ are the respective counts of 1s and 0s. The prior distribution is
 
-$$P(\theta|\alpha,\beta) = \frac{\Gamma(\alpha + \beta)}{\Gamma(\alpha)\Gamma(\beta)}\theta^{\alpha-1}(1-\theta)^{\beta-1}$$
+The prior distribution is the probability density function of the beta distribution
+
+$$P(\theta|\alpha,\beta) = \frac{1}{\mathrm{B}(\alpha, \beta)}\theta^{\alpha-1}(1-\theta)^{\beta-1}$$
+
+where $\mathrm{B}(\alpha, \beta) = \frac{\Gamma(\alpha)\Gamma(\beta)}{\Gamma(\alpha + \beta)}$ is the beta function.
 
 The marginal distribution is
 
-$$m(D|\alpha,\beta) = \frac{\Gamma(\alpha+\beta)}{\Gamma(\alpha)\Gamma(\beta)} \frac{\Gamma(\alpha+a)\Gamma(\beta+b)}{\Gamma(\alpha+a+\beta+b)}$$
+$$\int_0^1 f_\theta(D)P(\theta|\alpha, \beta)d\theta = \frac{\mathrm{B}(\alpha + a, \beta + b)}{\mathrm{B}(\alpha, \beta)}$$
 
 Putting this all together, the posterior distribution is
 
-$$P(\theta|s, \alpha, \beta) = \frac{\Gamma(\alpha+\beta+a+b)}{\Gamma(\alpha+a)\Gamma(\beta+b)} \theta^{\alpha-1+a}(1-\theta)^{\beta-1+b}$$
+$$P(\theta|D, \alpha, \beta) = \frac{1}{\mathrm{B}(\alpha + a, \beta + b)} \theta^{\alpha-1+a}(1-\theta)^{\beta-1+b}$$
 
-Notice the posterior equals the prior with shape parameters incremented by the observed counts, $a$ and $b.$
-
-Suppose you claim complete ignorance and take a uniform $\mathrm{Beta}(1, 1)$ prior. The posterior expected value is still pretty close!
+The posterior equals the prior with shape parameters incremented by the observed counts, $a$ and $b.$
 
 ```{r}
 plot_bayes <- function(alpha, beta, a, b) {
@@ -195,19 +206,19 @@ plot_bayes <- function(alpha, beta, a, b) {
   prior_ev <- (alpha / (alpha + beta)) %>% round(2)
   posterior_ev <- ((alpha + a) / (alpha + beta + a + b)) %>% round(2)
   dat <- data.frame(theta = seq(0, 1, by = .01)) %>%
-    mutate(prior = beta(alpha, beta) * theta^(alpha-1) * (1-theta)^(beta-1),
+    mutate(prior = (1 / beta(alpha, beta)) * theta^(alpha-1) * (1-theta)^(beta-1),
            prior_ci = theta > qbeta(.025, alpha, beta) & 
                       theta < qbeta(.975, alpha, beta),
            likelihood = theta^a * (1-theta)^b,
-           posterior = beta(alpha + a, beta + b) * theta^(alpha-1+a) * (1-theta)^(beta-1+b),
+           posterior = (1 / beta(alpha + a, beta + b)) * theta^(alpha-1+a) * (1-theta)^(beta-1+b),
            posterior_ci = theta > qbeta(.025, alpha + a, beta + b) & 
                       theta < qbeta(.975, alpha + a, beta + b))
   
   p_prior <- dat %>%
     ggplot(aes(x = theta, y = prior)) + 
-    geom_line(color = "blue") +
-    geom_area(aes(alpha = prior_ci), fill = "blue") +
-    geom_vline(xintercept = prior_ev, color = "blue") +
+    geom_line(color = "steelblue") +
+    geom_area(aes(alpha = prior_ci), fill = "steelblue") +
+    geom_vline(xintercept = prior_ev, color = "steelblue") +
     scale_alpha_manual(values = c(.1, .5)) +
     theme_minimal() +
     theme(legend.position = "none") +
@@ -215,16 +226,16 @@ plot_bayes <- function(alpha, beta, a, b) {
   
   p_likelihood <- dat %>%
     ggplot(aes(x = theta, y = likelihood)) + 
-    geom_line(color = "blue") +
+    geom_line(color = "steelblue") +
     theme_minimal() +
     theme(legend.position = "none") +
     labs(x = NULL)
   
   p_posterior <- dat %>%
     ggplot(aes(x = theta, y = posterior)) + 
-    geom_line(color = "blue") +
-    geom_area(aes(alpha = posterior_ci), fill = "blue") +
-    geom_vline(xintercept = posterior_ev, color = "blue") +
+    geom_line(color = "steelblue") +
+    geom_area(aes(alpha = posterior_ci), fill = "steelblue") +
+    geom_vline(xintercept = posterior_ev, color = "steelblue") +
     scale_alpha_manual(values = c(.1, .5))  +
     theme_minimal() +
     theme(legend.position = "none") +
@@ -241,34 +252,125 @@ plot_bayes <- function(alpha, beta, a, b) {
 }
 ```
 
+Suppose you claim complete ignorance and take a uniform Beta(1, 1) prior. Recall that you observed a = 7 ones and b = 3 zeros. The posterior expected value is still pretty close!
+
 ```{r fig.height=7}
-plot_bayes(1, 1, 7, 3)
+plot_bayes(alpha = 10, beta = 10, a = 7, b = 3)
 ```
 
-Suppose you had an inkling that $p = 0.7$.
+Suppose you had prior reason to believe *p* = 0.7. You would model that as $\alpha$ = 7, $\beta$ = 3. The prior probability distribution would be $P(\theta|\alpha = 7,\beta = 3) = \frac{1}{\mathrm{B}(7, 3)}\theta^{7-1}(1-\theta)^{3-1}$. Then after observing a = 7 ones and b = 3 zeros, the posterior probability distribution would be $P(\theta|\alpha = 7+7,\beta = 3+3) = \frac{1}{\mathrm{B}(7+7, 3+3)}\theta^{7+7-1}(1-\theta)^{3+3-1}$.
 
 ```{r fig.height=7}
-plot_bayes(7, 3, 7, 3)
+plot_bayes(alpha = 7, beta = 3, a = 7, b = 3)
+```
+
+## Bayes Factors
+
+The Bayes Factor (BF) is a measure of the relative evidence of one model over another. Take another look at Bayes' formula:
+
+$$P(\theta|D) = \frac{P(D|\theta)P(\theta)}{P(D)}.$$
+
+Suppose you want to compare how two models explain and observed data outcome, $D$. Model $M_1:f_1(D|\theta_1)$ says the observed data $D$ was produced by a generative model with pdf $f_1$ parameterized by $\theta_2$. Model $M_2:f_2(D|\theta_2)$ says it was produced by a generative model with pdf $f_2$ parameterized by $\theta_2$. In each model you specify a prior probability distribution for the parameter
+
+If you take the ratio of the posterior probabilities, the posterior odds, the $P(D)$ terms cancel and you have
+
+$$\frac{P(\theta_1|D)}{P(\theta_2|D)} = \frac{P(D|\theta_1)}{P(D|\theta_2)} \cdot \frac{P(\theta_1)}{P(\theta_2)}$$
+
+The posterior odds equals the ratio of the likelihoods multiplied by the prior odds. That likelihood ratio is the Bayes Factor (BF). Rearranging, BF is the odds ratio of the posterior and prior odds.
+
+$$BF = \frac{P(D|\theta_1)}{P(D|\theta_2)} = \mathrm{\frac{Posterior Odds}{Prior Odds}}$$
+
+Return to the example of observing $D$ = 7 ones and 3 zeros. You can compare an hypothesized $\theta$ of .5 to a completely agnostic model where $\theta$ is uniform over [0, 1]. The likelihood of observing $D$ when $\theta$ = .5 is $P(D|\theta_1) = 5^7(1-.5)^3$ = `r scales::number(dbinom(7, 10, .5), accuracy = .001)`. The likelihood of observing $D$ where $\theta$ is uniform on [0, 1] is $P(D|\theta_2) = \int_0^1 \binom{10}{3}q^7(1-q)^3dq$
+
+```{r}
+.5^1 * .5^1
+dbinom(1, 1, .5)
+dbinom(11, 11, .5)
+beta(11, 11)
+```
+
+
+
+with a uniform Beta(1, 1) prior (i.e., complete agnosticism). 
+
+
+The Bayes factor at $\theta$ = .7 quantifies how much the odds of H0: $\theta$ = .7 over H1: $\hat{\theta}$ = .7.
+
+```{r}
+prior <- function(theta, alpha, beta) {
+  (1 / beta(alpha, beta)) * theta^(alpha-1) * (1-theta)^(beta-1)
+}
+posterior <- function(theta, alpha, beta, a, b) {
+  (1 / beta(alpha + a, beta + b)) * theta^(alpha-1+a) * (1-theta)^(beta-1+b)
+}
+
+prior(.5, 115, 85) 
+posterior(.5, 1, 1, 10, 10)
+
+posterior(.5, 1, 1, 10, 10) / prior(.5, 1, 1) 
+
+1 / beta(115, 85)
+
+# Posterior Distribution 
+1/beta(1+10, 1+10) * .5^(1-1+10) * (1-.5)^(1-1+10)
+dbeta(.5, 11, 11)
+
+# Prior Beta Distributions
+1/beta(1, 1) * .5^(1-1) * (1-.5)^(1-1)
+dbeta(.5, 1, 1)
+
+
+dbeta(.5, 115, 85)
+```
+
+
+The Bayes factor measures how much your prior belief is altered by the evidence. It is the ratio of the likelihoods at some hypothesized value before and after observing the data. In this case, our confidence increased by a factor of...
+
+```{r collapse=TRUE}
+theta <- 0.5
+
+alpha <- 1
+beta <- 1
+a <- 10
+b <- 10
+
+(prior_likelihood <- (1 / beta(alpha, beta)) * theta^(alpha-1) * (1-theta)^(beta-1))
+(posterior_likelihood <- (1 / beta(alpha + a, beta + b)) * theta^(alpha-1+a) * (1-theta)^(beta-1+b))
+(bayes_factor <- posterior_likelihood / prior_likelihood)
+
+# 3.7 on alpha = beta = 1
+# 1.91 on alpha = beta = 4
 ```
 
 ## A Gentler Introduction
 
 This section is my notes from DataCamp course [Fundamentals of Bayesian Data Analysis in R](https://learn.datacamp.com/courses/fundamentals-of-bayesian-data-analysis-in-r). It is an intuitive approach to Bayesian inference.
 
-Suppose you purchase 100 ad impressions on a web site and receive 13 clicks. How would you describe the click rate? The frequentist approach would be to construct a 95% CI around click proportion.
+Suppose you purchase 100 ad impressions on a web site and receive 13 clicks. How would you describe the click rate? The Frequentist approach would be to construct a 95% CI around the click proportion.
 
-```{r fig.height=3, warning=FALSE}
+```{r}
+(ad_prop_test <- prop.test(13, 100))
+```
+
+```{r fig.height=3, warning=FALSE, echo=FALSE}
 ad_prop_test <- prop.test(13, 100)
 click_rate_mu <- ad_prop_test$estimate
 click_rate_se <- sqrt(click_rate_mu*(1-click_rate_mu)) / sqrt(100)
-data.frame(pi = seq(0, .30, by = .001)) %>%
-  mutate(likelihood = dnorm(pi, click_rate_mu, click_rate_se),
-         ci = if_else(pi >= ad_prop_test$conf.int[1] & 
-                        pi <= ad_prop_test$conf.int[2], "Y", "N")) %>%
-  ggplot(aes(x = pi, y = likelihood)) +
-  geom_line() +
-  geom_area(aes(y = if_else(ci == "N", likelihood, 0)), 
-            fill = "firebrick", show.legend = FALSE) +
+data.frame(pi = seq(0, .30, by = .01)) %>%
+  mutate(
+    likelihood = dnorm(pi, click_rate_mu, click_rate_se),
+    # observed = map(pi, ~ c(., 1 - .) * 100),
+    # expected = map(13/100, ~c(., 1 - .) * 100),
+    # x2 = map2_dbl(observed, expected, ~sum((.x - .y)^2 / .y)),
+    # likelihood = dchisq(x2, 1),
+    # pcs = pchisq(x2, 1),
+    ci_low = if_else(pi <= ad_prop_test$conf.int[1], likelihood, NA_real_),
+    ci_high = if_else(pi >= ad_prop_test$conf.int[2], likelihood, NA_real_)
+  ) %>%
+  ggplot(aes(x = pi)) +
+  geom_line(aes(y = likelihood)) +
+  geom_area(aes(y = ci_low), fill = "firebrick", alpha = .4) +
+  geom_area(aes(y = ci_high), fill = "firebrick", alpha = .4) +
   geom_vline(xintercept = click_rate_mu, linetype = 2) +
   theme_minimal() +
   scale_x_continuous(breaks = seq(0, .3, .05)) +
@@ -282,15 +384,18 @@ data.frame(pi = seq(0, .30, by = .001)) %>%
 
 How might you model this using Bayesian reasoning? One way is to run 1,000 experiments that sample 100 ad impression events from an `rbinom()` generative model using a uniform prior distribution of 0-30% click probability. The resulting 1,000 row data set of click probabilities and sampled click counts forms a joint probability distribution. This method of Bayesian analysis is called *rejection sampling* because you sample across the whole parameter space, then condition on the observed evidence.
 
-```{r fig.height=3}
+```{r}
 df_sim <- data.frame(click_prob = runif(1000, 0.0, 0.3))
 df_sim$click_n <- rbinom(1000, 100, df_sim$click_prob)
+```
 
+```{r echo=FALSE}
 df_sim %>% 
   mutate(is_13 = factor(click_n == 13, levels = c(TRUE, FALSE))) %>%
   ggplot(aes(x = click_prob, y = click_n, color = is_13)) +
-  geom_point(alpha = 0.3, show.legend = FALSE) +
-  geom_hline(yintercept = 13, color = "red", linetype = 2) +
+  geom_point(alpha = 0.6, show.legend = FALSE) +
+  geom_hline(yintercept = 13, color = "steelblue", linetype = 1, size = .5) +
+  scale_color_manual(values = c("TRUE" = "steelblue", "FALSE" = "gray80")) +
   theme_minimal() +
   labs(title = "Joint probability of observed clicks and click probability",
        subtitle = "with conditioning on 13 observed clicks.",
@@ -298,13 +403,17 @@ df_sim %>%
        x = expression(theta))
 ```
 
-Condition the joint probability distribution on the 13 observed clicks to update your prior. The `quantile()` function will arrange the click probabilities that produced 13 clicks and return the .025 and .975 values - the *credible interval*.
+Condition the joint probability distribution on the 13 observed clicks to update your prior. The `quantile()` function returns the median and the .025 and .975 percentile values - the *credible interval*.
 
-```{r collapse=TRUE, fig.height=3}
+```{r}
 # median and credible interval
-sim_ci <- df_sim %>% filter(click_n == 13) %>% pull(click_prob) %>% 
-  quantile(c(.025, .5, .975))
+(sim_ci <- df_sim %>% filter(click_n == 13) %>% pull(click_prob) %>% 
+  quantile(c(.025, .5, .975)))
+```
 
+Your posterior click rate likelihood is `r scales::percent(sim_ci[2], accuracy = .1)` with 95 credible interval [`r scales::percent(sim_ci[1], accuracy = .1)`, `r scales::percent(sim_ci[3], accuracy = .1)`]. Here is the density plot of the `r df_sim %>% filter(click_n == 13) %>% nrow()` simulations that produced the 13 clicks. The median and 95% credible interval are marked.
+
+```{r echo=FALSE}
 df_sim %>% 
   filter(click_n == 13) %>% 
   ggplot(aes(x = click_prob)) +
@@ -323,20 +432,27 @@ df_sim %>%
 
 That's pretty close to the frequentist result! Instead of running 1,000 experiments with randomly selected click probabilities and randomly selected click counts based on those probabilities, you could define a discrete set of candidate click probabilities, e.g. values between 0 and 0.3 incremented by .01, and calculate the click probability density for the 100 ad impressions. This method of Bayesian analysis is called *grid approximation*.
 
-```{r fig.height=3}
-df_bayes <- expand.grid(click_prob = seq(0, .3, by = .001), 
-                        click_n = 0:100) %>%
-  mutate(prior = dunif(click_prob, min = 0, max = 0.3),
-         likelihood = dbinom(click_n, 100, click_prob),
-         probability = likelihood * prior / sum(likelihood * prior))
+```{r}
+df_bayes <- expand.grid(
+  click_prob = seq(0, .3, by = .001), 
+  click_n = 0:100
+) %>%
+  mutate(
+    prior = dunif(click_prob, min = 0, max = 0.3),
+    likelihood = dbinom(click_n, 100, click_prob),
+    probability = likelihood * prior / sum(likelihood * prior)
+  )
+```
 
+```{r echo=FALSE}
 df_bayes %>% 
   mutate(is_13 = factor(click_n == 13, levels = c(TRUE, FALSE))) %>%
   filter(probability > .0001) %>%
-  ggplot(aes(x = click_prob, y = click_n, color = probability)) +
-  geom_point() +
-  geom_hline(yintercept = 13, color = "red", linetype = 2) +
-  scale_color_gradient(low = "white", high = "steelblue", guide = "colorbar") +
+  ggplot(aes(x = click_prob, y = click_n, color = is_13)) +
+  geom_point(alpha = 0.6, show.legend = FALSE) +
+  geom_hline(yintercept = 13, color = "steelblue", linetype = 1, size = .5) +
+  scale_color_manual(values = c("TRUE" = "steelblue", "FALSE" = "gray80")) +
+  # scale_color_gradient(low = "white", high = "steelblue", guide = "colorbar") +
   theme_minimal() +
   labs(title = "Joint probability of clicks and click probability.",
        subtitle = "with conditioning on 13 observed clicks.",
@@ -344,25 +460,40 @@ df_bayes %>%
        x = expression(theta))
 ```
 
-Condition the joint probability distribution on the 13 observed clicks to adjust your prior.
+Condition the joint probability distribution on the 13 observed clicks to update your prior. 
 
-```{r fig.height=3}
-# median and credible interval
+```{r}
 df_bayes_13 <- df_bayes %>% filter(click_n == 13) %>%
   mutate(posterior = probability / sum(probability))
-sampling_idx <- sample(1:nrow(df_bayes_13), size = 10000, replace = TRUE, prob = df_bayes_13$posterior)
-sampling_vals <- df_bayes_13[sampling_idx, ]
-df_bayes_ci <- quantile(sampling_vals$click_prob, c(.025, .5, .975))
+```
 
+Instead of using the `quantile()` function on these values to measure the median and *credible interval*, resample the posterior probability to create a distribution.
+
+```{r}
+sampling_idx <- sample(
+  1:nrow(df_bayes_13), 
+  size = 10000, 
+  replace = TRUE, 
+  prob = df_bayes_13$posterior
+)
+
+sampling_vals <- df_bayes_13[sampling_idx, ]
+
+(df_bayes_ci <- quantile(sampling_vals$click_prob, c(.025, .5, .975)))
+```
+
+```{r echo=FALSE, warning=FALSE}
 df_bayes %>%
   filter(click_n == 13) %>%
   mutate(likelihood = probability / sum(probability),
+         ci_low = if_else(click_prob < df_bayes_ci[1], likelihood, NA_real_),
+         ci_high = if_else(click_prob > df_bayes_ci[3], likelihood, NA_real_), 
          ci = if_else(click_prob >= df_bayes_ci[1] & 
                         click_prob <= df_bayes_ci[3], "Y", "N")) %>%
   ggplot(aes(x = click_prob, y = likelihood)) +
   geom_line() +
-  geom_area(aes(y = if_else(ci == "N", likelihood, 0)), 
-            fill = "firebrick", show.legend = FALSE) +
+  geom_area(aes(y = ci_low), fill = "firebrick", alpha = .4) +
+  geom_area(aes(y = ci_high), fill = "firebrick", alpha = .4) +
   geom_vline(xintercept = df_bayes_ci[2], linetype = 2) +
   theme_minimal() +
   scale_x_continuous(breaks = seq(0, .3, .05)) +
@@ -374,24 +505,36 @@ df_bayes %>%
        x = expression(theta))
 ```
 
-You can use a Bayesian model to estimate multiple parameters. Suppose you want to predict the water temperature in a lake on Jun 1 based on 5 years of prior water temperatures. You model the water temperature as a normal distribution, $\mathrm{N}(\mu, \sigma)$ with a prior distribution $\mu = \mathrm{N}(18, 5)$ and $\sigma = \mathrm{unif}(0, 10)$ based on past experience.
+You can use a Bayesian model to estimate multiple parameters. Suppose you want to predict the water temperature in a lake on Jun 1 based on 5 years of prior water temperatures. 
 
-Using the grid approximation approach, construct a grid of candidate $\mu = [8.0, 8.5, \ldots, 30]$ and $\sigma = [.1, .2, \ldots, 10]$ combinations - a 4,500 row data frame. 
-
-```{r fig.height=3}
+```{r}
 temp <- c(19, 23, 20, 17, 23)
+```
 
-# grid of proposed parameter values - parameter space
+You model the water temperature as a normal distribution, $\mathrm{N}(\mu, \sigma^2)$ with a prior distribution $\mu = \mathrm{N}(18, 5^2)$ and $\sigma = \mathrm{unif}(0, 10)$ based on past experience.
+
+Using the grid approximation approach, construct a grid of candidate $\mu$ values from 8 to 30 degrees incremented by .5 degrees, and candidate $\sigma$ values from .1 to 10 incremented by .1 - a 4,500 row data frame. 
+
+```{r}
 mdl_grid <- expand_grid(mu = seq(8, 30, by = 0.5),
-                        sigma = seq(.1, 10, by = 0.1)) %>%
-  mutate(mu_prior = map_dbl(mu, ~dnorm(., mean = 18, sd = 5)),
-         sigma_prior = map_dbl(sigma, ~dunif(., 0, 10)),
-         prior = mu_prior * sigma_prior, # combined prior,
-         likelihood = map2_dbl(mu, sigma, ~dnorm(temp, .x, .y) %>% prod),
-         posterior = likelihood * prior,
-         posterior = posterior / sum(posterior))
+                        sigma = seq(.1, 10, by = 0.1))
+```
 
-mdl_grid %>%
+For each combination of $\mu$ and $\sigma$, the *prior* probabilities are the densities from $\mu = \mathrm{N}(18, 5^2)$ and $\sigma = \mathrm{unif}(0, 10)$. The combined prior is their product. The *likelihoods* are the products of the probabilities of observing each `temp` given the candidate $\mu$ and $\sigma$ values.
+
+```{r}
+mdl_grid_2 <- mdl_grid %>%
+  mutate(
+    mu_prior = map_dbl(mu, ~dnorm(., mean = 18, sd = 5)),
+    sigma_prior = map_dbl(sigma, ~dunif(., 0, 10)),
+    prior = mu_prior * sigma_prior, # combined prior,
+    likelihood = map2_dbl(mu, sigma, ~dnorm(temp, .x, .y) %>% prod()),
+    posterior = likelihood * prior / sum(likelihood * prior)
+  )
+```
+
+```{r echo=FALSE}
+mdl_grid_2 %>%
   ggplot(aes(x = mu, y = sigma, fill = posterior)) +
   geom_tile() +
   scale_fill_gradient(low = "white", high = "steelblue", guide = "colorbar") +
@@ -432,4 +575,17 @@ What is the probability the temperature is at least 18?
 pred_temp <- rnorm(1000, mean = sampling_vals$mu, sampling_vals$sigma)
 scales::percent(sum(pred_temp >= 18) / length(pred_temp))
 ```
+
+## Coursera Notes Inference
+
+Bayesian inference updates prior beliefs with accumulated evidence. The posterior odds equals the prior odds multiplied by the likelihood ratio of observing evidence under the competing hypotheses.
+
+$$\frac{P(H1|D)}{P(H0|D)} = \frac{P(D|H1)}{P(D|H0)} \times \frac{P(H1)}{P(H0)}$$
+
+(*This isn't quite what I expected. Wouldn't you replace the likelihood ratio, $\frac{P(D|H1)}{P(D|H0)}$ with the proportional adjustment, $\frac{P(D|H1)}{P(D)}$?)
+
+Express the prior
+
+
+https://www.bayesrulesbook.com/
 

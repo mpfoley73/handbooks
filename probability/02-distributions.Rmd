@@ -444,7 +444,7 @@ References: [Arein Kim](https://towardsdatascience.com/gamma-distribution-intuit
 
 The beta distribution, $\mathrm{Beta}(\alpha, \beta)$, is a family of distributions used to model probabilities. In Bayesian inference, it is frequently the conjugate prior distribution for the Bernoulli, binomial, negative binomial, and geometric distributions. When the beta distribution is used as the conjugate prior, the posterior distribution is also a beta distribution, greatly reducing the complexity of the analysis. After accumulating additional evidence, you simply adjust the $\alpha$ and $\beta$ parameters.
 
-> If $P$ is the probability of success in a random process then $P$ may be expressed as a random variable with a beta distribution $P \sim \mathrm{Beta}(\alpha, \beta)$. The probability of a probability of $P = p$ is
+> If $P$ is the probability of success in a random process then $P$ may be expressed as a random variable with a beta distribution $P \sim \mathrm{Beta}(\alpha, \beta)$. The probability that $P = p$ is
 >
 > $$f(p; \alpha, \beta) = \frac{p^{\alpha-1} (1-p)^{\beta-1}}{\mathrm{B}(\alpha, \beta)}, \hspace{1cm} \mathrm{B}(\alpha, \beta) = \frac{\Gamma(\alpha) \Gamma(\beta)}{\Gamma(\alpha + \beta)}.$$
 >
@@ -464,25 +464,37 @@ data.frame(p = seq(0, 1, .01)) %>%
 
 $\mathrm{Beta}(5, 5)$ is a symmetric probability; $\mathrm{Beta}(10, 10)$ is also symmetric, but with smaller variance. In general, the strength of the prior increases with the sum of $\alpha + \beta$.
 
-```{r fig.height=2.5}
+```{r fig.height=2.5, echo=FALSE}
 data.frame(p = seq(0, 1, .01)) %>%
-  mutate(Beta_5_5 = dbeta(p, 5, 5),
-         Beta_10_10 = dbeta(p, 10, 10)) %>%
-  pivot_longer(cols = -p) %>%
-  ggplot(aes(x = p, y = value, color = name)) +
+  mutate(`Beta(5, 5)` = dbeta(p, 5, 5),
+         `Beta(10, 10)` = dbeta(p, 10, 10)) %>%
+  pivot_longer(cols = -p, values_to = "density") %>%
+  ggplot(aes(x = p, y = density, color = name)) +
   geom_line() +
-  labs(title = "Beta(5, 5) and Beta(10, 10) are symmetric.")
+  labs(title = "Beta(5, 5) and Beta(10, 10) are symmetric.", color = NULL)
 ```
 
-The distribution can shift to the left $\mathrm{Beta}(2, 5)$ or right $\mathrm{Beta}(5, 2)$.
+The distribution shifts to the left if $\beta$ > $\alpha$ and right if $\alpha$ > $\beta$.
 
-```{r fig.height=2.5}
+```{r fig.height=2.5, echo=FALSE}
 data.frame(p = seq(0, 1, .01)) %>%
-  mutate(Beta_2_5 = dbeta(p, 2, 5),
-         Beta_5_2 = dbeta(p, 5, 2)) %>%
-  pivot_longer(cols = -p) %>%
-  ggplot(aes(x = p, y = value, color = name)) +
+  mutate(`Beta(2, 5)` = dbeta(p, 2, 5),
+         `Beta(5, 2)` = dbeta(p, 5, 2)) %>%
+  pivot_longer(cols = -p, values_to = "density") %>%
+  ggplot(aes(x = p, y = density, color = name)) +
   geom_line() +
-  labs(title = "Beta(2, 5) and Beta(5, 2) are skewed.")
+  labs(title = "Beta(2, 5) and Beta(5, 2) are shifted and skewed.", color = NULL)
 ```
 
+If one of the values is < 1, the curve flips toward $\infty$ at the extreme. $\alpha$ or $\beta$ is usually 0.5 to denote near certainty.
+
+```{r fig.height=2.5, echo=FALSE}
+data.frame(p = seq(0, 1, .01)) %>%
+  mutate(`Beta(1, .95)` = dbeta(p, 1, .95),
+         `Beta(1, .75)` = dbeta(p, 1, .75),
+         `Beta(1, .50)` = dbeta(p, 1, .50)) %>%
+  pivot_longer(cols = -p, values_to = "density") %>%
+  ggplot(aes(x = p, y = density, color = name)) +
+  geom_line() +
+  labs(title = "Express certainty with Beta(1, .5) or Beta(.5, 1).", color = NULL)
+```

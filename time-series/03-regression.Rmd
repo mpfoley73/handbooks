@@ -44,7 +44,7 @@ Consider this kitchen-sink model:
 
 $$\mathrm{Beer}_t = \beta_0 + \beta_1 \mathrm{Gas}_t + \beta_2 \mathrm{Electricity}_t + \beta_3 \mathrm{Cement}_t + \epsilon_t$$
 
-Use `fable::TSLM()` to fit a linear regression model to tsibble time series data. `fable::TSLM()` is similar to `lm()` with additional facilities for handling time series. `TSLM() %>% report()` is identical to `lm() %>% summary()`. **fable** is part of the [tidyverts](https://tidyverts.org/) group of time series packages. One nice feature of the **tidyverts** is piping.
+Use `fable::TSLM()` to fit a linear regression model to tsibble time series data. `TSLM()` is similar to `lm()` with additional facilities for handling time series. `TSLM() %>% report()` is identical to `lm() %>% summary()`. **fable** is part of the [tidyverts](https://tidyverts.org/) group of time series packages. One nice feature of the **tidyverts** is piping.
 
 ```{r}
 ausprod_fmla <- formula(Beer ~ Gas + Electricity + Cement)
@@ -58,7 +58,7 @@ ausprod_lm <- ausprod_gas %>%
 report(ausprod_lm)
 ```
 
-The modeled $R^2$ is `r ausprod_lm %>% broom::glance() %>% pull("r_squared") %>% scales::comma(accuracy = .001)`, the adjusted $R^2$ is `r ausprod_lm %>% broom::glance() %>% pull("adj_r_squared") %>% scales::comma(accuracy = .001)`, and the standard error of the regression^[The residual standard error, $\hat{\sigma}$, is actually the standard _deviation_ of the residuals. See discussion on [StackExchange](https://stats.stackexchange.com/questions/144433/why-do-we-say-residual-standard-error?noredirect=1&lq=1). Is the name related to the fact that $\hat{\sigma}$ is part of the formula for the standard error of the coefficient estimates, $SE\left(\hat{\beta}\right) = \sqrt{\hat{\sigma}^2(X'X)^{-1}}$? See [my regression notes](https://bookdown.org/mpfoley1973/data-sci/parameter-estimation.html).], $\hat{\sigma}_\epsilon,$ is `r ausprod_lm %>% broom::glance() %>% pull(sigma2) %>% sqrt() %>% scales::comma(accuracy = .1)`. The fitted values follow the actual data okay. The fitted to actuals plot has a moderate linear relationship.
+The modeled $R^2$ is `r ausprod_lm %>% broom::glance() %>% pull("r_squared") %>% scales::comma(accuracy = .001)`, the adjusted $R^2$ is `r ausprod_lm %>% broom::glance() %>% pull("adj_r_squared") %>% scales::comma(accuracy = .001)`, and the standard error of the regression^[The residual standard error, $\hat{\sigma}$, is actually the standard _deviation_ of the residuals. See discussion on [StackExchange](https://stats.stackexchange.com/questions/144433/why-do-we-say-residual-standard-error?noredirect=1&lq=1). Is the name related to the fact that $\hat{\sigma}$ is part of the formula for the standard error of the coefficient estimates, $SE\left(\hat{\beta}\right) = \sqrt{\hat{\sigma}^2(X'X)^{-1}}$? See [my regression notes](https://bookdown.org/mpfoley1973/data-sci/parameter-estimation.html).], $\hat{\sigma}_\epsilon,$ is `r ausprod_lm %>% broom::glance() %>% pull(sigma2) %>% sqrt() %>% scales::comma(accuracy = .1)`. The fitted values follow the observations okay. The fitted to actuals plot has a moderate linear relationship.
 
 ```{r include=FALSE, eval=FALSE}
 ausprod_aug <- augment(ausprod_lm) 
@@ -106,15 +106,14 @@ Much better. The modeled $R^2$ is `r ausprod_lm %>% broom::glance() %>% pull("r_
 
 ### Special Predictors {-}
 
-We used two special predictor functions in our model, `trend()` and `season()`. Let's look at them more closely.
+We used two special predictor functions in our model, `trend()` and `season()`. Let's look more closely at them.
 
 Adding the `trend()` special function is the same thing as adding a row number predictor. It captures the slope of the response variable associated with its sequence in the regression.
 
 ```{r}
-x <- ausprod_gas %>%
-  model(TSLM(Beer ~ trend()))
-
-augment(x) %>%
+ausprod_gas %>%
+  model(TSLM(Beer ~ trend())) %>%
+  augment() %>%
   mutate(rownum = row_number()) %>%
   ggplot(aes(x = rownum)) +
   geom_point(aes(y = .fitted), color = "steelblue", size = 2) +
@@ -156,7 +155,7 @@ Fourier terms are an alternative to dummy variables. They are especially useful 
 
 ## Model Evaluation
 
-Evaluate the regression model with diagnostic plots. Use tidyverts function `feasts::gg_tsresiduals()`.
+Evaluate the regression model with diagnostic plots. Use `feasts::gg_tsresiduals()` from the tidyverts.
 
 ```{r}
 gg_tsresiduals(ausprod_lm)
@@ -210,7 +209,7 @@ augment(ausprod_lm) %>%
 
 Check for *outliers*, *leverage points*, and *influential points*. An outlier is a point far from the others (in either the x or y direction); a leverage point is far from the others in the x direction, potentially affecting the measured slope; an influential point is a leverage point that *does* affect the slope. For multiple linear regression models there is no straight-forward visual diagnostic like the simple linear regression scatter plot. 
 
-The "hat matrix" $H$ identifies leverage points. Recall that in the linear regression model $\hat{y} = X \hat{\beta}$ the slope coefficients are estimated by $\hat{\beta} = (X'X)^{-1}X'y$. Substituting, $\hat{y} = X(X'X)^{-1}X'y$, or $\hat{y} = Hy$, where 
+The "hat matrix" $H$ identifies leverage points. Recall that in the linear regression model, $\hat{y} = X \hat{\beta}$, the slope coefficients are estimated by $\hat{\beta} = (X'X)^{-1}X'y$. Substituting, $\hat{y} = X(X'X)^{-1}X'y$, or $\hat{y} = Hy$, where 
 
 $$H = X(X'X)^{-1}X'.$$ 
 
@@ -218,48 +217,48 @@ $H$ is called the hat matrix because $H$ puts the hat on $y$. $H$ is an $n \time
 
 $$H_{ii} > 3 \frac{k + 1}{n}.$$
 
-There are multiple methods to identify influential points. One is Cook's distance. Cook's distance for observation $i$ is defined 
+Identify influential points by their Cook's distance. Cook's distance for observation $i$ is defined 
 
 $$D_i = \frac{(y_i - \hat{y}_i)^2}{p \times MSE} \frac{H_{ii}}{(1 - H_{ii})^2}.$$
 
-$D_i$ directly summarizes how much all of the fitted values change when the ith observation is deleted. A data point with $D_i > 1$ is probably influential. $D_i > 0.5$ is at least worth investigating.
+$D_i$ directly summarizes how much all of the fitted values change when the *i*th observation is deleted. A data point with $D_i > 1$ is probably influential. $D_i > 0.5$ is at least worth investigating.
 
 > I cannot find any support for Cook's distance in fable.
 
 
 ## Variable Selection
 
-There are many strategies to choose regression model predictors when there are many to choose from.  There are five common measures of predictive accuracy: $\bar{R}^2$, CV, AIC, AICc, and BIC. They can be calculated with `fabletools::glance()`.
+There are five common measures of predictive accuracy: $\bar{R}^2$, CV, AIC, AICc, and BIC.
 
 ```{r}
-glance(ausprod_lm)
+glance(ausprod_lm) %>% t()
 ```
 
 $\bar{R}^2$ is common and well-established, but tends to select too many predictor variables, making it less suitable for forecasting. BIC has the feature that if there is a true underlying model, the BIC will select it given enough data. However, there is rarely a true underlying model, and even if there was one, that model would not necessarily produce the best forecasts because the parameter estimates may not be accurate.  The AICc, AIC, and CV statistics are usually best because forecasting is their objective. If the value of time series size $T$ is large enough, they all lead to the same model.
 
 $R^2 = 1 - \frac{SSE}{SST}$ and $\bar{R}^2 = 1 - (1 - R^2) \frac{T - 1}{T - k - 1}$. Maximizing $\bar{R}^2$ is equivalent to minimizing the regression standard error $\hat{\sigma}$.
 
-Classical leave-one-out cross-validation (**CV**) measures the predictive ability of a model. In concept, CV is calculated by fitting the model _without_ observation $t$ and measuring the predictive error on observation $t$. Repeat for all $T$ observations. The $CV$ is the mean squared error. The model with the minimum CV is the best model for forecasting. In practice, you use the hat matrix instead of fitting the model repeatedly.
+Classical leave-one-out cross-validation (CV) measures the predictive ability of a model. In concept, CV is calculated by fitting the model _without_ observation $t$ and measuring the predictive error on observation $t$. Repeat for all $T$ observations. CV is the mean squared error, and the model with the minimum CV is the best model for forecasting. In practice, you use the hat matrix instead of fitting the model repeatedly.
 
 $$CV = MSE = \frac{1}{T} \sum_{t=1}^T \left[\frac{e_t}{1 - h_t}\right]^2$$
 
 where $h_t$ are the diagonal values of the hat-matrix $H$ from $\hat{y} = X\beta = X(X'X)^{-1}X'y = Hy$ and $e_t$ is the residual obtained from fitting the model to all $T$ observations.  
 
-Closely related to CV is Akaike's Information Criterion (**AIC**), defined as
+Closely related to CV is Akaike's Information Criterion (AIC), defined as
 
 $$AIC = T \log\left(\frac{SSE}{T}\right) + 2(k + 2)$$
 
 The measure penalizes the model by the number of parameters that need to be estimated. The model with the minimum AIC is the best model for forecasting. For large values of $T$, minimizing the AIC is equivalent to minimizing the CV.
 
-For small values of $T$, the AIC tends to select too many predictors, and so a bias-corrected version of the AIC has been developed, **AICc**. 
+For small values of $T$, the AIC tends to select too many predictors, and so a bias-corrected version of the AIC has been developed, AICc. 
 
 $$AIC_c = AIC + \frac{2(k+2)(k + 3)}{T - k - 3}$$
 
-**BIC** is similar to AIC, but penalizes the number of parameters more heavily than the AIC. For large values of $T$, minimizing BIC is similar to leave-*v*-out cross-validation when $v = T[1 − 1/\log(T) - 1]$.
+BIC is similar to AIC, but penalizes the number of parameters more heavily than the AIC. For large values of $T$, minimizing BIC is similar to leave-*v*-out cross-validation when $v = T[1 − 1/\log(T) - 1]$.
 
 $$BIC = T \log\left(\frac{SSE}{T}\right) + (k + 2)\log(T)$$
 
-There are two common methods for using these measures: **best subsets regression** and **stepwise regression**.  In best subsets regression, you fit all possible models then choose the one with the best metric value (e.g., lowest AIC). If there are too many candidate models (40 predictors would yield $2^{40}$ models!), use stepwise regression.  In *backwards stepwise regression*, include *all* candidate predictors initially, then check whether leaving any one predictor out improves the evaluation metric.  If any leave-one-out model is better, then choose the best leave-one-out model. Repeat until no leave-one-out model is better.
+There are many strategies to choose regression model predictors when there are many to choose from. Two common methods for using these measures are **best subsets regression** and **stepwise regression**.  In best subsets regression, you fit all possible models then choose the one with the best metric value (e.g., lowest AIC). If there are too many candidate models (40 predictors would yield $2^{40}$ models!), use stepwise regression.  In *backwards stepwise regression*, include *all* candidate predictors initially, then check whether leaving any one predictor out improves the evaluation metric.  If any leave-one-out model is better, then choose the best leave-one-out model. Repeat until no leave-one-out model is better.
 
 Let's use the best subsets method to evaluate the possible models for the `ausprod_gas` data set. The 3 candidate predictors yield $2^3 = 8$ possible models. I don't know how to do this in **caret**, so I'll just do it manually.
 
@@ -293,13 +292,13 @@ ausprod_best_subsets %>%
   flextable::set_caption("Best subsets model is Beer ~ Gas + Cement")
 ```
 
-All of the models produce about the same $\bar{R}^2$. The $CV$, $AIC$, $AICc$, and $BIC$ metrics shrink somewhat with less predictors, optimizing on the intercept-only model. It seems that while beer production is correlated with other commodities, it is fully explained by the trend and seasonal variables. 
+All of the models produce about the same $\bar{R}^2$. The CV, AIC, AICc, and BIC metrics shrink somewhat with less predictors, optimizing on the intercept-only model. It seems that while beer production is correlated with other commodities, it is fully explained by the trend and seasonal variables. 
 
 ## Predicting Values
 
 Use the `forecast()` method to predict future periods. If there are no predictors in the model other than `trend()` and `season()`, `forecast()` is all you need. If there _are_ predictors, construct "new data" using `scenarios()` and `new_data()`.
 
-```{r}
+```{r collapse=TRUE}
 # scenarios() creates data sets extending the key-index in `.data` `n` periods.
 future_dat <- scenarios(
   `High Gas` = new_data(ausprod_gas, n = 4) %>% 
@@ -311,6 +310,7 @@ future_dat <- scenarios(
            Electricity = mean(ausprod_gas$Electricity), 
            Cement = mean(ausprod_gas$Cement))
 )
+future_dat
 
 ausprod_fc <- forecast(ausprod_lm, new_data = future_dat)
 

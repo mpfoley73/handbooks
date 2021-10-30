@@ -1,0 +1,72 @@
+# Likelihood Statistics
+
+Likelihood functions are an approach to statistical inference (along with Frequentist and Bayesian). Likelihoods are functions of a data distribution parameter. For example, the binomial likelihood function is 
+
+$$L(\theta) = \frac{n!}{x!(n-x)!}\cdot \theta^x \cdot (1-\theta)^{n-x}$$
+
+You can use the binomial likelihood function to assess the likelihoods of various hypothesized population probabilities, $\theta$. Suppose you sample *n* = 10 coin flips and observe *x* = 8 successful events (heads) for an estimated heads probability of .8. The likelihood of a fair coin, $\theta$ = .05 given the evidence is only `r scales::number(dbinom(8, 10, .5), accuracy = .001)`.
+
+```{r}
+dbinom(8, 10, .5)
+```
+
+You can see from the plot below that the likelihood function is maximized at $\theta$ = 0.8 (likelihood = `r scales::number(dbinom(8, 10, .8), accuracy = .001)`). The actual value of the likelihood is unimportant - it's a density.
+
+```{r echo=FALSE}
+data.frame(
+  theta = seq(0, 1, .01)
+) %>%
+  mutate(likelihood = map_dbl(theta, ~ dbinom(x = 8, size = 10, prob = .))) %>%
+  ggplot(aes(x = theta, y = likelihood)) +
+  geom_line() +
+  theme_light() +
+  labs(title = "Population proportion likelihoods given 8 successes in sample of n = 10",
+       x = expression(theta))
+```
+
+You can combine likelihood estimates by multiplying them. Suppose one experiment finds 4 of 10 heads and a second experiment finds 8 of 10 heads. You'd hope two experiments could be combined to achieve the same result as a single experiment with 12 of 20 heads, and that is indeed the case.
+
+```{r collapse=TRUE}
+x <- dbinom(4, 10, seq(0, 1, .1))
+y <- dbinom(8, 10, seq(0, 1, .1))
+z <- dbinom(12, 20, seq(0, 1, .1))
+
+round((x / max(x)) * (y / max(y)), 3)
+round(z, 3)
+```
+
+Compare competing estimates of $\theta$ with the *likelihood ratio*. The likelihood of $\theta$ = .8 vs $\theta$ = .5 (fair coin) is $\frac{L(\theta = 0.8)}{L(\theta = 0.5)}$ = `r scales::number(dbinom(8, 10, .8) / dbinom(8, 10, .5), accuracy = .01)`.
+
+
+A likelihood ratio of >= 8 is *moderately strong* evidence for an alternative hypothesis. A likelihood ratio of >= 32 is *strong* evidence for the alternative hypothesis. Keep in mind that likelihood ratios are *relative* evidence of H1 vs H0 - both hypotheses may be quite unlikely!
+
+A set of studies usually include both positive and negative test results. You can see this from the likelihood plots below. These are the likelihood curves produced from x = [0..3] successes in a sample of 3. Think of this as the likelihood of [0..3] positive findings in 3 studies based on an $\alpha$ = .05 level of significance and a .80 1 - $\beta$ statistical power of the study. 
+
+The yellow line at .05 is the likelihood of a Type I error of concluding there is an effect when H1 is false. The yellow line at .80 is the likelihood of a Type II error of concluding there is no effect when H1 is true. The likelihood of 0 of 3 experiments reporting a positive effect under $\alpha$ = .05, 1 - $\beta$ = .80 is much higher under H0 ($\theta$ = .05) than under H1 ($\theta$ = .80): `r scales::number(dbinom(x = 0, size = 3, prob = .05), accuracy = .001)` vs `r scales::number(dbinom(x = 0, size = 3, prob = .80), accuracy = .001)` for a likelihood ratio of `r scales::number(dbinom(x = 0, size = 3, prob = .05) / dbinom(x = 0, size = 3, prob = .80), accuracy = 1)`. The likelihood of 1 of 3 experiments reporting a positive effect is still higher under H0 than under H1: `r scales::number(dbinom(x = 1, size = 3, prob = .05), accuracy = .001)` vs `r scales::number(dbinom(x = 1, size = 3, prob = .80), accuracy = .001)` for a likelihood ratio of `r scales::number(dbinom(x = 1, size = 3, prob = .05) / dbinom(x = 1, size = 3, prob = .80), accuracy = .01)`. For 2 of 3 experiments reporting a positive effect the likelihood ratio is `r scales::number(dbinom(x = 2, size = 3, prob = .05) / dbinom(x = 2, size = 3, prob = .80), accuracy = .001)`, and for 3 of 3 experiments reporting a positive effect the likelihood ratio is `r scales::number(dbinom(x = 3, size = 3, prob = .05) / dbinom(x = 3, size = 3, prob = .80), accuracy = .00001)`.
+
+```{r echo=FALSE}
+data.frame(
+  theta = seq(0, 1, .01)
+) %>%
+  mutate(
+    `0 of 3` = map_dbl(theta, ~ dbinom(x = 0, size = 3, prob = .)),
+    `1 of 3` = map_dbl(theta, ~ dbinom(x = 1, size = 3, prob = .)),
+    `2 of 3` = map_dbl(theta, ~ dbinom(x = 2, size = 3, prob = .)),
+    `3 of 3` = map_dbl(theta, ~ dbinom(x = 3, size = 3, prob = .))
+  ) %>%
+  pivot_longer(cols = ends_with(" of 3"), values_to = "likelihood") %>%
+  ggplot(aes(x = theta, y = likelihood, linetype = name)) +
+  geom_line() +
+  geom_vline(xintercept = .05, linetype = 2, size = 1, color = "goldenrod") +
+  geom_vline(xintercept = .80, linetype = 2, size = 1, color = "goldenrod") +
+  geom_vline(xintercept = 1 - 3 / (3 + 1), linetype = 2, size = .75, color = "steelblue") +
+  geom_vline(xintercept = 3 / (3 + 1), linetype = 2, size = .75, color = "steelblue") +
+  theme_light() +
+  theme(panel.grid = element_blank()) +
+  labs(title = "Population proportion likelihoods given x successes in sample of n = 3",
+       subtitle = "Yellow lines at .05 and .80, blue at .25 and .75.",
+       x = expression(theta), linetype = NULL)
+```
+
+The blue lines demarcates the points where mixed results are as likely as unanimous results. A set of studies are likely to produce unanimous results only if the number of studies is fairly high $(\gt 1 - n / (n+1))$ or low $(< n / (n + 1))$. 
+
