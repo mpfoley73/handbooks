@@ -8,37 +8,58 @@ library(feasts) # feature extraction and statistics
 library(fable) # forecasting
 library(patchwork) # arranging plots
 library(flextable)
+library(kableExtra)
 ```
 
-Exponential smoothing methods are weighted averages of past observations, with the weights decaying exponentially as the observations get more remote. Exponential smoothing is a family of methods that vary by their *trend* and *seasonal* components and whether the errors are *additive*, *multiplicative*, or *damped*. 
+Exponential smoothing methods are weighted averages of past observations, with the weights decaying exponentially as the observations get more remote. Exponential smoothing is a family of methods that vary by their *trend* and *seasonal* components.
 
-* There can be no trend (N), or it can be an additive (A) linear trend from the forecast horizon, or it can be a damped additive (A<sub>d</sub>) trend leveling off from the forecast horizon.
+```{r}
+data.frame(
+  `Trend Component` = c("None (N)", "Additive (A)", "Additive Damped (A~d~)"),
+  `None (N)` = c("(N, N)", "(A, N)", "(A~d~, N)"),
+  `Additive (A)` = c("(N, A)", "(A, A)", "(A~d~, A)"),
+  `Multiplicative (M)` = c("(N, M)", "(A, M)", "(A~d~, M)")
+) %>%
+  kbl(
+    col.names = c("Trend Component", "None <br>(N)", "Additive <br>(A)", "Multiplicative <br>(M)"),
+    caption = "Exponential smoothing taxonomy.",
+    escape = FALSE
+  ) %>%
+  add_header_above(c(" " = 1, "Seasonal Component" = 3)) %>%
+  kable_classic(full_width = FALSE, position = "float_right") %>%
+  kable_styling(bootstrap_options = c("condensed"))
+```
 
-* There can be no seasonality (N), or it can be additive (A), or additive damped (A<sub>d</sub>).
+* There can be no trend (N), an additive (A) linear trend from the forecast horizon, or a damped additive (A<sub>d</sub>) trend leveling off from the forecast horizon. *The trend could also be multiplicative (M) or multiplicative damped (M<sub>d</sub>), but [Hyndman](https://otexts.com/fpp3/taxonomy.html) explains that they do not produced good forecasts.*
 
-* The errors may be constant over time (A), or increase with the level (M).
+* There can be no seasonality (N), or it can be additive (A) change, or multiplicative (M) (proportional) change. *Apparently seasonality does not have an additive damped version.*
 
-The trend and seasonality combinations produce 3 x 3 = 9 possible exponential smoothing methods.  The parameters determining the level, trend, and seasonality of the exponential smoothing model are based on minimization of the sum of square errors (SSE) of the simultaneous equations.  
+The trend and seasonal combinations produce 3 x 3 = 9 possible exponential smoothing methods. ETS (Error, Trend, and Seasonality) models double the number of possible *state space models* to 18 by treating the error variances as either additive or multiplicative. ETS models do not just extend the exponential smoothing models; they also estimate their parameters differently, using maximum likelihood estimation. For models with additive errors, this is equivalent to minimizing the sum of squared errors (SSE). The great advantage of using ETS models is that you can optimize the parameter settings by minimizing the Akaike Information Criterion (AIC<sub>c</sub>).
 
-The two treatment of errors double the number of possible *state space models* to 18.  State space models include error, trend, and seasonality components and are therefore called **ETS models**. ETS models do not just extend the exponential smoothing models to account for treatment of the error variance. They also estimate their parameters differently. ETS models use maximum likelihood estimation. For models with additive errors, this is equivalent to minimizing the sum of squared errors (SSE). The great advantage of using ETS models is that you can optimize the parameter settings by minimizing the Akaike Information Criterion (AIC<sub>c</sub>).
+The `fable::ETS()` function fits ETS models. The combinations are specified through the formula:
 
-The sections below describe the basic exponential smoothing models, focusing on the structure and parameters.
+`ETS(y ~ error(c("A", "M")) + trend(c("N", "A", "Ad")) + season(c("N", "A", "M"))`
 
 ## Simple Exponential Smoothing (SES)
 
 Simple exponential smoothing models have no seasonal or trend components. Simple exponential smoothing models are of the form $\hat{y}_{T+h|T} = \alpha y_T + \alpha(1-\alpha)y_{T-1} + \alpha(1-\alpha)^2y_{T-2} \dots$ where $0 < \alpha < 1$ is a weighting parameter. On the one extreme, $\alpha$ = 1 is the same as a naive model. On the other extreme $\alpha \approx$ 0 is the average model. 
 
-Exponential smoothing models are commonly expressed in a component form as a recursive model. The first component, the forecast, is the last value of the estimated level, kind of like a y-intercept.
+Exponential smoothing models are commonly expressed in a component form as a recursive model. 
 
-$$\hat{y}_{t+h|t} = l_t$$
+$$
+\begin{align}
+\hat{y}_{t+h|t} &= l_t \\
+l_t &= \alpha y_t + (1 - \alpha)l_{t-1}
+\end{align}
+$$
 
-The second component, the level, describes how the level changes over time, kind of like a slope.
+The first component, $\hat{y}_{t+h|t}$, is the forecast. It equals the last value of the estimated level, kind of like a y-intercept.The second component, $l_t$ is the level (or smoothed value) of the series at time $t$. It describes how the level changes over time, kind of like a slope. 
 
-$$l_t = \alpha y_t + (1 - \alpha)l_{t-1}$$
+There are two parameters to estimate: $\alpha$ and $l_0$ - the forecast at base of the recursion. Estimate the parameters by minimizing the SSE with a nonlinear optimization method (black box for me).
 
-$l_t$ is the level (or smoothed value) of the series at time $t$. Expressed this way, it is clear there are two parameters to estimate: $\alpha$ and $l_0$ - the forecast at base of the recursion. Simple exponential smoothing estimates the parameters by minimizing the SSE. Unlike regression, which returns exact parameter estimates, the SSE for the exponential equation is minimized with nonlinear optimization.
+#### Example {-}
 
-Let's learn by example. Data set `tsibbledata::global_economy` contains annual country-level economic indicators, including `Exports`. This time series has no trend or seasonality, so it is a good candidate for a simple exponential smoothing model.
+Data set `tsibbledata::global_economy` contains annual country-level economic indicators, including `Exports`. This time series has no trend or seasonality, so it is a good candidate for a simple exponential smoothing model.
 
 ```{r}
 tsibbledata::global_economy %>%
@@ -93,20 +114,23 @@ mdl_ses %>%
 
 ## Holt: SES + Trend
 
-Holt's linear trend model expands simple exponential smoothing with a trend component.
+Holt's method extends SES with a trend component.
 
-$$\hat{y}_{t+h|t} = l_t + hb_t$$
-The level equation is the same except for an adjustment for the trend.
+$$
+\begin{align}
+\hat{y}_{t+h|t} &= l_t + hb_t \\
+l_t &= \alpha y_t + (1 - \alpha)(l_{t-1} + hb_{t-1}) \\
+b_t &= \beta^*(l_t - l_{t-1}) + (1 - \beta^*)b_{t-1}
+\end{align}
+$$
 
-$$l_t = \alpha y_t + (1 - \alpha)(l_{t-1} + hb_{t-1})$$
+The level equation, $l_t$ is the same except for a trend adjustment. A third equation, $b_t$, the trend, describes how the slope changes over time. The parameter $\beta^*$ describes how quickly the slope can change.
 
-A third equation, the trend, describes how the slope changes over time. The parameter $\beta^*$ describes how quickly the slope can change.
+Now there are four parameter to estimate, $\alpha$, $l_0$, $\beta^*$, and $b_0$. Estimation is by minimizing the SSE.
 
-$$b_t = \beta^*(l_t - l_{t-1}) + (1 - \beta^*)b_{t-1}$$
+#### Example {-}
 
-Now there are four parameter to estimate, $\alpha$, $\beta^*$, $l_0$, and $b_0$. Holt estimates the parameters by minimizing the SSE. 
-
-Let's learn by example. Data set `tsibbledata::global_economy` contains annual country-level economic indicators, including `Population` size. This time series has a trend, so it is a good candidate for Holt's linear trend exponential smoothing model.
+Data set `tsibbledata::global_economy` contains annual country-level economic indicators, including `Population` size. This time series has a trend, so it is a good candidate for Holt's linear trend exponential smoothing model.
 
 ```{r}
 tsibbledata::global_economy %>%
@@ -208,7 +232,7 @@ mdl_holt %>%
   labs(title = "Autralia population with Holt's linear trend exponential smoothing model.")
 ```
 
-#### Another Example
+#### Example {-}
 
 Let's compare the performance of the models we know at this point to the base R datasets::WWWusage data set of internet usage.
 
@@ -289,48 +313,93 @@ www_fit %>%
 
 ## Holt-Winters: Holt + Seasonality
 
-The Holt-Winters method adds a seasonality component.  There are two versions of this model, the *additive* and the *multiplicative*.  The additive method assumes the error variance is constant, and the multiplicative version assumes the error variance scales with the level.  Here is the additive version first.  The forecast includes a level, trend, and now also a season.
+The Holt-Winters method extends Holt's method with a seasonality component, $s_t$, for $m$ seasons per period. There are two versions of this model, the *additive* and the *multiplicative*. The additive method assumes the error variance is constant, and the seasonal component sums to approximately zero over the course of the year. The multiplicative version assumes the error variance scales with the level, and the seasonal component sums to approximately $m$ over the course of the year. 
 
-$$\hat{y}_{t+h|t} = l_t + hb_t + s_{t-m+h_m^+}$$
+### Additive Method
 
-The level is adjusted for the trend and now the season too.
+The additive method introduces the seasonality component as an additive element. 
 
-$$l_t = \alpha(y_t - s_{t-m}) + (1 - \alpha)(l_{t-1} + b_{t-1})$$
-The trend is not affected by the seasonal component.
-$$b_t = \beta^*(l_t - l_{t-1}) + (1 - \beta^*)b_{t-1}$$
-The seasonal compenent changes over time in relation to the $\gamma$ parameter.  $m$ is the period of seasonality.  
+$$
+\begin{align}
+\hat{y}_{t+h|t} &= l_t + hb_t + s_{t+h-m(k+1)} \\
+l_t &= \alpha(y_t - s_{t-m}) + (1 - \alpha)(l_{t-1} + b_{t-1}) \\
+b_t &= \beta^*(l_t - l_{t-1}) + (1 - \beta^*)b_{t-1} \\
+s_t &= \gamma(y_t - l_{t-1} - b_{t-1}) + (1 - \gamma)s_{t-m}
+\end{align}
+$$
 
-$$s_t = \gamma(y_t - l_{t-1} - b_{t-1}) + (1 - \gamma)s_{t-m}$$
+$k$ is the modulus of $(h - 1) / m$, so $s_{t+h-m(k+1)}$ is always based on the prior seasonal period. $l_t$ is a weighted average ($alpha$ weighting) between the seasonally adjusted observation and the non-seasonal forecast. The trend component is unchanged. The seasonal component is a weighted average ($\gamma$ weighting) between the current seasonal index and the same season of the prior season period.  
 
-There are now three smoothing parameters: $0 \le \alpha \le 1$, $0 \le \beta^* \le 1$, and $0 \le \gamma \le 1-\alpha$.  In the additive version, the seasonal component averages to zero.  In the multiplicative version, the seasonality averages to one.  Use the multiplicative method if the seasonal variation increases with the level.
-$$\hat{y}_{t+h|t} = (l_t + hb_t) s_{t-m+h_m^+}$$
-$$l_t = \alpha\frac{y_t}{s_{t-m}} + (1 - \alpha)(l_{t-1} + b_{t-1})$$
-$$b_t = \beta^*(l_t - l_{t-1}) + (1-\beta*)b_{t-1}$$
-$$s_t = \gamma\frac{y_t}{(l_{t-1} - b_{t-1})} + (1 - \gamma)s_{t-m}$$
+Now there are five smoothing parameters to estimate: $\alpha$, $l_0$, $\beta^*$, $b_0$, and $\gamma$, plus an initial value for each season of the seasonal period.
 
-Here is the Holt-Winters model applied to the `a10` dataset from the `fpp2` package to produce a 36-month forecast.  `a10` contains monthly anti-diabetic drug sales in Australia, 1991-2008.  The error variance increases with the series level, so the multiplicative method applies.  The model estimates the three smoothing parameters, plus initial states, including 12 initial season states - one for each month in the year.
+### Multiplicative Method
 
-```{r}
-# a10.train <- subset(a10, end = length(a10) - 36)
-# a10.test <- subset(a10, start = length(a10) - 35)
-# a10.hw <- hw(a10, seasonal = "multiplicative", h = 36)
-# summary(a10.hw)
+In the multiplicative version, the seasonality averages to one. Use the multiplicative method if the seasonal variation increases with the level.
+
+$$
+\begin{align}
+\hat{y}_{t+h|t} &= (l_t + hb_t) s_{t+h-m(k+1)} \\
+l_t &= \alpha\frac{y_t}{s_{t-m}} + (1 - \alpha)(l_{t-1} + b_{t-1}) \\
+b_t &= \beta^*(l_t - l_{t-1}) + (1-\beta*)b_{t-1} \\
+s_t &= \gamma\frac{y_t}{(l_{t-1} - b_{t-1})} + (1 - \gamma)s_{t-m} \\
+\end{align}
+$$
+
+#### Example {-}
+
+Data set `tsibble::tourism` contains quarterly domestic tourist visit-nights in Australia. The plot below is extended with forecasts using the Holt-Winters additive method and the Holt-Winters seasonal method. It's not obvious whether the error variance increases with the series level, so either the additive or the multiplicative method may be appropriate. The RMSE from the multiplicative model 
+
+```{r message=FALSE}
+tour <- tsibble::tourism %>%
+  filter(Purpose == "Holiday") %>%
+  summarize(Trips = sum(Trips) / 1000)
+
+tour_fit <- tour %>%
+  model(
+    Additive = ETS(Trips ~ error("A") + trend("A") + season("A")),
+    Multiplicative = ETS(Trips ~ error("M") + trend("A") + season("M"))
+  )
+
+tour_fit %>% report()
 ```
 
 ```{r}
-# autoplot(a10.hw) +
-#   autolayer(a10, series = "Actual") +
-#   autolayer(fitted(a10.hw), series = "Fitted") +
-#   autolayer(a10.hw$mean, series = "Forecast") +
-#   labs(title = "Anti-Diabetic Drug Sales in Australia with 36-month Forecast",
-#        subtitle = "Method: Holt-Winters (multiplicative)",
-#        y = "Scripts",
-#        x = "Month") +
-#   guides(colour=guide_legend(title = "Series"), 
-#          fill=guide_legend(title = "Prediction interval")) +
-#   scale_color_manual(values = c("black", "red", "blue"))
+tour_fit_fc <- tour_fit %>%
+  forecast(h = 10) %>%
+  mutate(sigma = map_dbl(Trips, ~pluck(.x, "sigma")),
+         ci_025 = qnorm(.025, .mean, sigma),
+         ci_975 = qnorm(.975, .mean, sigma))
+
+tour_fit_aug <- tour_fit %>%
+  augment()
+
+tour_fit_aug %>% 
+  # filter(.model == "Additive") %>%
+  ggplot(aes(x = Quarter)) +
+  geom_line(aes(y = Trips)) +
+  geom_line(aes(y = .fitted, color = .model)) +
+  geom_line(data = tour_fit_fc, aes(y = .mean, color = .model)) +
+  geom_ribbon(data = tour_fit_fc, 
+              aes(ymin = ci_025, ymax = ci_975, fill = .model),
+              alpha = 0.2) +
+  scale_color_manual(values = c("Additive" = "goldenrod", "Multiplicative" = "slategray")) +
+  scale_fill_manual(values = c("Additive" = "goldenrod", "Multiplicative" = "slategray")) +
+  theme_light() +
+  labs(title = "Australian Domestic Tourism with Holt-Winters Models.",
+       y = "Trips (millions)", fill = "Model", color = "Model")
 ```
 
+Notice below that the additive seasonal component estimates (`s[0]` to `s[-3]`) sum to approximately zero.
+
+```{r}
+tour_fit %>% select(Additive) %>% report()
+```
+
+And the multiplicative seasonal component estimates (`s[0]` to `s[-3]`) sum to approximately 4 - the number of seasons in the seasonal period.
+
+```{r}
+tour_fit %>% select(Multiplicative) %>% report()
+```
 Check the model assumptions with `checkresiduals`. The residuals plot shows some long-term autocorrelation (a long hump), and the variance increases in the latter years. The histogram shows a normal distribution. The autocorrelation function (ACF) plot shows many spikes outside the insignificance band, and the Ljung-Box test rejects the null hypothesis of no autocorrelation of the residuals (p < 0.0001).
 
 ```{r}
