@@ -23,25 +23,23 @@ If the data generating process produces discrete outcomes (counts), the sample c
 
 ### Independent Samples t-Test {-}
 
-If a population measure *X* is normally distributed with mean $\mu_X$ and variance $\sigma_X^2$, and population measure *Y* is normally distributed with mean $\mu_Y$ and variance $\sigma_Y^2$, then their difference is normally distributed with mean $d = \mu_X - \mu_Y$ and variance $\sigma_{XY}^2 = \sigma_X^2 + \sigma_Y^2$. By the CLT, as the sample sizes grow, non-normally distributed *X* and *Y* will approach normality, and so will their difference.
+If a population measure *X* is normally distributed with mean $\mu_X$ and variance $\sigma_X^2$, and a population measure *Y* is normally distributed with mean $\mu_Y$ and variance $\sigma_Y^2$, then their difference is normally distributed with mean $d = \mu_X - \mu_Y$ and variance $\sigma_{XY}^2 = \sigma_X^2 + \sigma_Y^2$. By the CLT, as the sample sizes grow, a non-normally distributed *X* and *Y* will approach normality, and so will their difference.
 
-The **independent samples t-test** uses the difference in sample means $\hat{d} = \bar{x} - \bar{y}$ as an estimate of $d$ to evaluate an hypothesized difference, $d_0$. The null hypothesis is $d = d_0$.  Alternatively, you can construct a $(1 - \alpha)\%$ confidence interval around $\hat{d}$ to estimate $d$ within a margin of error, $\epsilon$.
+The **independent samples t-test** evaluates an hypothesized difference, $d_0$ (H0: $d = d_0$), from the difference in sample means $\hat{d} = \bar{x} - \bar{y}$, or constructs a (1 - $\alpha$)% confidence interval around $\hat{d}$ to estimate $d$ within a margin of error, $\epsilon$.
 
-In principal, you can test the difference between independent means with either a z test or a t-test.  Both require independent samples and approximately normal sampling distributions. The sampling distributions are normal if the underlying populations are normally distributed, or if the sample sizes are large ($n_X$ and $n_Y$ $\ge$ 30). However, the *z*-test additionally requires known sampling distribution variances $\sigma^2_X$ and $\sigma^2_Y$.  These variances are never known, so always use the *t*-test.
+In principal, you can evaluate $\hat{d}$ with either a *z*-test or a *t*-test. Both require independent samples and approximately normal sampling distributions. Sampling distributions are normal if the underlying populations are normally distributed, or if the sample sizes are large ($n_X$ and $n_Y$ $\ge$ 30). However, the *z*-test additionally requires known sampling distribution variances, $\sigma^2_X$ and $\sigma^2_Y$. These variances are never known, so always use the *t*-test.
 
-The *z*-test assumes $d$ has a normal distribution centered at $\hat{d} = d$ with standard error $se = \sqrt{\frac{\sigma_X^2}{n_X} + \frac{\sigma_Y^2}{n_Y}}.$ Test $H_0: d = d_0$ with test statistic $Z = \frac{\hat{d} - d_0}{se}$ or define a $(1 - \alpha)\%$ confidence interval as $d = \hat{d} \pm z_{(1 - \alpha {/} 2)} se$.  
+The *z*-test assumes $d$ is normally distributed around $\hat{d} = d$ with standard error $SE = \sqrt{\frac{\sigma_X^2}{n_X} + \frac{\sigma_Y^2}{n_Y}}.$ The test statistic for H0: $d = d_0$ is $Z = \frac{\hat{d} - d_0}{SE}$. The (1 - $\alpha$)% CI is $d = \hat{d} \pm z_{(1 - \alpha {/} 2)} SE$.  
 
-The *t*-test assumes $d$ has a *t* distribution centered at $\hat{d} = d$ with standard error $se = \sqrt{\frac{s_X^2}{n_X} + \frac{s_Y^2}{n_Y}}.$ Test $H_0: d = d_0$ with test statistic $T = \frac{\hat{d} - d_0}{se}$, or define a $(1 - \alpha)\%$ confidence interval as $d = \hat{d} \pm t_{(1 - \alpha / 2), (n_X + n_Y - 2)} se$.
+The *t*-test assumes $d$ has a *t*-distribution around $\hat{d} = d$ with standard error $SE = \sqrt{\frac{s_X^2}{n_X} + \frac{s_Y^2}{n_Y}}.$ The test statistic for H0: $d = d_0$ is $T = \frac{\hat{d} - d_0}{SE}$. The (1 - $\alpha$)% CI iss $d = \hat{d} \pm t_{(1 - \alpha / 2), (n_X + n_Y - 2)} SE$.
 
-However, there is an issue with the *t* test degrees of freedom. If the sample sizes are small, and the standard deviations from each population are similar (the ratios of $s_X$ and $s_Y$ are <2), you can pool the variances $s_p^2 = \frac{(n_X - 1) s_X^2 + (n_Y-1) s_Y^2}{n_X + n_Y-2}$ so that $se = s_p \sqrt{\frac{1}{n_X} + \frac{1}{n_Y}}$ and $df = n_X + n_Y -2$. This is call the **pooled variances t-test**. Otherwise, $se = \sqrt{\frac{s_X^2}{n_X} + \frac{s_Y^2}{n_Y}}$, but you must reduce the degrees of freedom using the Welch-Satterthwaite correction, $df = \frac{\left(\frac{s_X^2}{n_X} + \frac{s_Y^2}{n_Y}\right)^2}{\frac{s_X^4}{n_X^2\left(N_X-1\right)} + \frac{s_Y^4}{n_Y^2\left(N_Y-1\right)}}.$ This is called the **separate variance t-test**, or **Welch's t-test**.
+There is a complication with the *t*-test *SE* and degrees of freedom. If the sample sizes are small and the standard deviations from each population are similar (the ratios of $s_X$ and $s_Y$ are <2), pool the variances, $s_p^2 = \frac{(n_X - 1) s_X^2 + (n_Y-1) s_Y^2}{n_X + n_Y-2}$, so that $SE = s_p \sqrt{\frac{1}{n_X} + \frac{1}{n_Y}}$ and the degrees of freedom (df) = $n_X + n_Y - 2$ (the **pooled variances t-test**). Otherwise, $SE = \sqrt{\frac{s_X^2}{n_X} + \frac{s_Y^2}{n_Y}}$, but you reduce df using the Welch-Satterthwaite correction, $df = \frac{\left(\frac{s_X^2}{n_X} + \frac{s_Y^2}{n_Y}\right)^2}{\frac{s_X^4}{n_X^2\left(N_X-1\right)} + \frac{s_Y^4}{n_Y^2\left(N_Y-1\right)}}$ (the **separate variance t-test**, or **Welch's t-test**).
 
 ### Mann-Whitney U Test {-}
 
-The **Mann-Whitney U test** is a nonparametric alternative to the independent-samples t-test for cases in which the samples are non-normally distributed or are ordinal rather than continuous.
+The **Mann-Whitney U test**^[This test is sometimes called the Mann-Whitney test, Wilcoxon Rank Sum test, Wilcoxon-Mann-Whitney test, and the two-sample Wilcoxon test], is a nonparametric alternative to the independent-samples *t*-test. Use the Mann-Whitney U test when the samples are not normally distributed or when the response variables are ordinal rather continuous. In the first case where the normality assumption fails, the test evaluates H0 that the two samples are from the same population distribution. In the second case where the response variables are ordinal, the test evaluates the difference in medians. 
 
-If the two distributions have a *different* shape, the Mann-Whitney U test determines whether there are differences in the **distributions**. It does this by ranking all the values and comparing the mean ranks between the two groups. From this you can decide whether the dependent variable differs (lt, gt, or ne) between the groups. If the two distributions are the *same* shape, the Mann-Whitney U test determine whether there are differences in the **medians**. This is a more specific description of the difference.
-
-The test statistic is the minimum of $U_1$ and $U_2$ where $U_1 = n_1 n_2 \frac{(n_1 (n_1 + 1))}{2} - R_1$ and $U_2 = n_1 n_2 \frac{(n_2 (n_2 + 1))}{2} - R_2$ and $R_1$ and $R_2$ are the respective rank sums. $U = 0$ if there is complete separation between the groups, and $U = n_1 n_2$ if there is complete overlap, so you reject $H_0$ of equal populations for small values of $U$.
+Mann-Whitney ranks the response values then calculates the mean rank for each group. The test statistic is the minimum of $U_1$ and $U_2$ where $U_1 = n_1 n_2 \frac{(n_1 (n_1 + 1))}{2} - R_1$ and $U_2 = n_1 n_2 \frac{(n_2 (n_2 + 1))}{2} - R_2$ and $R_1$ and $R_2$ are the rank sums. $U$ will equal 0 if there is complete separation between the groups, and $n_1 n_2$ if there is complete overlap. Reject H0 if $U$ is sufficiently small.
 
 ### Case Study {-}
 
@@ -59,9 +57,24 @@ ind_num$mw_median <- with(ind_num$mw_dat, by(engagement, gender, median))
 ind_num$mw_sd <- with(ind_num$mw_dat, by(engagement, gender, sd))
 ```
 
-A company shows an advertisement to $n_M$ = `r ind_num$t_n["Male"]` males and $n_F$ = `r ind_num$t_n["Female"]` females, then measures their engagement with a survey. Do the mean engagement scores differ between the groups?
+A company shows an advertisement to $n_M$ = `r ind_num$t_n["Male"]` males and $n_F$ = `r ind_num$t_n["Female"]` females, then measures their engagement with a survey. Do the groups' mean engagement scores differ?
 
-[Laerd](https://statistics.laerd.com/) has two data sets for this example. One meets the conditions for a t-test, and the other fails the normality test, forcing us to use Mann-Whitney.
+[Laerd](https://statistics.laerd.com/) has two data sets for this example. One meets the conditions for a *t*-test, and the other fails the normality test, forcing you to use the Mann-Whitney U test.
+
+```{r fig.height=3.5, fig.width=7.5, echo=FALSE}
+bind_rows(
+  `t-Test` = ind_num$t_dat, 
+  `Mann-Whitney` = ind_num$mw_dat, 
+  .id = "set"
+) %>%
+  ggplot(aes(x = engagement, fill = gender)) +
+  # geom_density(alpha = 0.6) +
+  geom_histogram(bins = 20, alpha = 0.6, position = "dodge") +
+  facet_wrap(~fct_rev(set)) +
+  labs(title = "Mean Engagement Scores Counts", fill = NULL) +
+  theme_light() +
+  scale_fill_manual(values = c("Male" = "slategray", "Female" = "snow3"))
+```
 
 ```{r fig.height=3.5, fig.width=7.5, echo=FALSE}
 bind_rows(
@@ -87,12 +100,14 @@ bind_rows(
        caption = "Error bars show 95% CI.")
 ```
 
-The t-test data set has the following summary statistics.
+The *t*-test data set has the following summary statistics.
 
 ```{r}
 (ind_num$t_gt <- ind_num$t_dat %>% 
-  gtsummary::tbl_summary(by = c(gender), 
-                         statistic = list(all_continuous() ~ "{mean} ({sd})")))
+  gtsummary::tbl_summary(
+    by = c(gender), 
+    statistic = list(all_continuous() ~ "{mean} ({sd})")
+  ))
 ```
 
 > There were `r ind_num$t_n["Male"]` male and `r ind_num$t_n["Female"]` female participants. Data are mean $\pm$ standard deviation, unless otherwise stated. The advertisement was more engaging to male viewers, `r gtsummary::inline_text(ind_num$t_gt, engagement, column = "Male")`, than female viewers, `r gtsummary::inline_text(ind_num$t_gt, engagement, column = "Female")`.
@@ -101,15 +116,17 @@ The Mann-Whitney data set has the following summary statistics.
 
 ```{r}
 (ind_num$mw_gt <- ind_num$mw_dat %>% 
-  gtsummary::tbl_summary(by = c(gender), 
-                         statistic = list(all_continuous() ~ "{mean} ({sd})")))
+  gtsummary::tbl_summary(
+    by = c(gender), 
+    statistic = list(all_continuous() ~ "{mean} ({sd})")
+  ))
 ```
 
 > There were `r ind_num$mw_n["Male"]` male and `r ind_num$mw_n["Female"]` female participants. Data are mean $\pm$ standard deviation, unless otherwise stated. The advertisement was more engaging to male viewers, `r gtsummary::inline_text(ind_num$mw_gt, engagement, column = "Male")`, than female viewers, `r gtsummary::inline_text(ind_num$mw_gt, engagement, column = "Female")`.
 
 #### Conditions {-}
 
-The independent samples *t* test and Mann-Whitney U test apply when 1) the response variable is continuous, 2) the independent variable is binomial, and 3) the observations are independent. The decision between the *t* test and Mann-Whitney stems from two additional conditions related to the data distribution - if both conditions hold, use the *t* test; otherwise use Mann-Whitney.
+The independent samples *t*-test and Mann-Whitney U test apply when 1) the response variable is continuous, 2) the independent variable is binomial, and 3) the observations are independent. The decision between the *t*-test and Mann-Whitney stems from two additional conditions related to the data distribution - if both conditions hold, use the *t*-test; otherwise use Mann-Whitney.
 
 1. **Outliers**. There should be no outliers in either group. Outliers exert a large influence on the mean and standard deviation. Test with a box plot. If there are outliers, you might be able to drop them or transform the data.
 2. **Normality**.  Values should be *nearly* normally distributed. The *t*-test is robust to normality, but this condition is important with small sample sizes. Test with Q-Q plots or the Shapiro-Wilk test for normality. If the data is very non-normal, you might be able to transform the data.
@@ -122,7 +139,7 @@ If the data does not pass the two conditions, use Mann-Whitney, but now you need
 
 3. **Distribution shape**. If the distributions have the same shape, interpret the Mann-Whitney result as a comparison of the *medians*; otherwise interpret the result as a comparison of the *mean ranks*.
 
-##### Outliers {-}
+##### Checking for Outliers {-}
 
 Assess outliers with a box plot. Box plot whiskers extend up to 1.5\*IQR from the upper and lower hinges and outliers (beyond the whiskers) are are plotted individually.
 
@@ -153,7 +170,7 @@ If the outliers are data entry errors or measurement errors, fix or discard them
 * Leave it in if it doesn't affect the conclusion (compared to taking it out).
 * Transform the variable. Don't do this unless the variable is also non-normal. Transformation also has the downside of making interpretation more difficult.
 
-##### Normality {-}
+##### Checking for Normality {-}
 
 Assume the population is normally distributed if *n* $\ge$ 30. Otherwise, assess a Q-Q plot, skewness and kurtosis values, or a histogram. If you still don't feel confident about normality, run a Shapiro-Wilk test.
 
@@ -198,9 +215,9 @@ If the data is not normally distributed, you still have a couple options before 
 * Transform the dependent variable.
 * Carry on regardless - the independent samples *t*-test is fairly robust to deviations from normality.
 
-##### Homogenous Variances {-}
+##### Checking for Homogenous Variances {-}
 
-If the data passed the outliers and normality tests, you will use the t-test, so now you need to test the variances to see which version (*pooled-variances* method if variances are homogeneous; *separate variances* method otherwise). A rule of thumb is that homogeneous variances have a ratio of standard deviations between 0.5 and 2.0:
+If the data passed the outliers and normality tests, you will use the *t*-test, so now you need to test the variances to see which version (*pooled-variances* method if variances are homogeneous; *separate variances* if variances are heterogeneous). A rule of thumb is that homogeneous variances have a ratio of standard deviations between 0.5 and 2.0:
 
 ```{r}
 sd(ind_num$t_dat %>% filter(gender == "Male") %>% pull(engagement)) /
@@ -214,7 +231,7 @@ var.test(ind_num$t_dat %>% filter(gender == "Female") %>% pull(engagement),
          ind_num$t_dat %>% filter(gender == "Male") %>% pull(engagement))
 ```
 
-Bartlett's test is a second option.
+Bartlett's test is another option.
 
 ```{r}
 bartlett.test(ind_num$t_dat$engagement, ind_num$t_dat$gender)
@@ -230,9 +247,9 @@ Levene's test is a third option. Levene's is less sensitive to departures from n
 
 > There was homogeneity of variances for engagement scores for males and females, as assessed by Levene's test for equality of variances (*p* = `r ind_num$levene %>% pluck("Pr(>F)", 1) %>% scales::number(accuracy = 0.001)`).
 
-##### Similar Distributions {-}
+##### Checking for Similar Distributions {-}
 
-If the data passed the outliers and normality tests, you use the Mann-Whitney test, so now you need to test the distributions to determine how you can interpret its results. If the distributions are similarly shaped, you can interpret the Mann-Whitney U test as inferences about differences in medians between the two groups. If the distributions look dissimilar, interpret the test as inferences about the distributions, lower/higher scores and/or mean ranks.
+If the data fail either the outliers or the normality test, use the Mann-Whitney test. The Mann-Whitney data set failed both, so the Mann-Whitney test applies. Now you need to test the distributions to determine how to interpret its results. If the distributions are similarly shaped, interpret the Mann-Whitney U test as inferences about differences in medians between the two groups. If the distributions are dissimilar, interpret the test as inferences about the distributions, lower/higher scores and/or mean ranks.
 
 ```{r fig.height = 3.5, fig.width=7.5, echo=FALSE}
 ind_num$mw_dat %>%
@@ -247,7 +264,11 @@ ind_num$mw_dat %>%
 
 #### Test {-}
 
-Conduct the *t*-test or the Mann-Whitney U test.
+Conduct the *t*-test or the Mann-Whitney U test. 
+
+##### t-Test {-}
+
+The the *t*-test data the variances were equal, so the pooled-variances version applies (`t.test(var.equal = TRUE)`).
 
 ```{r}
 (ind_num$t_test <- t.test(engagement ~ gender, data = ind_num$t_dat, var.equal = TRUE))
@@ -257,11 +278,13 @@ Conduct the *t*-test or the Mann-Whitney U test.
 
 The effect size, Cohen's *d*, is defined as $d = |M_D| / s$, where $|M_D| = \bar{x} - \bar{y}$, and $s$ is the pooled sample standard deviation, $s_p = \sqrt{\frac{(n_X - 1) s_X^2 + (n_Y-1) s_Y^2}{n_X + n_Y-2}}$. $d <.2$ is considered trivial, $.2 \le d < .5$ small, and $.5 \le d < .8$ large.
 
-```{r}
+```{r message=FALSE}
 (d <- effectsize::cohens_d(engagement ~ gender, data = ind_num$t_dat, pooled_sd = TRUE))
 ```
 
-You are about to reject the null hypothesis. Construct a plot as a sanity check on your reasoning.
+> There was a large difference in mean engagement score between males and females, Cohen's d = `r scales::number(d$Cohens_d, accuracy = 0.01)` 95% CI [`r scales::number(d$CI_low, accuracy = 0.01)`, `r scales::number(d$CI_high, accuracy = 0.01)`]
+
+Before rejecting the null hypothesis, construct a plot as a sanity check.
 
 ```{r echo=FALSE, warning=FALSE, fig.height=3.5, fig.width=7.5}
 d_bar <- ind_num$t_mean["Male"] - ind_num$t_mean["Female"]
@@ -282,13 +305,19 @@ data.frame(d = seq(-1.0, 1.0, by = .01)) %>%
   geom_area(aes(x = d, y = urr), fill = "firebrick", alpha = 0.6) +
   geom_vline(aes(xintercept = d_0), size = 1) +
   geom_vline(aes(xintercept = d_bar), color = "goldenrod", size = 1, linetype = 2) +
+  annotate("text", x = d_bar + .06, y = .05, 
+           label = scales::number(d_bar, accuracy = .01), 
+           size = 3, color = "goldenrod3") +
   theme_minimal() +
   theme(legend.position="none",
         axis.text.y = element_blank()) +
   labs(title = bquote("Two-Tailed t-test"),
-       x = "d_xu",
-       y = "Probability")
+       x = "Difference in Group Means (Male - Female)",
+       y = "Probability",
+       caption = "Shaded area is 95% CI.")
 ```
+
+##### Mann-Whitney U test {-}
 
 The Mann-Whitney U test is the same as the Wilcoxon test, but for two variables.
 

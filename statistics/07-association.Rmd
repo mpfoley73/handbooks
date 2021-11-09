@@ -1,13 +1,14 @@
 # Association
 
-
-## Pearson
-## Chi-Square
-## Spearman
-
 ## Pearson's Correlation for Numeric Vars
 
+Pearson’s correlation coefficient divides the covariance by the product of the standard deviations of the two variables.
+
+$$r_{x,y} = \frac{cov(x,y)}{\sigma(x) \sigma(y)}$$
+
 ## Spearman's Ranked Correlation for Numeric Vars
+
+Spearman or Kendall should be used whenever at least one of the variables is a ranked variable.
 
 ## Pearson's Correlation for Categorical Vars
 

@@ -498,3 +498,17 @@ data.frame(p = seq(0, 1, .01)) %>%
   geom_line() +
   labs(title = "Express certainty with Beta(1, .5) or Beta(.5, 1).", color = NULL)
 ```
+
+## Normal
+
+Under the central limit theorem, if we take samples from a random variable and calculate a summary statistic for each sample, that statistic is itself a random variable, and its mean converges to the true population statistic with more and more sampling.
+
+The standard deviation of a sampled statistic is called the *standard error* of that statistic. In the case of the sampled mean, it is 
+
+$$SE = \frac{\sigma}{\sqrt{n}}$$
+
+## Student t
+
+The *t*-distribution is essentially an approximation of the normal distribution acknowledging that we only have a sample estimate of the true population standard deviation in how we calculate the standard error.
+
+

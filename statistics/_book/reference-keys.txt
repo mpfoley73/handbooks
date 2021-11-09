@@ -77,3 +77,8 @@ spearmans-ranked-correlation-for-numeric-vars
 pearsons-correlation-for-categorical-vars
 spearmans-ranked-correlation-for-categorical-vars
 bayes-factors
+tab:unnamed-chunk-37
+tab:unnamed-chunk-38
+tab:unnamed-chunk-39
+t-test
+mann-whitney-u-test-1
