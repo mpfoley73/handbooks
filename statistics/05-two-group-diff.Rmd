@@ -35,11 +35,11 @@ The *t*-test assumes $d$ has a *t*-distribution around $\hat{d} = d$ with standa
 
 There is a complication with the *t*-test *SE* and degrees of freedom. If the sample sizes are small and the standard deviations from each population are similar (the ratios of $s_X$ and $s_Y$ are <2), pool the variances, $s_p^2 = \frac{(n_X - 1) s_X^2 + (n_Y-1) s_Y^2}{n_X + n_Y-2}$, so that $SE = s_p \sqrt{\frac{1}{n_X} + \frac{1}{n_Y}}$ and the degrees of freedom (df) = $n_X + n_Y - 2$ (the **pooled variances t-test**). Otherwise, $SE = \sqrt{\frac{s_X^2}{n_X} + \frac{s_Y^2}{n_Y}}$, but you reduce df using the Welch-Satterthwaite correction, $df = \frac{\left(\frac{s_X^2}{n_X} + \frac{s_Y^2}{n_Y}\right)^2}{\frac{s_X^4}{n_X^2\left(N_X-1\right)} + \frac{s_Y^4}{n_Y^2\left(N_Y-1\right)}}$ (the **separate variance t-test**, or **Welch's t-test**).
 
-### Mann-Whitney U Test {-}
+### Wilcoxon Rank Sum Test {-}
 
-The **Mann-Whitney U test**^[This test is sometimes called the Mann-Whitney test, Wilcoxon Rank Sum test, Wilcoxon-Mann-Whitney test, and the two-sample Wilcoxon test], is a nonparametric alternative to the independent-samples *t*-test. Use the Mann-Whitney U test when the samples are not normally distributed or when the response variables are ordinal rather continuous. In the first case where the normality assumption fails, the test evaluates H0 that the two samples are from the same population distribution. In the second case where the response variables are ordinal, the test evaluates the difference in medians. 
+The **Mann-Whitney U test**^[This test is sometimes called the Mann-Whitney test, Mann-Whitney U test, Wilcoxon-Mann-Whitney test, and the two-sample Wilcoxon test], is a nonparametric alternative to the independent-samples *t*-test. Use the the test when the samples are not normally distributed or when the response variables are ordinal rather continuous. In the first case where the normality assumption fails, the test evaluates H0 that the two samples are from the same population distribution. In the second case where the response variables are ordinal, the test evaluates the difference in medians. 
 
-Mann-Whitney ranks the response values then calculates the mean rank for each group. The test statistic is the minimum of $U_1$ and $U_2$ where $U_1 = n_1 n_2 \frac{(n_1 (n_1 + 1))}{2} - R_1$ and $U_2 = n_1 n_2 \frac{(n_2 (n_2 + 1))}{2} - R_2$ and $R_1$ and $R_2$ are the rank sums. $U$ will equal 0 if there is complete separation between the groups, and $n_1 n_2$ if there is complete overlap. Reject H0 if $U$ is sufficiently small.
+The Wilcoxon Rank Sum test ranks the response values, then sums the ranks for the reference group, $W = \sum R_1$. The test statistic is $U = W - \frac{n_2(n_2 + 1)}{2}$ where $n_2$ is the number of observations in the test group. $U$ will equal 0 if there is complete separation between the groups, and $n_1 n_2$ if there is complete overlap. Reject H0 if $U$ is sufficiently small.
 
 ### Case Study {-}
 
@@ -131,11 +131,11 @@ The independent samples *t*-test and Mann-Whitney U test apply when 1) the respo
 1. **Outliers**. There should be no outliers in either group. Outliers exert a large influence on the mean and standard deviation. Test with a box plot. If there are outliers, you might be able to drop them or transform the data.
 2. **Normality**.  Values should be *nearly* normally distributed. The *t*-test is robust to normality, but this condition is important with small sample sizes. Test with Q-Q plots or the Shapiro-Wilk test for normality. If the data is very non-normal, you might be able to transform the data.
 
-If the data passes the two conditions, use the *t* test, but now you need to check a third condition related to the variances to determine which flavor of the *t* test to use.
+If the data passes the two conditions, use the *t*-test, but now you need to check a third condition related to the variances to determine which flavor of the *t*-test to use.
 
 3. **Homogeneous Variances**. Use *pooled-variances* if the variances are homogeneous; otherwise use the *separate variances* method. Test with Levene's test of equality of variances.
 
-If the data does not pass the two conditions, use Mann-Whitney, but now you need to check a third condition here as well. The condition does not affect how to perform the test, but rather how to interpret the results.
+If the data does not pass the first two conditions, use Mann-Whitney, but now you need to check a third condition here as well. The condition does not affect how to perform the test, but rather how to interpret the results.
 
 3. **Distribution shape**. If the distributions have the same shape, interpret the Mann-Whitney result as a comparison of the *medians*; otherwise interpret the result as a comparison of the *mean ranks*.
 
@@ -317,39 +317,42 @@ data.frame(d = seq(-1.0, 1.0, by = .01)) %>%
        caption = "Shaded area is 95% CI.")
 ```
 
-##### Mann-Whitney U test {-}
+##### Wilcoxon Rank Sum test {-}
 
-The Mann-Whitney U test is the same as the Wilcoxon test, but for two variables.
-
-```{r}
-(ind_num$mw_test <- wilcox.test(engagement ~ gender, 
-                                data = ind_num$mw_dat, 
-                                exact = TRUE, 
-                                correct = FALSE))
-```
-
-Unfortunately, `wilcox.test()` does not report U or the standardized test statistic $z = \frac{U - m_U}{\sigma_U}$ where $m_U = \frac{n_1 n_2}{2}$ and $\sigma_U = \sqrt{\frac{n_1 n_2(n_1 + n_2 + 1)}{12}}$, so you have to calculate that yourself.
+The reference level for the `gender` variable is males, so the Wilcoxon Rank Sum test statistic is the sum of male ranks minus $n_f(n_f + 1) / 2$ where $n_f$ is the number of females. You can calculate the test statistic by hand.
 
 ```{r}
-ind_num$mw_test_manual <- ind_num$mw_dat %>% 
+(ind_num$mw_test_manual <- ind_num$mw_dat %>% 
   mutate(R = rank(engagement)) %>%
   group_by(gender) %>%
-  summarize(.groups = "drop", n = n(), R = sum(R)) %>%
-  pivot_wider(names_from = gender, values_from = c(n, R)) %>%
-  mutate(
-    U_Male = n_Male * n_Female + n_Male*(n_Male + 1)/2 - R_Male,
-    U_Female = n_Male * n_Female + n_Female*(n_Female + 1)/2 - R_Female,
-    U = min(U_Male, U_Female),
-    m_U = n_Male * n_Female / 2,
-    s_U = sqrt((n_Male * n_Female * (n_Male + n_Female + 1)) / 12),
-    z = (U - m_U) / s_U,
-    mean_rank_Male = R_Male / n_Male,
-    mean_rank_Female = R_Female / n_Female,
-  )
-ind_num$mw_test_manual %>% flextable::flextable() %>% flextable::autofit()
+  summarize(.groups = "drop", n = n(), R = sum(R), meanR = sum(R)/n()) %>%
+  pivot_wider(names_from = gender, values_from = c(n, R, meanR)) %>%
+  mutate(U = R_Male - n_Female * (n_Female + 1) / 2))
 ```
 
-> Median engagement score was not statistically significantly different between males and females, *U* = `r ind_num$mw_test_manual %>% pull(U)`, *z* = `r ind_num$mw_test_manual %>% pull(z) %>% scales::number(accuracy = 0.001)`, *p* = `r ind_num$mw_test$p.value %>% scales::number(accuracy = 0.001)`, using an exact sampling distribution for *U*.
+Compare the test statistic to the Wilcoxon rank sum distribution with `pwilcox()`.
+
+```{r}
+pwilcox(
+  q = ind_num$mw_test_manual[1, ]$U - 1, 
+  m = ind_num$mw_test_manual[1, ]$n_Male, 
+  n = ind_num$mw_test_manual[1, ]$n_Male, 
+  lower.tail = FALSE
+) * 2
+```
+
+There is a function for all this.
+
+```{r}
+(ind_num$mw_test <- wilcox.test(
+  engagement ~ gender, 
+  data = ind_num$mw_dat, 
+  exact = TRUE, 
+  correct = FALSE,
+  conf.int = TRUE))
+```
+
+> Median engagement score was not statistically significantly different between males and females, *U* = `r ind_num$mw_test$statistic`, *p* = `r ind_num$mw_test$p.value %>% scales::number(accuracy = .001)`, using an exact sampling distribution for *U*.
 
 Now you are ready to report the results. Here is how you would report the *t* test.
 
@@ -357,11 +360,11 @@ Now you are ready to report the results. Here is how you would report the *t* te
 
 Here is how you would report the Mann-Whitney U-Test.
 
-> A Mann-Whitney U test was run to determine if there were differences in engagement score between males and females. Distributions of the engagement scores for males and females were similar, as assessed by visual inspection. Median engagement score for males (`r ind_num$mw_median["Male"] %>% as.numeric() %>% scales::number(accuracy = .01)`) and females (`r ind_num$mw_median["Female"] %>% as.numeric() %>% scales::number(accuracy = .01)`) was not statistically significantly different, *U* = `r ind_num$mw_test_manual %>% pull(U)`, *z* = `r ind_num$mw_test_manual %>% pull(z) %>% scales::number(accuracy = .001)`, *p* = `r ind_num$mw_test$p.value %>% scales::number(accuracy = .001)`, using an exact sampling distribution for *U*.
+> A Mann-Whitney U test was run to determine if there were differences in engagement score between males and females. Distributions of the engagement scores for males and females were similar, as assessed by visual inspection. Median engagement score for males (`r ind_num$mw_median["Male"] %>% as.numeric() %>% scales::number(accuracy = .01)`) and females (`r ind_num$mw_median["Female"] %>% as.numeric() %>% scales::number(accuracy = .01)`) was not statistically significantly different, *U* = `r ind_num$mw_test$statistic`, *p* = `r ind_num$mw_test$p.value %>% scales::number(accuracy = .001)`, using an exact sampling distribution for *U*.
 
 Had the distributions differed, you would report the Mann-Whitney like this:
 
-> A Mann-Whitney U test was run to determine if there were differences in engagement score between males and females. Distributions of the engagement scores for males and females were not similar, as assessed by visual inspection. Engagement scores for males (mean rank = `r ind_num$mw_test_manual %>% pull(mean_rank_Male)`) and females (mean rank = `r ind_num$mw_test_manual %>% pull(mean_rank_Female)`) were not statistically significantly different, *U* = `r ind_num$mw_test_manual %>% pull(U)`, *z* = `r ind_num$mw_test_manual %>% pull(z) %>% scales::number(accuracy = .001)`, *p* = `r ind_num$mw_test$p.value %>% scales::number(accuracy = .001)`, using an exact sampling distribution for *U*.
+> A Mann-Whitney U test was run to determine if there were differences in engagement score between males and females. Distributions of the engagement scores for males and females were not similar, as assessed by visual inspection. Engagement scores for males (mean rank = `r ind_num$mw_test_manual %>% pull(meanR_Male)`) and females (mean rank = `r ind_num$mw_test_manual %>% pull(meanR_Female)`) were not statistically significantly different, *U* = `r ind_num$mw_test$statistic`, *p* = `r ind_num$mw_test$p.value %>% scales::number(accuracy = .001)`, using an exact sampling distribution for *U*.
 
 ## Paired Samples (Continuous)
 

@@ -82,3 +82,10 @@ tab:unnamed-chunk-38
 tab:unnamed-chunk-39
 t-test
 mann-whitney-u-test-1
+tab:unnamed-chunk-40
+wilcoxon-rank-sum-test-2
+case-study-3
+pearsons-correlation
+spearmans-ranked-correlation
+kendals-tau
+case-study-numeric-vars
