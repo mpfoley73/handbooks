@@ -9,27 +9,23 @@ library(janitor)
 library(flextable)
 ```
 
-Tests of association assess the strength of association between two variables. There are a bunch of variations on this theme.
+Tests of association assess the strength of association between two variables. There are many variations on this theme.
 
-**Pearson's correlation** assesses the strength of a linear relationship between two continuous variables. Its assumptions include bi-variate normality and no outliers. If either fail, **Spearman's Ranked correlation** and **Kendall's Tau-B are non-parameteric alternatives. Spearman measures the strength and direction of association, not necessarily linear.
+**Pearson's correlation** assesses the strength of a linear relationship between two continuous variables. It applies when the relationship is linear with no outliers and the variables are bi-variate normal. There are two less restrictive alternatives, **Spearman's rho** and **Kendall's tau**, that assess the strength and direction of association.
 
-If one of the variables is bivariate categorical, use **point-biserial correlation**, a special case of Pearson's correlation. 
+If one of the variables is bivariate categorical, use **point-biserial correlation**, a special case of Pearson's correlation. **Pearson's partial correlation** controls for one or more variables - linear regression?
 
-Pearson's partial correlation controls for one or more variables - linear regression?
+If both variables are ordinal, use **Goodman and Kruskal's gamma**. **Somers' d** is an alternative if you want to distinguish between a dependent and independent variable (instead of linear regression?). The **Mantel-Haenszel** test of trend is used to determine whether there is a linear trend (i.e., a linear relationship/association) between two ordinal variables that are represented in a contingency table. The **Cochran-Armitage** test of trend is used to determine whether there is a linear trend (i.e., a linear relationship/association) between an ordinal independent variable and a dichotomous dependent variable.
 
-If both variables are ordinal, use Goodman and Kruskal's gamma. Somers' d is an alternative if you want to distinguish between a dependent and independent variable (instead of linear regression?). The Mantel-Haenszel test of trend is used to determine whether there is a linear trend (i.e., a linear relationship/association) between two ordinal variables that are represented in a contingency table. 
-
-The Cochran-Armitage test of trend is used to determine whether there is a linear trend (i.e., a linear relationship/association) between an ordinal independent variable and a dichotomous dependent variable.
-
-The chi-square test for association tests for whether two categorical variables are associated. chi-square test for independence focuses on contingency tables that are greater than 2 x 2, which are often referred to as r x c contingency tables, and tests whether two variables measured at the nominal level are independent (i.e., whether there is an association between the two variables).
+The **chi-square test for association** tests for whether two categorical variables are associated. The **chi-square test for independence** focuses on contingency tables that are greater than 2 x 2, which are often referred to as r x c contingency tables, and tests whether two variables measured at the nominal level are independent (i.e., whether there is an association between the two variables).
 
 **Relative risks** can be calculated from more than one statistical test, but in this guide we will focus on the calculation of relative risk in a 2 x 2 table. **Odds Ratio** can be calculated from more than one statistical test (e.g., a binomial logistic regression, ordinal logistic regression, multinomial logistic regression, etc), but in this guide we will focus on the calculation of an odds ratio from a 2 x 2 contingency table (i.e., a measure of association between two dichotomous variables). 
 
-Goodman and Kruskal's λ (the Greek symbol, λ, is pronounced "lambda") is also referred to as Goodman and Kruskal's lambda. It is a nonparametric measure of the strength of association between two nominal variables where a distinction is made between a dependent and independent variable
+**Goodman and Kruskal's λ** (the Greek symbol, λ, is pronounced "lambda") is also referred to as Goodman and Kruskal's lambda. It is a nonparametric measure of the strength of association between two nominal variables where a distinction is made between a dependent and independent variable
 
-The Fisher's exact test can be used to test more than one type of null hypothesis. In this guide we will use Fisher's exact test to determine whether two dichotomous variables are independent (i.e., test the null hypothesis of independence). 
+The **Fisher's exact test** can be used to test more than one type of null hypothesis. In this guide we will use Fisher's exact test to determine whether two dichotomous variables are independent (i.e., test the null hypothesis of independence). 
 
-Loglinear analysis is used to understand (and model) associations between two or more categorical variables (i.e., nominal or ordinal variables). However, loglinear analysis is usually employed when dealing with three or more categorical variables, as opposed to two variables, where a chi-square test for association is usually conducted instead. 
+**Loglinear analysis** is used to understand (and model) associations between two or more categorical variables (i.e., nominal or ordinal variables). However, loglinear analysis is usually employed when dealing with three or more categorical variables, as opposed to two variables, where a chi-square test for association is usually conducted instead. 
 
 
 
@@ -49,15 +45,17 @@ The statistic can be used as an estimate of the population correlation, $\rho$, 
 
 $$\rho_{X,Y} = \frac{cov(X,Y)}{\sigma(X) \sigma(Y)}$$
 
-Pearson's correlation applies to two continuous (interval or ratio), paired, linearly related variables. If *x* and *y* have a bivariate normal distribution and there are no outliers, the sampling distribution of a function of $r_{x,y}$, $t$, follows a *t*-distribution with *n* − 2 degrees of freedom. 
+A rule of thumb interpretation is that $|r|$ under .1 is "no correlation", .1 - .3 is "small", .3 - .5 "medium/moderate", and .5 - 1.0 "large/strong".
+
+The test statistic below follows a *t*-distribution with *n* − 2 degrees of freedom. 
 
 $$t = r_{x,y} \sqrt{\frac{n - 2}{1 - r^2_{x,y}}}$$
 
-## Spearman's Ranked Correlation
+## Spearman's Rho
 
-Spearman's correlation is measure of the strength and direction of a monotonic relationship between two continuous variables, two ordinal variables, or a continuous and an ordinal variable. Unlike Pearson, the relationship need not be linear (it only needs to be monotonic), and the variables need not be continuous (ordinal variables apply too). Spearman's correlation is a non-parametric alternative to Pearson, used when one or more variables are ordinal, or when one of the Pearson's correlation assumptions (bivariate normality and no outliers) is violated.
+Spearman's ranked correlation (Spearman's rho) is a measure of the strength and direction of a monotonic relationship between two variables that are at least ordinal. Spearman's correlation is a non-parametric alternative to Pearson when one or more of its conditions are violated. Unlike Pearson, the relationship need not be linear (it only needs to be monotonic), and has no outliers or bivariate normality conditions.
 
-Spearman's correlation is Pearson's correlation applied to the *ranks* of variables (for ordinal variables, their value already is a rank).
+Spearman's correlation is Pearson's correlation applied to the *ranks* of variables (for ordinal variables, their value already is a rank). However, there is also a second definition that gives the same result, at least when there are no ties in the ranks:
 
 $$\rho = 1 - \frac{6 \sum_i d^2_i}{n(n^2 - 1)}$$
 
@@ -65,55 +63,172 @@ where $d_i$ is the difference in ranks of observation $i$.
 
 ## Kendal's Tau
 
-Kendal's Tau, just as with Spearman's correlation, is measure of the strength and direction of a monotonic relationship between two continuous variables, two ordinal variables, or a continuous and an ordinal variable. The relationship need not be linear (it only needs to be monotonic), and the variables need not be continuous (ordinal variables apply too). Kendal's Tau is a non-parametric alternative to Pearson, used when one or more variables are ordinal, or when one of the Pearson's correlation assumptions (bivariate normality and no outliers) is violated.
+Kendal's tau is a second alternative to Pearson and is identical to Spearman's rho with regard to assumptions. Kendal's tau only differs from Spearman's rho in *how* it measures the relationship. Whereas Spearman measures the correlation of the ranks, Kendal's tau is a function of concordant (C), discordant (D) and tied (Tx and Ty) pairs of observations. Concordant means both X and Y in one observation of a pair are larger than in the other. Discordant means X is larger in one observation than the other while Y is smaller. Tied mean either both observations have the same X or both have the same Y.
 
-Kendal's Tau differs from Spearman's correlation in *how* it measures the relationship. Whereas Spearman measures the correlation of the ranks, Kendal's Tau is a function of concordant (C), discordant (D) and tied (Tx and Ty) pairs of observations. Concordant means both X and Y in one observation of a pair are larger than in the other. Discordant means X is larger in one observation than the other while Y is smaller. Tied mean either both observations have the same X or both have the same Y.
+$$\mathrm{Kendall's} \space \tau_b = \frac{C - D}{\sqrt{(C + D + T_x) \times (C + D + T_Y)}}$$
 
-$$\mathrm{Kendall's} \space \tau_b = \frac{C - D}{\sqrt{(C + D + T_x \times (C + D + T_Y)}}$$
-
-
-## Case Study: Numeric Vars
+## Case Study: Pearson, Spearman, Kendall
 
 ```{r include=FALSE}
-# assoc_num <- list()
-# 
-# assoc_num$pearson_dat <- datasets::trees
-# assoc_num$t_n <- with(ind_num$t_dat, by(engagement, gender, length))
-# ind_num$t_mean <- with(ind_num$t_dat, by(engagement, gender, mean))
-# ind_num$t_sd <- with(ind_num$t_dat, by(engagement, gender, sd))
-# 
-# assoc_num$spearman_dat <- datasets::trees %>%
-#   mutate(
-#     Girth = Girth * if_else(row_number() %in% c(10, 20, 30), 1.5, 1),
-#     Height = Height * if_else(row_number() %in% c(10, 20, 30), 1.5, 1)
-#   )
-# ind_num$mw_n <- with(ind_num$mw_dat, by(engagement, gender, length))
-# ind_num$mw_median <- with(ind_num$mw_dat, by(engagement, gender, median))
-# ind_num$mw_sd <- with(ind_num$mw_dat, by(engagement, gender, sd))
+cs1 <- list()
+
+# Two continuous (c) vars
+cs1$dat1 <- read.spss("./input/pearson-correlation.sav", to.data.frame = TRUE)
+# Two continuous (c) vars, but violating normality/outlier assumption.
+cs1$dat1b <- read.spss("./input/spearmans-correlation.sav", to.data.frame = TRUE)
+# Two ordinal (o) vars
+cs1$dat2 <- read.spss("./input/kendalls-tau-b.sav", to.data.frame = TRUE)
 ```
 
-The `datasets::trees` data set contains the `Girth` and `Height` of *n* = 31 trees. Is girth linearly associated with height?
+This case study works with two data sets. `dat1` is composed of two continuous variables; `dat2` is composed of two ordinal variables.  
 
-I mutated one version of `trees` so that it contains some outliers, forcing us to use Spearman instead of Pearson.
+A researcher investigates the relationship between `cholesterol` concentration and time spent watching TV, `time_tv`, in *n* = `r cs1$dat1 %>% nrow()` otherwise healthy 45 to 65 year old men (`dat1`). This data set will meet the conditions for Pearson, so we try all three tests on it.
 
-```{r fig.height=3.5, fig.width=7.5, echo=FALSE}
-# bind_rows(
-#   `Pearson` = assoc_num$pearson_dat, 
-#   `Spearman` = assoc_num$spearman_dat, 
-#   .id = "set"
-# ) %>%
-#   ggplot(aes(x = Girth, y = Height)) +
-#   geom_point() +
-#   facet_wrap(~fct_rev(set)) +
-#   labs(title = "Scatterplot of Height and Girth") +
-#   theme_light()
+A researcher investigates the relationship between the level of agreement with the statement "*Taxes are too high*" (`tax_too_high`, four level ordinal) and participant `income` level (three level ordinal) (`dat2`). The ordinal variables rule out Pearson, leaving Spearman and Kendall.
+
+#### Conditions {-}
+
+Pearson's correlation applies when X and Y are continuous (interval or ratio) paired variables with 1) a linear relationship that 2) has no significant outliers, and 3) are bivariate normal. Spearman's rho and Kendall's tau only require that X and Y be at least ordinal with 1) a monotonically increasing or decreasing relationship.
+
+1. **Linearity** and **Monotonicity**. A visual inspection of a scatterplot should find a linear relationship (Pearson) or monotonic relationship (Spearman and Kendall).
+
+Pearson's correlation additionall requires
+
+2. **No Outliers**. Identify outliers with the scatterplot.
+3. **Normality**. Bivariate normality is difficult to assess. Instead, check that each variable is individually normally distributed. Use the Shapiro-Wilk test.
+
+##### Linearity / Monotonicity {-}
+
+Assess linearity and monotonicity with a scatter plot. `dat1` is plotted on the left in Figure \@ref(fig:ccscatter). A second version that fails the linearity test is shown to the right. If the linear relationship assumption fails, consider transforming the variable instead of reverting to Spearman or Kendall.
+
+```{r ccscatter, echo=FALSE, fig.height=3.5, fig.width=7.5, fig.cap="The left scatter plot is `dat1`. It meets Pearson's linearity condition. A second version at right illustrates what a failure might look like."}
+bind_rows(
+  `Linear` = cs1$dat1,
+  `Non-Linear` = cs1$dat1b,
+  .id = "set"
+) %>%
+  ggplot(aes(x = time_tv, y = cholesterol)) +
+  geom_point(color = "snow4", alpha = 0.6) +
+  geom_smooth(method = "lm", formula = y ~ x, se = FALSE, color = "goldenrod", linetype = 2) +
+  theme_minimal() +
+  facet_wrap(vars(set)) +
+  labs(
+    title = "Scatter Plot of Cholesterol Concentration by Time Watching TV", 
+    subtitle = "Two data sets, only one meeting all conditions for parametric test.",
+    x = "Time (mins/d)",
+    y = "Cholesterol (mmol/L)"
+  )
 ```
 
-> There were ` ind_num$t_n["Male"]` male and ` ind_num$t_n["Female"]` female participants. Data are mean $\pm$ standard deviation, unless otherwise stated. The advertisement was more engaging to male viewers, ` gtsummary::inline_text(ind_num$t_gt, engagement, column = "Male")`, than female viewers, ` gtsummary::inline_text(ind_num$t_gt, engagement, column = "Female")`.
+The ordinal variable data set `dat2` is plotted in Figure \@ref(fig:ooscatter).
 
+```{r ooscatter, echo=FALSE, fig.height=3.5, fig.width=5.5, fig.cap="`dat2` meets the mononicity assumption for Spearman's rho and Kendall's tau."}
+cs1$dat2 %>%
+  count(income, tax_too_high) %>%
+  ggplot(aes(x = income, y = tax_too_high, size = n)) +
+  geom_point(color = "snow4", alpha = 0.6) +
+  theme_minimal() +
+  labs(
+    title = "Scatter Plot of Tax Attitude by Income Level", 
+    x = "Income Level",
+    y = "Taxes too high?"
+  )
+```
 
+##### No Outliers {-}
 
-## Pearson's Correlation for Categorical Vars
+Pearson's correlation requires no outliers. Both plots in Figure \@ref(fig:ccscatter) are free of outliers. If there were outliers, check whether they are data entry errors or measurement errors and fix or discard them. If the outliers are genuine, leave them in if they do not affect the conclusion. You can also try tranforming the variable. Failing all that, revert to the Spearman's rho or Kendall's tau.
 
-## Spearman's Ranked Correlation for Categorical Vars
+##### Bivariate Normality {-}
 
+Bivariate normality is difficult to assess. If two variables are bivariate normal, they will each be individually normal as well. That's the best you can hope to check for. Use the Shapiro-Wilk test.
+
+```{r collapse=TRUE}
+shapiro.test(cs1$dat1$time_tv)
+shapiro.test(cs1$dat1$cholesterol)
+```
+
+If a variable is not normally distributed, you can transform it, carry on regardless since the Pearson correlation is fairly robust to deviations from normality, or revert to Spearman and Kendall.
+
+#### Test {-}
+
+Calculate Pearson's correlation, Spearman's rho, or Kendall's tau. `dat` meets the assumptions for Pearson's correlation, but try Spearman's rho and Kendall's tau too, just to see how close they come to Pearson. `dat2` only meets the assumptions for Spearman and Kendall.
+
+##### Pearson's Correlation {-}
+
+`dat1` met the conditions for Pearson's correlation.
+
+```{r}
+(cs1$cc_pearson <- 
+  cor.test(cs1$dat1$cholesterol, cs1$dat1$time_tv, method = "pearson")
+)
+```
+
+*r* = `r cs1$cc_pearson$estimate %>% scales::number(accuracy = .01)` falls in the range of a "moderate" linear relationship. $r^2$ = `r scales::percent(cs1$cc_pearson$estimate^2, accuracy = 1)` is the coefficient of determination. Interpret it as the percent of variability in one variable that is explained by the other. If you are not testing a hypothesis (HO: $\rho \ne 0$), you can report just report *r*. Otherwise, include the *p*-value. Report your results like this:
+
+>A Pearson's product-moment correlation was run to assess the relationship between cholesterol concentration and daily time spent watching TV in males aged 45 to 65 years. One hundred participants were recruited.
+>
+>Preliminary analyses showed the relationship to be linear with both variables normally distributed, as assessed by Shapiro-Wilk's test (p > .05), and there were no outliers.
+>
+>There was a statistically significant, moderate positive correlation between daily time spent watching TV and cholesterol concentration, *r*(`r cs1$cc_pearson$parameter`) = `r cs1$cc_pearson$estimate %>% scales::number(accuracy = .01)`, p < .0005, with time spent watching TV explaining `r scales::percent(cs1$cc_pearson$estimate^2, accuracy = 1)` of the variation in cholesterol concentration.
+
+You wouldn't use Spearman's rho or Kendall's tau here since the more precise Pearson's correlation is available. But just out of curiosity, here are the correlations using those two measures.
+
+```{r collapse=TRUE}
+cor(cs1$dat1$cholesterol, cs1$dat1$time_tv, method = "kendall")
+cor(cs1$dat1$cholesterol, cs1$dat1$time_tv, method = "spearman")
+```
+
+Both Kendall and Spearman produced more conservative estimates of the strength of the relationship - Kendall especially so.
+
+You probably wouldn't use linear regression here either because it describes the linear relationship between a *response* variable and changes to an independent *explanatory* variable. Even though we are reluctant to interpret a regression model in terms of causality, that is what is implied the formulation `y ~ x` and independence assumption in of X. Nevertheless, correlation and regression are related. The slope term in a simple linear regression of the normalized values equals the Pearson correlation.
+
+```{r}
+lm(
+  y ~ x, 
+  data = cs1$dat1 %>% mutate(y = scale(cholesterol), x = scale(time_tv))
+)
+```
+
+##### Spearman's Rho {-}
+
+Data set `dat2` did not meet the conditions for Pearson's correlation, so use Spearman's rho and/or Kendall's tau.
+
+Start with Spearman's rho. Recall that Spearman's rho is just the Pearson correlation applied to the ranks. Recall also that the Pearson's correlation is just the covariance divided by the product of the standard deviations. You can quickly calculate it by hand.
+
+```{r}
+cov(rank(cs1$dat2$income), rank(cs1$dat2$tax_too_high)) /
+  (sd(rank(cs1$dat2$income)) * sd(rank(cs1$dat2$tax_too_high)))
+```
+
+Use the function though. I don't get why `cor.test` requires `x` and `y` be numeric.
+
+```{r}
+(cs1$spearman <- 
+  cor.test(
+    as.numeric(cs1$dat2$tax_too_high), 
+    as.numeric(cs1$dat2$income), 
+    method = "spearman")
+)
+```
+
+Interpret the statistic using the same rule of thumb as for Pearson's correlation. A rho over .5 is a strong correlation.
+
+>A Spearman's rank-order correlation was run to assess the relationship between income level and views towards income taxes in 24 participants. Preliminary analysis showed the relationship to be monotonic, as assessed by visual inspection of a scatterplot. There was a statistically significant, strong positive correlation between income level and views towards income taxes, $r_s$ = `r cs1$spearman$estimate %>% scales::number(accuracy = .001)`, *p* = `r cs1$spearman$p.value %>% scales::number(accuracy = .001)`.
+
+##### Kendall's Tau {-}
+
+Recall that Kendall's tau is a function of concordant (C), discordant (D) and tied (Tx and Ty) pairs of observations. The manual calculation is a little more involved. Here is the function instead.
+
+```{r}
+(cs1$kendall <- 
+  cor.test(
+    as.numeric(cs1$dat2$tax_too_high), 
+    as.numeric(cs1$dat2$income), 
+    method = "kendall")
+)
+```
+
+As with the case study on cholesterol and television, Kendall's tau was more conservative than Spearman's rho. $\tau_b$ = `r cs1$kendall$estimate %>% scales::number(accuracy = .001)` is still in the "strong" range, though just barely.
+
+>A Kendall's tau-b correlation was run to assess the relationship between income level and views towards income taxes amongst 24 participants. Preliminary analysis showed the relationship to be monotonic, as assessed by visual inspection of a scatterplot. There was a statistically significant, strong positive correlation between income level and the view that taxes were too high, $\tau_b$ = `r cs1$kendall$estimate %>% scales::number(accuracy = .001)`, *p* = `r cs1$kendall$p.value %>% scales::number(accuracy = .001)`.
