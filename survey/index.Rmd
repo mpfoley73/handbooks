@@ -1,0 +1,38 @@
+--- 
+title: "Survey Analysis"
+author: "Michael Foley"
+date: "`r Sys.Date()`"
+site: bookdown::bookdown_site
+documentclass: book
+bibliography: [book.bib, packages.bib]
+# url: your book url like https://bookdown.org/yihui/bookdown
+# cover-image: path to the social sharing image like images/cover.jpg
+description: |
+  Survey analysis using R.
+link-citations: yes
+github-repo: rstudio/bookdown-demo
+---
+
+# Preface {-}
+
+This is a compilation of notes from my study of survey design and analysis. I completed Data Camp courses [Survey and Measurement Development in R](https://app.datacamp.com/learn/courses/survey-and-measurement-development-in-r) [@mount] and [Analyzing Survey Data in R](https://app.datacamp.com/learn/courses/analyzing-survey-data-in-r) [@mcconville], then moved on to Thomas Lumley's [Complex Surveys: a guide to analysis using R](http://r-survey.r-forge.r-project.org/svybook/) [@lumley2010].
+
+## The **survey** Package {-}
+
+Only simple random sample survey designs can be analyzed with with normal statistical test functions. Complex survey designs require special treatment. The **survey** package, developed by Thomas Lumley, handles both simple and complex survey designs. To analyze data using the **survey** package, create a **survey** object that wraps the survey data with its metadata.
+
+The **survey** package contains a few data sets that will serve as examples in these notes.
+
+```{r warning=FALSE, message=FALSE}
+library(tidyverse)
+library(survey)
+
+data(api, package = "survey")
+```
+
+```{r include=FALSE}
+# automatically create a bib database for R packages
+knitr::write_bib(c(
+  .packages(), 'bookdown', 'knitr', 'rmarkdown'
+), 'packages.bib')
+```

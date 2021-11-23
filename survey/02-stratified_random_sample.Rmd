@@ -1,0 +1,27 @@
+# Stratified Sampling {#stratified}
+
+```{r include=FALSE}
+library(tidyverse)
+library(survey)
+data(api, package = "survey")
+```
+
+Stratified sampling is more common than simple random sampling because it is just as precise and costs less. Stratified sampling randomly samples from pre-defined groups (strata). 
+
+The Horvitz-Thompson estimator of the total is sum of the individual strati and its variance is the sum of the strati variances. 
+
+#### Example {-}
+
+Data set `apistrat` is a staratified sample of the Academic Performance Index (API) of *n* = 200 of the *N* = 6,194 schools in California. The strati are $n_E$ = 100 elementary schools $n_M$ = 50 middle schools, and $n_H$ = 50 high schools. The `fpc` columnn in this data set is the population size *for each stratum*.
+
+```{r}
+strata_design <- svydesign(id = ~1, strata = ~stype, fpc = ~fpc, data = apistrat)
+svytotal(~stype, strata_design)
+```
+Since high schools tend to be larger, fixing the number of of sampled high schools should reduce the variance in mean and total enrollment relative to simple random sampling (compare to `apisrd` in Chapter \@ref(simple)).
+
+```{r collapse=TRUE}
+svytotal(~enroll, strata_design)
+svymean(~enroll, strata_design)
+```
+

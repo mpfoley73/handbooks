@@ -1,0 +1,49 @@
+# Simple Random Samples {#simple}
+
+```{r include=FALSE}
+library(tidyverse)
+library(survey)
+data(api, package = "survey")
+```
+
+A simple random sample of size *n* from a population of size *N* has sampling weights are equal to *N/n*. The Horvitz-Thompson estimator of the population sum for variable *X* is
+
+$$\hat{T}_X = \sum_{i=1}^n \check{X}_i = \frac{N}{n} \sum_{i=1}^n X_i$$
+
+The variance of the estimator is 
+
+$$\mathrm{var} [\hat{T}_X] = \frac{N - n}{N} \times N^2 \times \frac{\mathrm{var}[X]}{n}$$
+
+The first term in the variance is the *finite population correction*. The third term is the vriance of the mean. The second term, $N^2$, scales the mean to the total.
+
+The estimator of the population mean is just the sum divided by *N*.
+
+$$\hat{\mu}_X = \hat{T}_X / N$$
+and the variance of the mean is the unscaled population sum variance. 
+
+$$\hat{\mathrm{var}}[\hat{\mu}_X] = \mathrm{var} [\hat{T}_X] / N^2$$
+
+#### Example {-}
+
+Data set `apisrs` is a simple random sample of the Academic Performance Index (API) of *n* = 200 of the *N* = 6,194 schools in California. 
+
+All **survey** objects require that you specify the columns identifying the clusters from largest to smallest level. In simple random designs like this, there are no clusters, and you specify just the constant `id = ~1`. The `fpc` parameter specifies the column with the finite population correction. In a simple random sample, it equals *N*. The `fpc` functions to both adjust the variance estimate, and to set the observation weights.
+
+```{r}
+srs_design <- svydesign(id = ~1,  fpc = ~fpc, data = apisrs)
+```
+
+$\hat{T}_X$, $\mathrm{var} [\hat{T}_X]$, $\hat{\mu}_X$, and $\hat{\mathrm{var}}[\hat{\mu}_X]$ are
+
+```{r collapse=TRUE}
+svytotal(~enroll, srs_design)
+svymean(~enroll, srs_design)
+```
+
+When the sample is much smaller than the population, the finite population correction makes little difference. You can omit the `fpc` parameter, but then you must supply the samplying weight instead. In this case, the sampling weight is 200/6194, and is in variable `pw`. The total and mean are unchanged, but the variance increases a little without the correction.
+
+```{r collapse=TRUE}
+srs_design2 <- svydesign(id = ~1, weights = ~pw, data = apisrs)
+svytotal(~enroll, srs_design2)
+svymean(~enroll, srs_design2)
+```
