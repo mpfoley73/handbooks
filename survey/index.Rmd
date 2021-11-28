@@ -15,20 +15,36 @@ github-repo: rstudio/bookdown-demo
 
 # Preface {-}
 
-This is a compilation of notes from my study of survey design and analysis. I completed Data Camp courses [Survey and Measurement Development in R](https://app.datacamp.com/learn/courses/survey-and-measurement-development-in-r) [@mount] and [Analyzing Survey Data in R](https://app.datacamp.com/learn/courses/analyzing-survey-data-in-r) [@mcconville], then moved on to Thomas Lumley's [Complex Surveys: a guide to analysis using R](http://r-survey.r-forge.r-project.org/svybook/) [@lumley2010].
+This is a compilation of notes from my study of survey design and analysis. I completed Data Camp courses [Survey and Measurement Development in R](https://app.datacamp.com/learn/courses/survey-and-measurement-development-in-r) [@mount] and [Analyzing Survey Data in R](https://app.datacamp.com/learn/courses/analyzing-survey-data-in-r) [@mcconville], then moved on to Thomas Lumley's [Complex Surveys: a guide to analysis using R](http://r-survey.r-forge.r-project.org/svybook/) [@lumley2010]. The following resources are also helpful.
+
+* UCLA IDRE seminar [@idre]
 
 ## The **survey** Package {-}
 
-Only simple random sample survey designs can be analyzed with with normal statistical test functions. Complex survey designs require special treatment. The **survey** package, developed by Thomas Lumley, handles both simple and complex survey designs. To analyze data using the **survey** package, create a **survey** object that wraps the survey data with its metadata.
-
-The **survey** package contains a few data sets that will serve as examples in these notes.
+Only simple random sample survey designs can be analyzed with with normal statistical test functions - complex survey designs require special treatment. The **survey** package, developed by Thomas Lumley, handles both simple and complex survey designs. The **survey** package contains a few data sets that will serve as examples in these notes. There is also a helper package named **jtools** ([RDocumentation](https://www.rdocumentation.org/packages/jtools/versions/2.1.4)), developed by Jacob A. Long, that will come in handy.
 
 ```{r warning=FALSE, message=FALSE}
 library(tidyverse)
 library(survey)
+library(jtools)
 
 data(api, package = "survey")
 ```
+
+## Survey Design {-}
+
+Survey analyses scale the *n* data observations up to the *N* population values. Each observation has an associated *sampling weight*. A sampling weight is a *probability weight* with on or more adjustments for non-response, non-coverage, calibration, and trimming. 
+
+For a **simple random sample**, the sampling weights equal the probability weights, *N/n*, meaning each observation represents *N/n* people. 
+
+In **stratified sampling**, the population is initially segmented by interesting factors (e.g. gender, race/ethnicity, or SES), then sampled with simple random sampling. This ensures a specified number of observations for each stratum. The sample is less variable because the stratification process eliminates one source of variability. The sampling weights equal the probability weights again, but now there are separate weights for each stratum, $N_A / n_A$, $N_B / n_B$, etc.
+
+**Cluster sampling** segments a population (usually geographically) into clusters, then randomly selects clusters to survey. Within a cluster, all members may be sampled (single stage design), or a random sample is taken (multi-stage design). Cluster sampling is almost universal in large-scale surveys involving in-person interviews because it dramatically reduces cost. Unfortunately, it also increases variance because observations within a cluster tend to me similar.
+
+You will often encounter the term *primary sampling unit* (PSU). It is the factor used for the initial sampling. For cluster sampling, it is the initial cluster; for stratified and simple random samples, it is the elementary unit.
+
+A second term you will encounter is *finite population correction*. It is a probability term that becomes relevant when the sampling fraction of the population becomes large. It equals $\sqrt{(N-n)/(N-1)}$.
+
 
 ```{r include=FALSE}
 # automatically create a bib database for R packages

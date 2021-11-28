@@ -1,0 +1,451 @@
+# Survey and Measurement Development
+
+```{r warning=FALSE, message=FALSE, include=FALSE}
+library(tidyverse)
+```
+
+A full survey project usually consists of six phases. 
+
+1. **Item Generation**. Start by generating a list of candidate survey items. With help from SMEs, you evaluate the equivalence (interrater reliability) and content validity of the candidate survey items and pare down the list into the final survey.
+
+2. **Survey Administration**. Administer the survey to respondents and perform an exploratory data analysis. Summarize the Likert items with plots and look for correlations among the variables.
+
+3. **Item Reduction**. Explore the dimensions of the latent variable in the survey data with parallel analysis and exploratory factor analysis. Assess the internal consistency of the items with Cronbach's alpha and split-half tests, and remove items that do not add value and/or amend your theory of the number of dimensions.
+
+4. **Confirmatory Factor Analysis**. Perform a formal hypothesis test of the theory that emerged from the exploratory factor analysis.
+
+5. **Convergent/Discriminant Validity**. Test for convergent and discriminant construct validity.
+
+6. **Replication**. Establish test-retest reliability and criterion validity.
+
+## Background: Quality
+
+[Quality](https://www.scribbr.com/methodology/reliability-vs-validity/) surveys should be both *reliable* (consistent) and *valid* (accurate).
+
+### Reliability
+
+A survey's reliability is the extent to which the results can be reproduced when repeated under similar conditions. You assess reliability three ways:
+
+* **Equivalence (aka Interrater)**. Interrater reliability generally means it does not matter *who* does the "rating" or measuring because the assessment criteria is unambiguous. For surveys, this means each item should be unambiguous, so if a group of subject matter experts (SMEs) took the survey they would respond identically.
+* **Internal consistency**. Internal consistency means different parts of a test measuring the same thing will yield the same results. For surveys, this means responses to items measuring the same thing ought to be highly correlated.
+* **Stability (aka Test-retest)**. Test-retest reliability means you can expect the same results from repeated measurements. 
+
+You use the Cohen's Kappa test of inter-rater reliability to test equivalence in the *Item Generation* phase (1). You use the Cronbach alpha test and split-half tests to assess internal consistency in the *Item Reduction* phase (3). You use the test-retest construct to assess stability in the *Replication* phase (6).
+
+### Validity
+
+A survey's Validity is how accurately it measures the latent variable it was intended to measure. A high validity survey produces results that correspond to real characteristics of the social world. Reliability is a necessary, but not sufficient, condition for validity. You assess validity three ways.
+
+* **Content**. Content validity means the measurement covers *all* aspects of the latent variable.
+* **Construct**. Construct validity means the measure is properly grounded on a theory of the latent variable.
+* **Criterion**. Criterion validity means the result of a measure corresponds to other valid measures of the same latent variable.
+
+You use Lawshe's CVR to assess content validity in the *Item Generation* phase (1). You use convergent analysis and discriminant analysis to assess construct validity in the *Convergent/Discriminant Validity* phase (5). You use concurrent analysis and predictive analysis to assess criterion validity in the *Replication* phase (6).
+
+
+## 1. Item Generation
+
+After you generate a list of candidate survey items, enlist SMEs to assess their *inter-rater reliability* with Cohen's Kappa and *content validity* with Lawshe's CVR. 
+
+### Cohen's Kappa
+
+An item has interrater reliability if it produces consistent results across raters. One way to test this is by having SMEs take the survey. Their answers should be close to each other. Conduct an inter-rater reliability test by measuring the statistical significance of SME response agreement using the Kohen's kappa test statistic. 
+
+Suppose your survey measures brand loyalty and two SMEs answer 13 survey items like this (showing first 6):
+
+```{r include=FALSE}
+sme <- data.frame(
+  RATER_A = c(1, 2, 3, 2, 1, 1, 1, 2, 3, 3, 2, 1, 1),
+  RATER_B = c(1, 2, 2, 3, 3, 1, 1, 1, 2, 3, 3, 3, 1)
+)
+```
+
+```{r}
+head(sme)
+```
+
+You could measure SME agreement with a simple correlation matrix (with `cor(sme)`) or by measuring the percentage of items they rate identically (with `irr::agree(sme)`), but these measures to not tests for statistical validity.
+
+```{r collapse=TRUE}
+cor(sme)
+irr::agree(sme)
+```
+
+Instead, calculate the Kohen's kappa test statistic to assess statistical validity. In general, Cohen's kappa compares the observed agreement (accuracy) to the probability of chance agreement. $\kappa$ < 0.4 indicates poor agreement, $\kappa$ >= 0.4 is moderate, $\kappa$ >= 0.6 is substantial, and $\kappa$ >= 0.8 is very strong agreement. 
+
+```{r}
+psych::cohen.kappa(sme)
+```
+
+Use the weighted kappa for ordinal measures like Likert items (*see* [Wikipedia](https://en.wikipedia.org/wiki/Cohen%27s_kappa)). In this example, $\kappa$ is only 0.32 (poor agreement). 
+
+### Lawshe's CVR
+
+And item has content validity if SMEs agree on its relevance to the latent variable. Test content validity with Lawshe's content validity ratio (CVR),
+
+$$CVR = \frac{E - N/2}{N/2}$$
+where $N$ is the number of SMEs and $E$ is the number who rate the item as *essential*. CVR can range from -1 to 1. E.g., suppose three SMEs (A, B, and C) assess the relevance of 5 survey items as "Not Necessary", "Useful", or "Essential":
+
+```{r echo=FALSE}
+sme2 <- data.frame(
+  item = c(1:5),
+  A = c("Essential", "Useful", "Not necesary", "Essential", "Essential"),
+  B = c("Useful", "Not necesary", "Not necesary", "Useful", "Essential"),
+  C = c("Not necesary", "Useful", "Essential", "Essential", "Essential")
+)
+print(sme2)
+```
+
+Use the `psychometric::CVratio()` function to calculate CVR. The threshold *CVR* to keep or drop an item depends on the number of raters. CVR should be >= 0.99 for 5 experts; >= 0.49 for 15, and >= 0.29 for 40.
+
+```{r}
+sme2 %>% 
+  pivot_longer(-item, names_to = "expert", values_to = "rating") %>%
+  group_by(item) %>% 
+  summarize(.groups = "drop",
+            n_sme = length(unique(expert)),
+            n_ess = sum(rating == "Essential"),
+            CVR = psychometric::CVratio(NTOTAL = n_sme, NESSENTIAL = n_ess))
+```
+
+In this example, items vary widely in content validity from unanimous consensus for to unanimous consensus against. 
+
+## 2. Survey Administration
+
+The second phase of a survey analysis is to collect the responses and perform an exploratory data analysis to familiarize yourself with the data.
+
+### Frequencies
+
+`brand_rep` is a brand reputation survey of *n* = 599 respondents answering nine 5-point Likert-scale items. The responses come in as numeric, and you will want to leave them that way for most analyses. 
+
+```{r cache=TRUE, message=FALSE}
+brand_rep <- read_csv(url("https://assets.datacamp.com/production/repositories/4494/datasets/59b5f2d717ddd647415d8c88aa40af6f89ed24df/brandrep-cleansurvey-extraitem.csv"))
+
+psych::response.frequencies(brand_rep)
+``` 
+
+Summarize Likert response with the `likert::likert()` function. This is the one place where you will need the items to be treated as factors.
+
+```{r}
+brand_rep %>%
+  data.frame() %>% # read_csv() returns a tibble
+  mutate(across(everything(), as.factor)) %>%  # likert() uses factors
+  likert::likert() %>%
+  plot() + 
+  labs(title = "Brand Reputation Survey") +
+  theme(legend.position = "top")
+```
+
+Missing values may mean respondents did not understand the question or did not want to reveal their answer. If <5% of survey responses have no missing values, you can just drop those responses. If missing values are a problem, try the `Hmisc::naclus()` to see which items tend to be missing in the same record. This survey is clean.
+
+```{r collapse=TRUE}
+nrow(brand_rep) - nrow(na.omit(brand_rep)) # num cases
+colSums(is.na(brand_rep)) # num cases by col
+```
+
+### Correlations
+
+You will want to identify items that correlate highly with each other, but not highly outside their group.  These patterns are the basis of mapping factors to the latent variables. Factors are the concrete survey items; latent variables are the abstract concepts they are intended to supply, like *brand loyalty* or *customer satisfaction*. The correlation plot below appears to have 3 groups, plus a stand-alone variable (`one_of_a_kind`).
+
+```{r}
+#psych::corr.test(brand_rep)
+corrplot::corrplot(cor(brand_rep), method = "circle")
+```
+
+
+## 3. Item Reduction
+
+The third phase, explores the mapping of the factors (aka "manifest variables") to the latent variable's "dimensions" and refines the survey to exclude factors that do not map to a dimension. A latent variable may have several dimensions. E.g., "brand loyalty" may consist of "brand identification", "perceived value", and "brand trust". Exploratory factor analysis (EFA), identifies the dimensions in the data, and whether any items do *not* reveal information about the latent variable. EFA establishes the *internal reliability*, whether similar items produce similar scores.
+
+Start with a parallel analysis and scree plot. This will suggest the number of factors in the data. Use this number as the input to an exploratory factor analysis.
+
+### Parallel Analysis
+
+A [scree plot](https://www.sciencedirect.com/topics/mathematics/scree-plot) is a line plot of the eigenvalues. An eigenvalue is the proportion of variance explained by each factor. Only factors with eigenvalues greater than those from uncorrelated data are useful. You want to find a sharp reduction in the size of the eigenvalues (like a cliff), with the rest of the smaller eigenvalues constituting rubble (scree!). After the eigenvalues drop dramatically in size, additional factors add relatively little to the information already extracted.
+
+Parallel analysis helps to make the interpretation of scree plots more objective. The eigenvalues are plotted along with eigenvalues of simulated variables with population correlations of 0. The number of eigenvalues above the point where the two lines intersect is the suggested number of factors. The rationale for parallel analysis is that useful factors account for more variance than could be expected by chance. 
+
+`psych::fa.parallel()` compares a scree of your data set to a random data set to identify the number of factors. The elbow below here is at 3 factors. 
+
+```{r fig.height=4}
+psych::fa.parallel(brand_rep)
+```
+### Exporatory Factor Analysis
+
+Use `psych::fa()` to perform the factor analysis with your chosen number of factors. The number of factors may be the result of your parallel analysis, or the opinion of the SMEs. In this case, we'll go with the 3 factors identified by the parallel analysis.
+
+```{r}
+brand_rep_efa <- psych::fa(brand_rep, nfactors = 3)
+# psych::scree(brand_rep) # psych makes scree plot's too.
+psych::fa.diagram(brand_rep_efa)
+```
+
+Using EFA, you may tweak the number of factors or drop poorly-loading items. Each item should load highly to one and only one dimension. This one dimension is the item's primary loading. Generally, a primary loading > .7 is excellent, >.6 is very good, >.5 is good, >.4 is fair, and <.4 is poor. Here are the factor loadings from the 3 factor model.
+
+```{r}
+brand_rep_efa$loadings
+```
+
+The brand-rep survey items load to 3 factors well except for the `one_of_a_kind` item. Its primary factor loading (0.309) is poor. The others are either very good (.6-.7) and excellent (>.7) range.
+
+Look at the model eigenvalues. There should be one eigenvalue per dimension. Eigenvalues a little less than one may be contaminating the model.
+
+```{r}
+brand_rep_efa$e.value
+```
+
+Look at the factor score correlations. They should all be around 0.6. Much smaller means they are not describing the same latent variable. Much larger means they are describing the same dimension of the latent variable.
+
+```{r}
+brand_rep_efa$r.scores
+```
+
+If you have a poorly loaded dimension, drop factors one at a time from the scale. `one_of_a_kind` loads across all three factors, but does not load strongly onto any one factor. `one_of_a_kind` is not clearly measuring any dimension of the latent variable. Drop it and try again.
+
+```{r}
+brand_rep_efa <- psych::fa(brand_rep %>% select(-one_of_a_kind), nfactors = 3)
+brand_rep_efa$loadings
+brand_rep_efa$e.value
+brand_rep_efa$r.scores
+```
+
+This is better. We have three dimensions of brand reputation:
+
+* items `well_made`, `consistent`, and `poor_workman_r` describe *Product Quality*,
+* items `higher_price`, `lot_more`, and `go_up` describe *Willingness to Pay*, and 
+* items `stands_out` and `unique` describe *Product Differentiation*
+
+Even if the data and your theory suggest otherwise, explore what happens when you include more or fewer factors in your EFA. 
+
+```{r}
+psych::fa(brand_rep, nfactors = 2)$loadings
+psych::fa(brand_rep, nfactors = 4)$loadings
+```
+
+The two-factor loading worked okay. The 4 factor loading only loaded one variable to the fourth factor. In this example the SME expected a three-factor model and the data did not contradict the theory, so stick with three. 
+
+Whereas the item generation phase tested for item equivalence, the EFA phase tests for internal reliability (*consistency*) of items. Internal reliability means the survey produces consistent results. The more common statistics for assessing internal reliability are Cronbach's Alpha, and split-half.
+
+### Cronbach's Alpha
+
+In general, an alpha <.6 is unacceptable, <.65 is undesirable, <.7 is minimally acceptable, <.8 is respectable, <.9 is very good, and >=.9 suggests items are *too* alike. A very low alpha means items may not be measuring the same construct, so you should drop items. A very high alpha means items are multicollinear, and you should drop items. Here is Cronbach's alpha for the brand reputation survey, after removing the poorly-loading `one_of_a_kind` variable.
+
+```{r}
+psych::alpha(brand_rep[, 1:8])$total$std.alpha
+```
+
+This value is in the "very good" range. Cronbach's alpha is often used to measure the reliability of a single dimension. Here are the values for the 3 dimensions.
+
+```{r collapse=TRUE}
+psych::alpha(brand_rep[, 1:3])$total$std # Product Quality
+psych::alpha(brand_rep[, 4:6])$total$std # Willingness to Pay
+psych::alpha(brand_rep[, 7:8])$total$std # Product Differentiation
+```
+
+Alpha is >0.7 for each dimension. Sometimes the alpha for our survey as a whole is greater than that of the dimensions. This can happen because Cronbach's alpha is sensitive to the number of items. Over-inflation of the alpha statistic can be a concern when working with surveys containing a large number of items.
+
+### Split-Half
+
+Use `psych::splitHalf()` to split the survey in half and test whether all parts of the survey contribute equally to measurement. *This method is much less popular than Cronbach's alpha.*
+
+```{r}
+psych::splitHalf(brand_rep[, 1:8])
+```
+
+## 4. Confirmatory Factor Analysis
+
+Whereas EFA is used to develop a theory of the number of factors needed to explain the relationships among the survey items, confirmatory factor analysis (CFA) is a formal hypothesis test of the EFA theory. CFA measures construct validity, that is, whether you are really measuring what you claim to measure.
+
+These notes explain how to use CFA, but do not explain the theory. For that you need to learn about [dimensionality reduction](https://www.datacamp.com/courses/dimensionality-reduction-in-r), and [structural equation modeling](https://www.datacamp.com/courses/structural-equation-modeling-with-lavaan-in-r).
+
+Use the **lavaan** package (latent variable analysis package), passing in the model definition. Here is the model for the three dimensions in the brand reputation survey. Lavaan's default estimator is maximum likelihood, which assumes normality. You can change it to MLR which uses robust standard errors to mitigate non-normality. The summary prints a ton of output. Concentrate on the `lambda` - the factor loadings.
+
+```{r}
+brand_rep_mdl <- paste(
+  "PrdQl =~ well_made + consistent + poor_workman_r",
+  "WillPay =~ higher_price + lot_more + go_up",
+  "PrdDff =~ stands_out + unique", 
+  sep = "\n"
+)
+brand_rep_cfa <- lavaan::cfa(model = brand_rep_mdl, data = brand_rep[, 1:8], estimator = "MLR")
+# lavaan::summary(brand_rep_cfa, fit.measures = TRUE, standardized = TRUE)
+semPlot::semPaths(brand_rep_cfa, rotation = 4)
+lavaan::inspect(brand_rep_cfa, "std")$lambda
+```
+
+The CFA hypothesis test is a chi-square test, so is sensitive to normality assumptions and n-size. Other fit measure are reported too: 
+* Comparative Fit Index (CFI) (look for value >.9)
+* Tucker-Lewis Index (TLI) (look for value >.9)
+* Root mean squared Error of Approximation (RMSEA) (look for value <.05)
+
+There are actually `r length(lavaan::fitMeasures(brand_rep_cfa))` fit measures to choose from! Focus on CFI and TLI.
+
+```{r}
+lavaan::fitMeasures(brand_rep_cfa, fit.measures = c("cfi", "tli"))
+```
+
+This output indicates a good model because both measures are >.9. Check the standardized estimates for each item. The standardized factor loadings are the basis of establishing construct validity. While we call these measures 'loadings,' they are better described as correlations of each manifest item with the dimensions. As you calculated, the difference between a perfect correlation and the observed is considered 'error.' This relationship between the so-called 'true' and 'observed' scores is the basis of classical test theory.
+
+```{r}
+lavaan::standardizedSolution(brand_rep_cfa) %>%
+  filter(op == "=~") %>%
+  select(lhs, rhs, est.std, pvalue)
+```
+
+If you have a survey that meets your assumptions, performs well under EFA, but fails under CFA, return to your survey and revisit your scale, examine the CFA modification indices, factor variances, etc.
+
+## 5. Convergent/Discriminant Validity
+
+Construct validity means the survey measures what it intends to measure. It is composed of convergent validity and discriminant validity. Convergent validity means factors address the same concept. Discriminant validity means factors address different aspects of the concept.
+
+Test for construct validity *after* assessing CFA model strength (with CFI, TFI, and RMSEA) -- a poor-fitting model may have greater construct validity than a better-fitting model. Use the `semTools::reliability()` function. The average variance extracted (AVE) measures convergent validity (`avevar`) and should be > .5. The composite reliability (CR) measures discriminant validity (`omega`) and should be > .7.
+
+```{r}
+semTools::reliability(brand_rep_cfa)
+```
+
+These values look good for all three dimensions. As an aside, `alpha` is Cronbach's alpha. Do not be tempted to test reliability and validity in the same step. Start with reliability because it is a necessary but insufficient condition for validity. By checking for internal consistency first, as measured by alpha, then construct validity, as measured by AVE and CR, you establish the necessary reliability of the scale as a whole was met, then took it to the next level by checking for construct validity among the unique dimensions.
+
+At this point you have established that the latent and manifest variables are related as hypothesized, and that the survey measures what you intended to measure, in this case, brand reputation. 
+
+## 6. Replication
+
+The replication phase establishes criterion validity and stability (reliability). Criterion validity is a measure of the relationship between the construct and some external measure of interest. Measure criterion validity with *concurrent validity*, how well items correlate with an external metric measured at the same time, and with *predictive validity*, how well an item predicts an external metric. Stability means the survey produces similar results over repeated *test-retest* administrations.
+
+### Criterion Validity
+
+#### Concurrent Validity
+
+Concurrent validity is a measure of whether our latent construct is significantly correlated to some outcome measured at the same time. 
+
+Suppose you have an additional data set of consumer spending on the brand. The consumer's perception of the brand should correlate with their spending. Before checking for concurrent validity, standardize the data so that likert and other variable types are on the same scale.
+
+```{r}
+set.seed(20201004)
+brand_rep <- brand_rep %>%
+  mutate(spend = ((well_made + consistent + poor_workman_r)/3 * 5 +
+                  (higher_price + lot_more + go_up)/3 * 3 +
+                  (stands_out + unique)/2 * 2) / 10)
+brand_rep$spend <- brand_rep$spend + rnorm(559, 5, 4) # add randomness
+brand_rep_scaled <- scale(brand_rep)
+```
+
+Do respondents with higher scores on our the brand reputation scale also tend to spend more at the store? Build model, and latentize `spend` as `Spndng` and model with the `~~` operator. Fit the model with the `semTools::sem()` function. 
+
+```{r}
+brand_rep_cv_mdl <- paste(
+  "PrdQl =~ well_made + consistent + poor_workman_r",
+  "WillPay =~ higher_price + lot_more + go_up",
+  "PrdDff =~ stands_out + unique",
+  "Spndng =~ spend",
+  "Spndng ~~ PrdQl + WillPay + PrdDff",
+  sep = "\n"
+)
+brand_rep_cv <- lavaan::sem(data = brand_rep_scaled, model = brand_rep_cv_mdl)
+```
+
+Here are the standardized covariances. Because the data is standardized, interpret these as correlations. The p-vales are not significant because the spending data was random.
+
+```{r}
+lavaan::standardizedSolution(brand_rep_cv) %>% 
+  filter(rhs == "Spndng") %>%
+  select(-op, -rhs)
+semPlot::semPaths(brand_rep_cv, whatLabels = "est.std", edge.label.cex = .8, rotation = 2)
+```
+
+Each dimension of brand reputation is positively correlated to spending history and the relationships are all significant.
+
+#### Predictive Validity
+
+Predictive validity is established by regressing some future outcome on your established construct. Assess predictive validity just as you would with any linear regression -- regression estimates and p-values (`starndardizedSolution()`), and the r-squared coefficient of determination `inspect()`.
+
+Build a regression model with the single `~` operator. Then fit the model to the data as before.
+
+```{r}
+brand_rep_pv_mdl <- paste(
+  "PrdQl =~ well_made + consistent + poor_workman_r",
+  "WillPay =~ higher_price + lot_more + go_up",
+  "PrdDff =~ stands_out + unique",
+  "spend ~ PrdQl + WillPay + PrdDff",
+  sep = "\n"
+)
+brand_rep_pv <- lavaan::sem(data = brand_rep_scaled, model = brand_rep_pv_mdl)
+#lavaan::summary(brand_rep_pv, standardized = T, fit.measures = T, rsquare = T)
+semPlot::semPaths(brand_rep_pv, whatLabels = "est.std", edge.label.cex = .8, rotation = 2)
+lavaan::standardizedSolution(brand_rep_pv) %>% 
+  filter(op == "~") %>%
+  mutate_if(is.numeric, round, digits = 3)
+lavaan::inspect(brand_rep_pv, "r2")
+```
+
+There is a statistically significant relationship between one dimension of brand quality (Willingness to Pay) and spending. At this point you may want to drop the other two dimensions. However, the R^2 is not good - only 7% of the variability in Spending can be explained by the three dimension of our construct.
+
+Factor scores represent individual respondents' standing on a latent factor. While not used for scale validation per se, factor scores can be used for customer segmentation via clustering, network analysis and other statistical techniques. 
+
+```{r}
+brand_rep_cfa <- lavaan::cfa(brand_rep_pv_mdl, data = brand_rep_scaled)
+
+brand_rep_cfa_scores <- lavaan::predict(brand_rep_cfa) %>% as.data.frame()
+psych::describe(brand_rep_cfa_scores)
+psych::multi.hist(brand_rep_cfa_scores)
+map(brand_rep_cfa_scores, shapiro.test)
+```
+These scores are not normally distributed, which makes clustering a great choice for modeling factor scores. Clustering does not mean distance-based clustering, such as K-means, in this context. Mixture models consider data as coming from a distribution which itself is a mixture of clusters. To learn more about model-based clustering in the [Hierarchical and Mixed Effects Models](https://www.datacamp.com/courses/hierarchical-and-mixed-effects-models) DataCamp course.
+
+Factor scores can be extracted from a structural equation model and used as inputs in other models. For example, you can use the factor scores from the brand reputation dimensions as regressors for a regrssion on spending.
+
+```{r}
+brand_rep_fs_reg_dat <- bind_cols(brand_rep_cfa_scores, spend = brand_rep$spend)
+brand_rep_fs_reg <- lm(spend ~ PrdQl + WillPay + PrdDff, data = brand_rep_fs_reg_dat)
+summary(brand_rep_fs_reg)$coef
+```
+
+The coefficients and r-squared of the lm() and sem() models closely resemble each other, but keeping the regression inside the lavaan framework provides more information (as witnessed in the higher estimates and r-squared). A construct, once validated, can be combined with a wide range of outcomes and models to produce valuable information about consumer behavior and habits.
+
+### Test-Retest Reliability
+
+Test-retest reliability is the ability to achieve the same result from a respondent at two closely-spaced points in time (repeated measures). 
+
+Suppose you had two surveys, identified by an `id` field.
+
+```{r}
+svy_1 <- brand_rep[sample(1:559, 300),] %>% as.data.frame()
+svy_2 <- brand_rep[sample(1:559, 300),] %>% as.data.frame()
+survey_test_retest <- psych::testRetest(t1 = svy_1, t2 = svy_2, id = "id")
+survey_test_retest$r12
+```
+
+An r^2 <.7 is unacceptable, <.9 good, and >.9 very good. This one is unacceptable.
+
+One way to check for replication is by splitting the data in half.
+
+```{r}
+svy <- bind_rows(svy_1, svy_2, .id = "time")
+
+psych::describeBy(svy, "time")
+
+brand_rep_test_retest <- psych::testRetest(
+  t1 = filter(svy, time == 1),
+  t2 = filter(svy, time == 2),
+  id = "id")
+
+brand_rep_test_retest$r12
+```
+
+If the correlation of scaled scores across time 1 and time 2 is greater than .9, that indicates very strong test-retest reliability. This measure can be difficult to collect because it requires the same respondents to answer the survey at two points in time. However, it's a good technique to have in your survey development toolkit.
+
+When validating a scale, it's a good idea to split the survey results into two samples, using one for EFA and one for CFA. This works as a sort of cross-validation such that the overall fit of the model is less likely due to chance of any one sample's makeup.
+
+```{r}
+brand_rep_efa_data <- brand_rep[1:280,]
+brand_rep_cfa_data <- brand_rep[281:559,]
+ 
+efa <- psych::fa(brand_rep_efa_data, nfactors = 3)
+efa$loadings
+
+brand_rep_cfa <- lavaan::cfa(brand_rep_mdl, data = brand_rep_cfa_data)
+lavaan::inspect(brand_rep_cfa, what = "call")
+
+lavaan::fitmeasures(brand_rep_cfa)[c("cfi","tli","rmsea")]
+
+```
