@@ -1,0 +1,17 @@
+```{r include=FALSE}
+library(tidyverse)
+library(emmeans)
+```
+
+# Topics: EMMs {#EMMs}
+
+This section is an overview of estimated marginal means, and its implementation in in the **emmeans** package. 
+
+```{r}
+pigs
+```
+
+
+## References
+
+This [Very statisticious](https://aosmith.rbind.io/2019/03/25/getting-started-with-emmeans/) blog post is helpful. I also worked through the **emmeans** vignettes on [CRAN](https://cran.r-project.org/web/packages/emmeans/).
