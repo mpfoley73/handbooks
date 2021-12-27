@@ -7,7 +7,7 @@ library(janitor)
 library(flextable)
 ```
 
-This is a tutorial for using the **survey** package to analyze complex survey data. "Complex" surveys are those with stratification and/or clustering. The package handles weights, and adjusts statistical tests for the survey design.
+This is a tutorial for using the **survey** package [@R-survey] to analyze complex survey data. "Complex" surveys are those with stratification and/or clustering. The package handles weights, and adjusts statistical tests for the survey design.
 
 ## Defining the Survey Design
 
