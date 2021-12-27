@@ -1,60 +1,3 @@
---- 
-title: "Survey Analysis"
-author: "Michael Foley"
-date: "`r Sys.Date()`"
-site: bookdown::bookdown_site
-documentclass: book
-bibliography: [book.bib, packages.bib]
-# url: your book url like https://bookdown.org/yihui/bookdown
-# cover-image: path to the social sharing image like images/cover.jpg
-description: |
-  Survey analysis using R.
-link-citations: yes
-github-repo: rstudio/bookdown-demo
----
-
-# Preface {-}
-
-This is a compilation of notes from my study of survey design and analysis. I completed Data Camp courses [Survey and Measurement Development in R](https://app.datacamp.com/learn/courses/survey-and-measurement-development-in-r) [@mount] and [Analyzing Survey Data in R](https://app.datacamp.com/learn/courses/analyzing-survey-data-in-r) [@mcconville], then moved on to Thomas Lumley's [Complex Surveys: a guide to analysis using R](http://r-survey.r-forge.r-project.org/svybook/) [@lumley2010]. The following resources are also helpful.
-
-* UCLA IDRE seminar [@idre]
-
-## The **survey** Package {-}
-
-Only simple random sample survey designs can be analyzed with with normal statistical test functions - complex survey designs require special treatment. The **survey** package, developed by Thomas Lumley, handles both simple and complex survey designs. The **survey** package contains a few data sets that will serve as examples in these notes. There is also a helper package named **jtools** ([RDocumentation](https://www.rdocumentation.org/packages/jtools/versions/2.1.4)), developed by Jacob A. Long, that will come in handy.
-
-```{r warning=FALSE, message=FALSE}
-library(tidyverse)
-library(survey)
-library(jtools)
-
-data(api, package = "survey")
-```
-
-## Survey Design {-}
-
-Survey analyses scale the *n* data observations up to the *N* population values. Each observation has an associated *sampling weight*. A sampling weight is a *probability weight* with on or more adjustments for non-response, non-coverage, calibration, and trimming. 
-
-For a **simple random sample**, the sampling weights equal the probability weights, *N/n*, meaning each observation represents *N/n* people. 
-
-In **stratified sampling**, the population is initially segmented by interesting factors (e.g. gender, race/ethnicity, or SES), then sampled with simple random sampling. This ensures a specified number of observations for each stratum. The sample is less variable because the stratification process eliminates one source of variability. The sampling weights equal the probability weights again, but now there are separate weights for each stratum, $N_A / n_A$, $N_B / n_B$, etc.
-
-**Cluster sampling** segments a population (usually geographically) into clusters, then randomly selects clusters to survey. Within a cluster, all members may be sampled (single stage design), or a random sample is taken (multi-stage design). Cluster sampling is almost universal in large-scale surveys involving in-person interviews because it dramatically reduces cost. Unfortunately, it also increases variance because observations within a cluster tend to me similar.
-
-You will often encounter the term *primary sampling unit* (PSU). It is the factor used for the initial sampling. For cluster sampling, it is the initial cluster; for stratified and simple random samples, it is the elementary unit.
-
-A second term you will encounter is *finite population correction*. It is a probability term that becomes relevant when the sampling fraction of the population becomes large. It equals $\sqrt{(N-n)/(N-1)}$.
-
-
-```{r include=FALSE}
-# automatically create a bib database for R packages
-knitr::write_bib(c(
-  .packages(), 'bookdown', 'knitr', 'rmarkdown'
-), 'packages.bib')
-```
-
-<!--chapter:end:index.Rmd-->
-
 # Survey and Measurement Development
 
 ```{r warning=FALSE, message=FALSE, include=FALSE}
@@ -439,7 +382,7 @@ There is a statistically significant relationship between one dimension of brand
 
 Factor scores represent individual respondents' standing on a latent factor. While not used for scale validation per se, factor scores can be used for customer segmentation via clustering, network analysis and other statistical techniques. 
 
-```{r}
+```{r test385}
 brand_rep_cfa <- lavaan::cfa(brand_rep_pv_mdl, data = brand_rep_scaled)
 
 brand_rep_cfa_scores <- lavaan::predict(brand_rep_cfa) %>% as.data.frame()
@@ -451,7 +394,7 @@ These scores are not normally distributed, which makes clustering a great choice
 
 Factor scores can be extracted from a structural equation model and used as inputs in other models. For example, you can use the factor scores from the brand reputation dimensions as regressors for a regrssion on spending.
 
-```{r}
+```{r test397}
 brand_rep_fs_reg_dat <- bind_cols(brand_rep_cfa_scores, spend = brand_rep$spend)
 brand_rep_fs_reg <- lm(spend ~ PrdQl + WillPay + PrdDff, data = brand_rep_fs_reg_dat)
 summary(brand_rep_fs_reg)$coef
@@ -465,28 +408,28 @@ Test-retest reliability is the ability to achieve the same result from a respond
 
 Suppose you had two surveys, identified by an `id` field.
 
-```{r}
-svy_1 <- brand_rep[sample(1:559, 300),] %>% as.data.frame()
-svy_2 <- brand_rep[sample(1:559, 300),] %>% as.data.frame()
-survey_test_retest <- psych::testRetest(t1 = svy_1, t2 = svy_2, id = "id")
-survey_test_retest$r12
+```{r test411}
+# svy_1 <- brand_rep[sample(1:559, 300),] %>% as.data.frame()
+# svy_2 <- brand_rep[sample(1:559, 300),] %>% as.data.frame()
+# survey_test_retest <- psych::testRetest(t1 = svy_1, t2 = svy_2, id = "id")
+# survey_test_retest$r12
 ```
 
 An r^2 <.7 is unacceptable, <.9 good, and >.9 very good. This one is unacceptable.
 
 One way to check for replication is by splitting the data in half.
 
-```{r}
-svy <- bind_rows(svy_1, svy_2, .id = "time")
-
-psych::describeBy(svy, "time")
-
-brand_rep_test_retest <- psych::testRetest(
-  t1 = filter(svy, time == 1),
-  t2 = filter(svy, time == 2),
-  id = "id")
-
-brand_rep_test_retest$r12
+```{r test422}
+# svy <- bind_rows(svy_1, svy_2, .id = "time")
+# 
+# psych::describeBy(svy, "time")
+# 
+# brand_rep_test_retest <- psych::testRetest(
+#   t1 = filter(svy, time == 1),
+#   t2 = filter(svy, time == 2),
+#   id = "id")
+# 
+# brand_rep_test_retest$r12
 ```
 
 If the correlation of scaled scores across time 1 and time 2 is greater than .9, that indicates very strong test-retest reliability. This measure can be difficult to collect because it requires the same respondents to answer the survey at two points in time. However, it's a good technique to have in your survey development toolkit.
@@ -494,485 +437,15 @@ If the correlation of scaled scores across time 1 and time 2 is greater than .9,
 When validating a scale, it's a good idea to split the survey results into two samples, using one for EFA and one for CFA. This works as a sort of cross-validation such that the overall fit of the model is less likely due to chance of any one sample's makeup.
 
 ```{r}
-brand_rep_efa_data <- brand_rep[1:280,]
-brand_rep_cfa_data <- brand_rep[281:559,]
- 
-efa <- psych::fa(brand_rep_efa_data, nfactors = 3)
-efa$loadings
-
-brand_rep_cfa <- lavaan::cfa(brand_rep_mdl, data = brand_rep_cfa_data)
-lavaan::inspect(brand_rep_cfa, what = "call")
-
-lavaan::fitmeasures(brand_rep_cfa)[c("cfi","tli","rmsea")]
+# brand_rep_efa_data <- brand_rep[1:280,]
+# brand_rep_cfa_data <- brand_rep[281:559,]
+#  
+# efa <- psych::fa(brand_rep_efa_data, nfactors = 3)
+# efa$loadings
+# 
+# brand_rep_cfa <- lavaan::cfa(brand_rep_mdl, data = brand_rep_cfa_data)
+# lavaan::inspect(brand_rep_cfa, what = "call")
+# 
+# lavaan::fitmeasures(brand_rep_cfa)[c("cfi","tli","rmsea")]
 
 ```
-
-<!--chapter:end:02-survey_design.Rmd-->
-
-# Analyzing Survey Data
-
-```{r warning=FALSE, message=FALSE, include=FALSE}
-library(tidyverse)
-library(survey)
-library(janitor)
-library(flextable)
-```
-
-This is a tutorial for using the **survey** package to analyze complex survey data. "Complex" surveys are those with stratification and/or clustering. The package handles weights, and adjusts statistical tests for the survey design.
-
-## Defining the Survey Design
-
-Below are some examples defining the most common survey designs. The **survey** package includes the *Student performance in California schools* data set (`api`), a record of the Academic Performance Index based on standardized testing. `api` contains sub-data sets that illustrate the design types.
-
-* `apisrs` is a simple random sample of (*n* = 200) schools, 
-* `apistrat` is stratified sample of 3 school types (elementary, middle, high) with simple random sampling of different sizes in each stratum, 
-* `apiclus2` is a two-stage cluster sample of schools within districts.
-
-```{r include=FALSE}
-data(api, package = "survey")
-```
-
-You create a survey design object with the `svydesign(data, ...)` function. There are parameter settings for each design type.
-
-### Simple Random Sample
-
-A simple random sample has no clusters, so indicate this with `ids = ~1`. The response weights will always be the same, equaling the population size divided by the sample size. Typically, the response weight is identified in a column. There is another parameter called the finite population correction (`fpc`) that is used to reduce the variance when a substantial fraction of the total population has been sampled. Set `fpc` to the stratum population size. A simple random sample has no strata, so it will always be the same, equaling the population size.
-
-For `apisrs` the population size is 6,194 (the number of schools in California). The sample size is 200, so the response weights all equal 6,194 / 200 = 30.97. 
-
-```{r collapse=TRUE}
-nrow(apisrs)
-apisrs %>% count(pw, fpc)
-```
-
-Here is the design object.
-
-```{r collapse=TRUE}
-apisrs_design <- svydesign(
-  data = apisrs, 
-  weights = ~pw, 
-  fpc = ~fpc, 
-  ids = ~1
-)
-summary(apisrs_design)
-```
-
-### Stratified Sample
-
-Define a stratified sample by specifying with the `strata` parameter. The schools in `apistrat` are stratified based on the school type *E* = Elementary, *M* = Middle, and *H* = High School. For each school type, a simple random sample of schools was taken: $n_E$ = 100, $n_M$ = 50, and $n_H$ = 50. The 100 elementary schools represent 100 / 4,421 of the state's elementary schools, so their weights = 44.21. Similarly, the weights are 50 / 1,018 = 20.36 for the middle schools, and 50 / 755 = 15.10 for the high schools.
-
-```{r}
-apistrat %>% 
-  count(stype, pw, fpc) %>% 
-  mutate(`pw*n` = pw * n) %>%
-  adorn_totals(,,,, -pw) %>% 
-  flextable() %>% colformat_num(j = 2, digits = 2) %>% colformat_int(j = c(3:5))
-```
-
-Here is the design object.
-
-```{r}
-apistrat_design <- svydesign(
-  data = apistrat, 
-  weights = ~pw, 
-  fpc = ~fpc, 
-  ids = ~1, 
-  strata = ~stype
-)
-summary(apistrat_design)
-```
-
-### Clustered
-
-Define a clustered sample by specifying the the cluster `ids` from largest to smallest level. The schools in `apiclus2` are clustered in two stages, first by the (`fpc1` = 757) school districts and a random sample of (*n* = 40) school districts (`dnum`) were selected. Then a random sample of (*n* <= 5) schools (`snum`) were selected from the `fpc2` schools in the selected school districts.
-
-```{r}
-apiclus_design <- svydesign(
-  id = ~dnum + snum, 
-  data = apiclus2, 
-  weights = ~pw, 
-  fpc = ~fpc1 + fpc2
-)
-summary(apiclus_design)
-```
-
-### Example: NHANES
-
-Let's create a complex survey design for the National Health and Nutrition Examination Survey (NHANES). The survey collected 78 attributes of (*n* = 20,293) persons.
-
-```{r}
-data(NHANESraw, package = "NHANES")
-NHANESraw <- NHANESraw %>% 
-  mutate(WTMEC4YR = WTMEC2YR / 2) # correction to weights
-```
-
-The survey used a 4-stage design: stage 0 stratified the US by geography and proportion of minority populations; stage 1 randomly selected counties within strata; stage 2 randomly seleted city blocks within counties; stage 3 randomly selected households within city blocks; and stage 4 randomly selected persons within households. When there are multiple levels of clusters like this, the convention is to assign the first cluster to `ids`. Set `nest = TRUE` because the cluster ids are nested within the strata (i.e., they are not unique).
-
-```{r}
-NHANES_design <- svydesign(
-  data = NHANESraw, 
-  strata = ~SDMVSTRA, 
-  ids = ~SDMVPSU, 
-  nest = TRUE, 
-  weights = ~WTMEC4YR
-)
-summary(NHANES_design)
-```
-
-Survey weights for minorities are typically lower to account for their large sample sizes relative to population representation. You can see how the weights sum to the sub-populations and the total population.
-
-```{r}
-NHANESraw %>% 
-  group_by(Race1) %>% 
-  summarize(.groups = "drop", 
-            `Sum(WTMEC4YR)` = sum(WTMEC4YR), 
-            `Avg(WTMEC4YR)` = mean(WTMEC4YR), 
-            n = n()) %>%
-  mutate(`Avg * n` = `Avg(WTMEC4YR)` * n) %>%
-  janitor::adorn_totals(where = "row") %>%
-  flextable::flextable() %>%
-  flextable::colformat_int(j = c(2:5))
-```
-
-The **survey** package functions handle the survey designs and weights. The population figures from the table above could have been built with `svytable()`.
-
-```{r}
-svytable(~Race1, design = NHANES_design) %>%
-  as.data.frame() %>%
-  mutate(prop = Freq / sum(Freq) * 100) %>%
-  arrange(desc(prop)) %>%
-  adorn_totals() %>%
-  flextable() %>%
-  colformat_int(j = 2) %>%
-  colformat_num(j = 3, suffix = "%", digits = 0)
-```
-
-## Exploring Categorical Items
-
-Create a contingency table by including two variables in `svytable()`. Here is contingency table for self-reported health by depression expressed as a 100% stacked bar chart.
-
-```{r}
-svytable(~Depressed + HealthGen, design = NHANES_design) %>%
-  data.frame() %>%
-  group_by(HealthGen) %>%
-  mutate(n_HealthGen = sum(Freq), Prop_Depressed = Freq / sum(Freq)) %>%
-  ggplot(aes(x = HealthGen, y = Prop_Depressed, fill = Depressed)) +
-  geom_col() + 
-  coord_flip() +
-  theme_minimal() +
-  scale_fill_brewer()
-```
-
-Perform a chi-square test of independence on contingency tables using the `svychisq()` function. Here is a test ofthe null hypothesis that depression is independent of general health.
-
-```{r}
-svychisq(~Depressed + HealthGen, design = NHANES_design, statistic = "Chisq")
-```
-
-The chi-square test with Rao & Scott adjustment is evidently not a standard chi-square test. *Maybe in how it factors in survey design?* The test statistic is usually $X^2 = \sum (O - E)^2 / E.$
-
-```{r collapse=TRUE}
-O <- svytable(~Depressed + HealthGen, design = NHANES_design) %>% as.matrix()
-E <- sum(O) * prop.table(O, 1) * prop.table(O, 2)
-(X2 <- sum((O - E)^2 / E))
-pchisq(X2, df = (nrow(O)-1) * (ncol(O) - 1), lower.tail = FALSE)
-```
-
-which is what `chisq.test()` does.
-
-```{r}
-svytable(~Depressed + HealthGen, design = NHANES_design) %>% 
-  as.matrix() %>% 
-  chisq.test()
-```
-
-
-## Exploring Quantitative Data
-
-The `svymean()`, `svytotal()`, and `svyquantile()` functions summarize quantitative variables. To group by a factor variable, use `svyby()`.
-
-```{r}
-svyquantile(x = ~SleepHrsNight, 
-            design = NHANES_design, 
-            na.rm = TRUE, 
-            quantiles = c(.01, .25, .50, .75, .99))
-
-svymean(x = ~SleepHrsNight, design = NHANES_design, na.rm = TRUE)
-```
-
-```{r}
-svyby(formula = ~SleepHrsNight, by = ~Depressed, FUN = svymean, 
-      design = NHANES_design, na.rm = TRUE, keep.names = FALSE) %>%
-  ggplot(aes(x = Depressed, y = SleepHrsNight, 
-             ymin = SleepHrsNight - 2*se, ymax = SleepHrsNight + 2*se)) +
-  geom_col(fill = "lightblue") +
-  geom_errorbar(width = 0.5)
-```
-
-You need raw data for the distribution plots, so be sure to weight the variables.
-
-```{r}
-NHANESraw %>% 
-  ggplot(aes(x = SleepHrsNight, weight = WTMEC4YR)) + 
-  geom_histogram(binwidth = 1, fill = "lightblue", color = "#FFFFFF", na.rm = TRUE)
-
-NHANESraw %>% 
-  filter(!is.na(SleepHrsNight) & !is.na(Gender)) %>%
-  group_by(Gender) %>%
-  mutate(WTMEC4YR_std = WTMEC4YR / sum(WTMEC4YR)) %>%
-  ggplot(aes(x = SleepHrsNight, Weight = WTMEC4YR_std)) +
-  geom_density(bw = 0.6, fill = "lightblue") +
-  labs(x = "Sleep Hours per Night") +
-  facet_wrap(~Gender, labeller = "label_both")
-```
-
-Test whether the population averages differ with a two-sample survey-weighted t-test. Use the `svytest()` function to incorporate the survey design.
-
-```{r}
-svyttest(formula = SleepHrsNight ~ Gender, design = NHANES_design)
-```
-
-## Modeling Quantitative Data
-
-Scatterplots need to adjust for the sampling weights. You can do this with the `size` or `alpha` aesthetics.
-
-```{r}
-p1 <- NHANESraw %>% 
-  filter(Age == 20) %>%
-  ggplot(aes(x = Height, y = Weight, color = Gender, size = WTMEC4YR)) +
-  geom_jitter(width = 0.3, height = 0, alpha = 0.3) +
-  guides(size = FALSE) +
-  theme(legend.position = "top") +
-  labs(color = "")
-
-p2 <- NHANESraw %>% 
-  filter(Age == 20) %>%
-  ggplot(aes(x = Height, y = Weight, color = Gender, alpha = WTMEC4YR)) +
-  geom_jitter(width = 0.3, height = 0) +
-  guides(alpha = FALSE) +
-  theme(legend.position = "top") +
-  labs(color = "")
-
-gridExtra::grid.arrange(p1, p2, nrow = 1)
-```
-
-Fit a regression line with `geom_smooth()`.
-
-```{r}
-NHANESraw %>% 
-  filter(!is.na(Weight) & !is.na(Height)) %>%
-  ggplot(aes(x = Height, y = Weight, size = WTMEC4YR)) +
-  geom_point(alpha = 0.1) +
-  geom_smooth(method = "lm", se = FALSE, mapping = aes(weight = WTMEC4YR), 
-              formula = y ~ x, color = "blue") +
-  geom_smooth(method = "lm", se = FALSE, mapping = aes(weight = WTMEC4YR), 
-              formula = y ~ poly(x, 2), color = "orange") +
-  geom_smooth(method = "lm", se = FALSE, mapping = aes(weight = WTMEC4YR), 
-              formula = y ~ poly(x, 3), color = "red") +
-guides(size = FALSE) 
-```
-
-Model a regression line with `svyglm()`. Let's build a model to predict, BPSysAve, a person's systolic blood pressure reading, using BPDiaAve, a person's diastolic blood pressure reading and Diabetes, whether or not they were diagnosed with diabetes.
-
-```{r}
-drop_na(NHANESraw, Diabetes, BPDiaAve, BPSysAve) %>%
-ggplot(mapping = aes(x = BPDiaAve, y = BPSysAve, size = WTMEC4YR, color = Diabetes)) + 
-    geom_point(alpha = 0.2) + 
-    guides(size = FALSE) + 
-    geom_smooth(method = "lm", formula = y ~ x, se = FALSE, mapping = aes(weight = WTMEC4YR))
-
-mod <- svyglm(BPSysAve ~ BPDiaAve*Diabetes, design = NHANES_design)
-summary(mod)
-```
-
-
-<!--chapter:end:03-survey_analysis.Rmd-->
-
-# Simple Random Samples {#simple}
-
-```{r include=FALSE}
-library(tidyverse)
-library(survey)
-data(api, package = "survey")
-```
-
-A simple random sample of size *n* from a population of size *N* has sampling weights are equal to *N/n*. The Horvitz-Thompson estimator of the population sum for variable *X* is
-
-$$\hat{T}_X = \sum_{i=1}^n \check{X}_i = \frac{N}{n} \sum_{i=1}^n X_i$$
-
-The variance of the estimator is 
-
-$$\mathrm{var} [\hat{T}_X] = \frac{N - n}{N} \times N^2 \times \frac{\mathrm{var}[X]}{n}$$
-
-The first term in the variance is the *finite population correction*. The third term is the vriance of the mean. The second term, $N^2$, scales the mean to the total.
-
-The estimator of the population mean is just the sum divided by *N*.
-
-$$\hat{\mu}_X = \hat{T}_X / N$$
-and the variance of the mean is the unscaled population sum variance. 
-
-$$\hat{\mathrm{var}}[\hat{\mu}_X] = \mathrm{var} [\hat{T}_X] / N^2$$
-
-#### Example {-}
-
-Data set `apisrs` is a simple random sample of the Academic Performance Index (API) of *n* = 200 of the *N* = 6,194 schools in California. 
-
-All **survey** objects require that you specify the columns identifying the clusters from largest to smallest level. In simple random designs like this, there are no clusters, and you specify just the constant `id = ~1`. The `fpc` parameter specifies the column with the finite population correction. In a simple random sample, it equals *N*. The `fpc` functions to both adjust the variance estimate, and to set the observation weights.
-
-```{r}
-srs_design <- svydesign(id = ~1,  fpc = ~fpc, data = apisrs)
-```
-
-$\hat{T}_X$, $\mathrm{var} [\hat{T}_X]$, $\hat{\mu}_X$, and $\hat{\mathrm{var}}[\hat{\mu}_X]$ are
-
-```{r collapse=TRUE}
-svytotal(~enroll, srs_design)
-svymean(~enroll, srs_design)
-```
-
-When the sample is much smaller than the population, the finite population correction makes little difference. You can omit the `fpc` parameter, but then you must supply the samplying weight instead. In this case, the sampling weight is 200/6194, and is in variable `pw`. The total and mean are unchanged, but the variance increases a little without the correction.
-
-```{r collapse=TRUE}
-srs_design2 <- svydesign(id = ~1, weights = ~pw, data = apisrs)
-svytotal(~enroll, srs_design2)
-svymean(~enroll, srs_design2)
-```
-
-<!--chapter:end:04-simple_random_sample.Rmd-->
-
-# Stratified Sampling {#stratified}
-
-```{r include=FALSE}
-library(tidyverse)
-library(survey)
-data(api, package = "survey")
-```
-
-Stratified sampling is more common than simple random sampling because it is just as precise and costs less. Stratified sampling randomly samples from pre-defined groups (strata). 
-
-The Horvitz-Thompson estimator of the total is sum of the individual strati and its variance is the sum of the strati variances. 
-
-#### Example {-}
-
-Data set `apistrat` is a staratified sample of the Academic Performance Index (API) of *n* = 200 of the *N* = 6,194 schools in California. The strati are $n_E$ = 100 elementary schools $n_M$ = 50 middle schools, and $n_H$ = 50 high schools. The `fpc` columnn in this data set is the population size *for each stratum*.
-
-```{r}
-strata_design <- svydesign(id = ~1, strata = ~stype, fpc = ~fpc, data = apistrat)
-svytotal(~stype, strata_design)
-```
-Since high schools tend to be larger, fixing the number of of sampled high schools should reduce the variance in mean and total enrollment relative to simple random sampling (compare to `apisrd` in Chapter \@ref(simple)).
-
-```{r collapse=TRUE}
-svytotal(~enroll, strata_design)
-svymean(~enroll, strata_design)
-```
-
-
-<!--chapter:end:05-stratified_random_sample.Rmd-->
-
-# Parts
-
-You can add parts to organize one or more book chapters together. Parts can be inserted at the top of an .Rmd file, before the first-level chapter heading in that same file. 
-
-Add a numbered part: `# (PART) Act one {-}` (followed by `# A chapter`)
-
-Add an unnumbered part: `# (PART\*) Act one {-}` (followed by `# A chapter`)
-
-Add an appendix as a special kind of un-numbered part: `# (APPENDIX) Other stuff {-}` (followed by `# A chapter`). Chapters in an appendix are prepended with letters instead of numbers.
-
-
-
-
-<!--chapter:end:06-parts.Rmd-->
-
-# Footnotes and citations 
-
-## Footnotes
-
-Footnotes are put inside the square brackets after a caret `^[]`. Like this one ^[This is a footnote.]. 
-
-## Citations
-
-Reference items in your bibliography file(s) using `@key`.
-
-For example, we are using the **bookdown** package [@R-bookdown] (check out the last code chunk in index.Rmd to see how this citation key was added) in this sample book, which was built on top of R Markdown and **knitr** [@xie2015] (this citation was added manually in an external file book.bib). 
-Note that the `.bib` files need to be listed in the index.Rmd with the YAML `bibliography` key.
-
-
-The RStudio Visual Markdown Editor can also make it easier to insert citations: <https://rstudio.github.io/visual-markdown-editing/#/citations>
-
-<!--chapter:end:07-citations.Rmd-->
-
-# Blocks
-
-## Equations
-
-Here is an equation.
-
-\begin{equation} 
-  f\left(k\right) = \binom{n}{k} p^k\left(1-p\right)^{n-k}
-  (\#eq:binom)
-\end{equation} 
-
-You may refer to using `\@ref(eq:binom)`, like see Equation \@ref(eq:binom).
-
-
-## Theorems and proofs
-
-Labeled theorems can be referenced in text using `\@ref(thm:tri)`, for example, check out this smart theorem \@ref(thm:tri).
-
-::: {.theorem #tri}
-For a right triangle, if $c$ denotes the *length* of the hypotenuse
-and $a$ and $b$ denote the lengths of the **other** two sides, we have
-$$a^2 + b^2 = c^2$$
-:::
-
-Read more here <https://bookdown.org/yihui/bookdown/markdown-extensions-by-bookdown.html>.
-
-## Callout blocks
-
-
-The R Markdown Cookbook provides more help on how to use custom blocks to design your own callouts: https://bookdown.org/yihui/rmarkdown-cookbook/custom-blocks.html
-
-<!--chapter:end:08-blocks.Rmd-->
-
-# Sharing your book
-
-## Publishing
-
-HTML books can be published online, see: https://bookdown.org/yihui/bookdown/publishing.html
-
-## 404 pages
-
-By default, users will be directed to a 404 page if they try to access a webpage that cannot be found. If you'd like to customize your 404 page instead of using the default, you may add either a `_404.Rmd` or `_404.md` file to your project root and use code and/or Markdown syntax.
-
-## Metadata for sharing
-
-Bookdown HTML books will provide HTML metadata for social sharing on platforms like Twitter, Facebook, and LinkedIn, using information you provide in the `index.Rmd` YAML. To setup, set the `url` for your book and the path to your `cover-image` file. Your book's `title` and `description` are also used.
-
-
-
-This `gitbook` uses the same social sharing data across all chapters in your book- all links shared will look the same.
-
-Specify your book's source repository on GitHub using the `edit` key under the configuration options in the `_output.yml` file, which allows users to suggest an edit by linking to a chapter's source file. 
-
-Read more about the features of this output format here:
-
-https://pkgs.rstudio.com/bookdown/reference/gitbook.html
-
-Or use:
-
-```{r eval=FALSE}
-?bookdown::gitbook
-```
-
-
-
-<!--chapter:end:09-share.Rmd-->
-
-`r if (knitr::is_html_output()) '
-# References {-}
-'`
-
-<!--chapter:end:10-references.Rmd-->
-

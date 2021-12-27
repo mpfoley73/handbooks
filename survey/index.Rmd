@@ -1,5 +1,5 @@
 --- 
-title: "Survey Analysis"
+title: "Survey Design and Analysis"
 author: "Michael Foley"
 date: "`r Sys.Date()`"
 site: bookdown::bookdown_site
@@ -8,7 +8,7 @@ bibliography: [book.bib, packages.bib]
 # url: your book url like https://bookdown.org/yihui/bookdown
 # cover-image: path to the social sharing image like images/cover.jpg
 description: |
-  Survey analysis using R.
+  Survey design and analysis using R.
 link-citations: yes
 github-repo: rstudio/bookdown-demo
 ---
@@ -19,9 +19,9 @@ This is a compilation of notes from my study of survey design and analysis. I co
 
 * UCLA IDRE seminar [@idre]
 
-## The **survey** Package {-}
+## The survey Package {-}
 
-Only simple random sample survey designs can be analyzed with with normal statistical test functions - complex survey designs require special treatment. The **survey** package, developed by Thomas Lumley, handles both simple and complex survey designs. The **survey** package contains a few data sets that will serve as examples in these notes. There is also a helper package named **jtools** ([RDocumentation](https://www.rdocumentation.org/packages/jtools/versions/2.1.4)), developed by Jacob A. Long, that will come in handy.
+Only simple random sample survey designs can be analyzed with with normal statistical test functions - complex survey designs require special treatment. The **survey** package [@R-survey] handles both simple and complex survey designs. It contains a few data sets that will serve as examples in these notes. There is also a helper package named **jtools** [@R-jtools] that will come in handy for regression.
 
 ```{r warning=FALSE, message=FALSE}
 library(tidyverse)
@@ -31,9 +31,9 @@ library(jtools)
 data(api, package = "survey")
 ```
 
-## Survey Design {-}
+## Common Terms {-}
 
-Survey analyses scale the *n* data observations up to the *N* population values. Each observation has an associated *sampling weight*. A sampling weight is a *probability weight* with on or more adjustments for non-response, non-coverage, calibration, and trimming. 
+Complex survey designs scale the *n* data observations up to the *N* population values. Each observation has an associated *sampling weight*. A sampling weight is a *probability weight* with on or more adjustments for non-response, non-coverage, calibration, and trimming. 
 
 For a **simple random sample**, the sampling weights equal the probability weights, *N/n*, meaning each observation represents *N/n* people. 
 
@@ -49,6 +49,6 @@ A second term you will encounter is *finite population correction*. It is a prob
 ```{r include=FALSE}
 # automatically create a bib database for R packages
 knitr::write_bib(c(
-  .packages(), 'bookdown', 'knitr', 'rmarkdown'
+  .packages(), 'bookdown', 'knitr', 'rmarkdown', 'survey', 'jtools'
 ), 'packages.bib')
 ```
