@@ -606,9 +606,9 @@ I think you could report these results like this.
 
 > A one-sample exact Poisson test was run to determine whether the number of goals scored in the first round of the 2002 World Cup was different from past World Cups, 1.5. A chi-square goodness-of-fit test indicated that the number of goals was not statistically significantly different from the counts expected in the Poisson distribution ($X^2$(`r length(o) - 1 - 1`) = `r scales::comma(X2, accuracy = 0.001)`, *p* = `r scales::comma(p.value, accuracy = 0.001)`). Data are mean $\pm$ standard deviation, unless otherwise stated. Mean goals scored (`r format(lambda, digits = 2, nsmall = 2)` $\pm$ `r radiant.data::weighted.sd(x = dat_pois$goals, w = dat_pois$freq) %>% scales::comma(accuracy = .01)`) was lower than the historical mean of `r format(1.5, digits = 2, nsmall = 2)`, but was not statistically significantly different (95% CI, `r format(pois_val$conf.int[1], digits = 1, nsmall = 2)` to `r format(pois_val$conf.int[2], digits = 1, nsmall = 2)`), *p* = `r format(pois_val$p.value, digits = 1, nsmall = 3)`.
 
-## One-Sample Binomial Test
+## Exact Binomial Test
 
-The Clopper-Pearson exact binomial test is precise, but theoretically complicated in that it inverts two single-tailed binomial tests. *No theoretical knowledge here - I just rely on the software.* Use the exact binomial test when small sample sizes and/or extreme success probabilities invalidate the chi-square and *G* tests. The exact binomial test has two conditions: 
+The Clopper-Pearson exact binomial test is precise, but theoretically complicated in that it inverts two single-tailed binomial tests (*No theory here - I'll just rely on the software*). Use the exact binomial test if you have a small sample size or an extreme success/failure probability that invalidates the chi-square and *G* tests. The exact binomial also applies when you have a one-tail test. The exact binomial test has two conditions: 
 
 * independence, and 
 * at least $n\pi \ge 5$ successes *or* $n(1−\pi)\ge 5$ failures. 
@@ -619,31 +619,45 @@ You can use this test for multinomial variables too, but the test only compares 
 
 A pharmaceutical company claims its drug reduces fever in >60% of cases. In a random sample of *n* = 40 cases the drug reduces fever in 20 cases. Do you reject the claim?
 
-#### Conditions {-}
-
-You are testing $P(x \le 20)$ in *n* = 40 trials when *p* = 60%, a one-tail test. The sample is a random assignment experiment with 20 successes and 20 failures, so it meets the conditions for the exact binomial test.
-
-#### Results {-}
-```{r}
-pbinom(q = 20, size = 40, p = 0.6, lower.tail = TRUE)
-```
+You are testing $P(x \le 20)$ in *n* = 40 trials when *p* = 60%, a one-tail test. The sample is a random assignment experiment with 20>5 successes and 20>5 failures, so it meets the conditions for the exact binomial test.
 
 ```{r}
-binom.test(20, 40, p = 0.6, alternative = "less")
+binom.test(20, 40, p = 0.6, alternative = "greater")
 ```
+
 The exact binomial test uses the "method of small *p*-values", in which the probability of observing a proportion $p$ as far or further from $\pi_0$ is the sum of all $P(X=p_i)$ where $p_i <= p$.
 
 ```{r}
 map_dbl(dbinom(0:20, 40, 0.6), ~if_else(. <= 0.5, ., 0)) %>% sum()
 ```
 
-You could have used the chi-squared goodness-of-fit test, however, it is not performing a one-tail test.
+That is what `pbinom()` does.
+
+```{r}
+pbinom(q = 20, size = 40, p = 0.6, lower.tail = TRUE)
+```
+
+A 95% confidence interval means 95% of confidence intervals constructed from a random sample of the population will contain the true population proportion. There are several methods to calculate a binomial confidence interval^[[Wikipedia](https://en.wikipedia.org/wiki/Binomial_proportion_confidence_interval).] `binom.test()` uses the Clopper-Pearson interval. This method calculates lower ($P_L$) and upper ($P_U$) limits that satisfy 
+
+$$
+\begin{eqnarray}
+\sum_{x=n_1}^n \binom{n}{x} p_L^x(1 - p_L)^{n-x} &=& \alpha/2\\
+\sum_{x=0}^{n_1} \binom{n}{x} p_U^x(1 - p_U)^{n-x} &=& \alpha/2
+\end{eqnarray}
+$$
+
+where $n_i$ is the measured successes in $n$ trials. For a one-tail test, the confidence interval is calculated with the right side equaling 0 and $/alpha$ instead of $\alpha/2$. A right-tailed 95% confidence interval means 95% of confidence intervals will contain a lower limit that is less than the true population proportion. If you wanted to construct a confidence interval around the population proportion, use a two-sided test.
+
+```{r}
+binom.test(20, 40, p = 0.6, alternative = "two.sided")
+```
+
+
+If you just wanted to know whether 20 successes in 40 trials is compatible with a population proportion of 60%, then you could use the chi-squared goodness-of-fit test.
 
 ```{r}
 chisq.test(x = c(20, 20), p = c(0.6, 0.4), correct = FALSE)
 ```
-
-You should study the construction of the confidence interval on [Wikipedia](https://en.wikipedia.org/wiki/Binomial_proportion_confidence_interval) and explain it here.
 
 ## One-Sample Proportion z Test
 

@@ -6,7 +6,7 @@ date: "`r Sys.Date()`"
 site: bookdown::bookdown_site
 output:
   bookdown::gitbook:
-    toc_depth: 4
+    toc_depth: 2
     fig_caption: true
     lib_dir: assets
     split_by: section
