@@ -153,6 +153,68 @@ A couple other points to remember:
 * The Bernoulli distribution is a special case of the binomial with $n = 1$. 
 * The binomial distribution assumes independent trials. If you sample *without replacement from a finite population*, use the hypergeometric distribution.
 
+## Hypergeometric
+
+> If $X = k$ is the count of successful events in a sample of size $n$ *without replacement* from a population of size $N$ containing $K$ successes, then $X$ is a random variable with a hypergeometric distribution
+>
+> $$f_X(k|N, K, n) = \frac{{{K}\choose{k}}{{N-K}\choose{n-k}}}{{N}\choose{n}}.$$
+>
+> with $E(X)=n\frac{K}{N}$ and $Var(X) = n\frac{K}{N}\cdot\frac{N-k}{N}\cdot\frac{N-n}{N-1}$.  
+
+The formula follows from the frequency table of the possible outcomes.
+
+|           |Sampled |Not Sampled |Total |
+|-----------|--------|------------|------|
+|success    |k       |K-k         |K     |
+|non-success|n-k     |(N-K)-(n-k) |N-K   |
+|Total      |n       |N-n         |N     |
+
+Here is a simple analysis of data from a hypergeometric process. What is the probability of selecting $k = 14$ red marbles from a sample of $n = 20$ taken from an urn containing $K = 70$ red marbles and $N-K = 30$ green marbles?
+
+Function `choose()` returns the binomial coefficient ${{n}\choose{k}} = \frac{n!}{k!(n-k)!}$.
+```{r}
+k <- 14; n <- 20; N <- 100; K <- 70
+choose(K, k) * choose(N-K, n-k) / choose(N, n)
+```
+
+But of course you would never have to do it that way.
+
+```{r}
+dhyper(x = k, m = K, n = N-K, k = n)
+```
+
+The expected value is `r n * K / N` and variance is `r n * K / N * (N - k) / N * (N - n) / (N - 1)`. 
+
+```{r message=FALSE, warning=FALSE, echo=FALSE}
+data.frame(x = 1:20) %>%
+  mutate(density = dhyper(x = 1:20, m = K, n = N-K, k = n)) %>%
+  ggplot() +
+  geom_col(aes(x = x, y = density)) +
+  theme_minimal() +
+  labs(title = "P(X = k) when X ~ Hypergeometric(100, 70, 20")
+```
+
+The hypergeometric random variable is similar to the binomial random variable except that it applies to situations of sampling *without* replacement from a small population.  As the population size increases, sampling without replacement converges to sampling *with* replacement, and the hypergeometric distribution converges to the binomial. What if the total population size had been 250? 500? 1000?
+
+```{r}
+p <- data.frame(x = 1:20) %>%
+  mutate(density = dbinom(x = 1:20, size = n, prob = K / N)) %>%
+  ggplot() +
+  geom_col(aes(x = x, y = density))
+hyper <- data.frame(
+  x = 1:20,
+  N_100 = dhyper(x = 1:20, m = K*1.0, n = (N-K)*1.0, k = n),
+  N_250 = dhyper(x = 1:20, m = K*2.5, n = (N-K)*2.5, k = n),
+  N_500 = dhyper(x = 1:20, m = K*5.0, n = (N-K)*5.0, k = n)
+) %>% pivot_longer(-x)
+p + geom_line(data = hyper, aes(x = x, y = value, color = name)) +
+  labs() +
+  theme_minimal() +
+  theme(legend.position = "top") +
+  labs(title = "P(X = k) when X ~ Hypergeometric(N, .7N, 20)", color = "", x = "k")
+
+```
+
 ## Poisson
 
 Poisson distributions are used to model the number of events occurring in a fixed period of time. In Poisson processes, events occur continuously and independently at a constant average rate. [This blog](https://towardsdatascience.com/poisson-distribution-intuition-and-derivation-1059aeab90d) by Aerin Kim demonstrates how the Poisson distribution is related to the binomial distribution. The key is that the binomial distribution expresses the probability of $X = k$ events in $n$ trials when the probability of *one* event in *one* trial is $p$. Sometimes you don't know $p$, but instead know that $\lambda$ events occur per some time interval. You could try to back into the binomial by shrinking the time interval so that $k$ could never be greater than one. The ratio $p = \lambda / n$ approaches the probability of observing one event in one trial as $n \rightarrow \infty$. As $n \rightarrow \infty$, $p \rightarrow 0$. If you do this and follow the math, you wind up with the Poisson distribution!

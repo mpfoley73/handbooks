@@ -11,31 +11,21 @@ library(flextable)
 
 Tests of association assess the strength of association between two variables. There are many variations on this theme.
 
-**Pearson's correlation** assesses the strength of a linear relationship between two continuous variables. It applies when the relationship is linear with no outliers and the variables are bi-variate normal. There are two less restrictive alternatives, **Spearman's rho** and **Kendall's tau**, that assess the strength and direction of association.
+[Pearson's correlation](#pearson) assesses the strength of a linear relationship between two continuous variables. It applies when the relationship is linear with no outliers and the variables are bi-variate normal. There are two less restrictive alternatives, [Spearman's rho](#spearman) and [Kendall's tau](#kendall), that assess the strength and direction of association.
+
+A two-way frequency table is a frequency table for *two* categorical variables. You usually construct a two-way table to test whether the frequency counts in one categorical variable differ from the other categorical variable using the [chi-square test for independence or G-test](#chisq-independence), or [Fisher's exact test](#fisher-exact).  If there is a significant difference (i.e., the variables are related), then describe the relationship with an analysis of the residuals, calculations of measures of association (difference in proportions, **Phi** and **Cramer's V**, **Relative risks**, or **Odds Ratio**), and partition tests. 
 
 If one of the variables is bivariate categorical, use **point-biserial correlation**, a special case of Pearson's correlation. **Pearson's partial correlation** controls for one or more variables - linear regression?
 
 If both variables are ordinal, use **Goodman and Kruskal's gamma**. **Somers' d** is an alternative if you want to distinguish between a dependent and independent variable (instead of linear regression?). The **Mantel-Haenszel** test of trend is used to determine whether there is a linear trend (i.e., a linear relationship/association) between two ordinal variables that are represented in a contingency table. The **Cochran-Armitage** test of trend is used to determine whether there is a linear trend (i.e., a linear relationship/association) between an ordinal independent variable and a dichotomous dependent variable.
 
-The **chi-square test for association** tests for whether two categorical variables are associated. The **chi-square test for independence** focuses on contingency tables that are greater than 2 x 2, which are often referred to as r x c contingency tables, and tests whether two variables measured at the nominal level are independent (i.e., whether there is an association between the two variables).
-
-**Relative risks** can be calculated from more than one statistical test, but in this guide we will focus on the calculation of relative risk in a 2 x 2 table. **Odds Ratio** can be calculated from more than one statistical test (e.g., a binomial logistic regression, ordinal logistic regression, multinomial logistic regression, etc), but in this guide we will focus on the calculation of an odds ratio from a 2 x 2 contingency table (i.e., a measure of association between two dichotomous variables). 
-
 **Goodman and Kruskal's λ** (the Greek symbol, λ, is pronounced "lambda") is also referred to as Goodman and Kruskal's lambda. It is a nonparametric measure of the strength of association between two nominal variables where a distinction is made between a dependent and independent variable
-
-The **Fisher's exact test** can be used to test more than one type of null hypothesis. In this guide we will use Fisher's exact test to determine whether two dichotomous variables are independent (i.e., test the null hypothesis of independence). 
 
 **Loglinear analysis** is used to understand (and model) associations between two or more categorical variables (i.e., nominal or ordinal variables). However, loglinear analysis is usually employed when dealing with three or more categorical variables, as opposed to two variables, where a chi-square test for association is usually conducted instead. 
 
-
-
-Use *association* tests to assess a possible two-way linear association between two continuous (interval or ratio) random variables. Association tests return an estimate between +1 (perfect linear relationship) to -1 (perfect linear inverse relationship).
-
-Use Pearson's product moment if both random variables are normally distributed. If either variable is skewed, ordinal, or has extreme values, use Spearman's rank correlation.
-
 There are three common correlation tests for categorical variables^[See https://www.statology.org/correlation-between-categorical-variables/]: Tetrachoric correlation for binary categorical variables; polychoric correlation for ordinal categorical variables; and Cramer’s V for nominal categorical variables.
 
-## Pearson's Correlation
+## Pearson's Correlation {#pearson}
 
 The Pearson product-moment correlation measures the strength and direction of a linear relationship between two continuous variables, *x* and *y*. The Pearson correlation coefficient, *r*, ranges from -1 (perfect negative linear relationship) to +1 (perfect positive linear relationship). A value of 0 indicates no relationship between two variables.
 
@@ -51,7 +41,7 @@ The test statistic below follows a *t*-distribution with *n* − 2 degrees of fr
 
 $$t = r_{x,y} \sqrt{\frac{n - 2}{1 - r^2_{x,y}}}$$
 
-## Spearman's Rho
+## Spearman's Rho {#spearman}
 
 Spearman's ranked correlation (Spearman's rho) is a measure of the strength and direction of a monotonic relationship between two variables that are at least ordinal. Spearman's correlation is a non-parametric alternative to Pearson when one or more of its conditions are violated. Unlike Pearson, the relationship need not be linear (it only needs to be monotonic), and has no outliers or bivariate normality conditions.
 
@@ -61,7 +51,7 @@ $$\rho = 1 - \frac{6 \sum_i d^2_i}{n(n^2 - 1)}$$
 
 where $d_i$ is the difference in ranks of observation $i$.
 
-## Kendal's Tau
+## Kendal's Tau {#kendall}
 
 Kendal's tau is a second alternative to Pearson and is identical to Spearman's rho with regard to assumptions. Kendal's tau only differs from Spearman's rho in *how* it measures the relationship. Whereas Spearman measures the correlation of the ranks, Kendal's tau is a function of concordant (C), discordant (D) and tied (Tx and Ty) pairs of observations. Concordant means both X and Y in one observation of a pair are larger than in the other. Discordant means X is larger in one observation than the other while Y is smaller. Tied mean either both observations have the same X or both have the same Y.
 
@@ -70,19 +60,19 @@ $$\mathrm{Kendall's} \space \tau_b = \frac{C - D}{\sqrt{(C + D + T_x) \times (C 
 ## Case Study: Pearson, Spearman, Kendall
 
 ```{r include=FALSE}
-cs1 <- list()
+cs <- list()
 
 # Two continuous (c) vars
-cs1$dat1 <- read.spss("./input/pearson-correlation.sav", to.data.frame = TRUE)
+cs$dat1 <- read.spss("./input/pearson-correlation.sav", to.data.frame = TRUE)
 # Two continuous (c) vars, but violating normality/outlier assumption.
-cs1$dat1b <- read.spss("./input/spearmans-correlation.sav", to.data.frame = TRUE)
+cs$dat1b <- read.spss("./input/spearmans-correlation.sav", to.data.frame = TRUE)
 # Two ordinal (o) vars
-cs1$dat2 <- read.spss("./input/kendalls-tau-b.sav", to.data.frame = TRUE)
+cs$dat2 <- read.spss("./input/kendalls-tau-b.sav", to.data.frame = TRUE)
 ```
 
 This case study works with two data sets. `dat1` is composed of two continuous variables; `dat2` is composed of two ordinal variables.  
 
-A researcher investigates the relationship between `cholesterol` concentration and time spent watching TV, `time_tv`, in *n* = `r cs1$dat1 %>% nrow()` otherwise healthy 45 to 65 year old men (`dat1`). This data set will meet the conditions for Pearson, so we try all three tests on it.
+A researcher investigates the relationship between `cholesterol` concentration and time spent watching TV, `time_tv`, in *n* = `r cs$dat1 %>% nrow()` otherwise healthy 45 to 65 year old men (`dat1`). This data set will meet the conditions for Pearson, so we try all three tests on it.
 
 A researcher investigates the relationship between the level of agreement with the statement "*Taxes are too high*" (`tax_too_high`, four level ordinal) and participant `income` level (three level ordinal) (`dat2`). The ordinal variables rule out Pearson, leaving Spearman and Kendall.
 
@@ -103,8 +93,8 @@ Assess linearity and monotonicity with a scatter plot. `dat1` is plotted on the 
 
 ```{r ccscatter, echo=FALSE, fig.height=3.5, fig.width=7.5, fig.cap="The left scatter plot is `dat1`. It meets Pearson's linearity condition. A second version at right illustrates what a failure might look like."}
 bind_rows(
-  `Linear` = cs1$dat1,
-  `Non-Linear` = cs1$dat1b,
+  `Linear` = cs$dat1,
+  `Non-Linear` = cs$dat1b,
   .id = "set"
 ) %>%
   ggplot(aes(x = time_tv, y = cholesterol)) +
@@ -123,7 +113,7 @@ bind_rows(
 The ordinal variable data set `dat2` is plotted in Figure \@ref(fig:ooscatter).
 
 ```{r ooscatter, echo=FALSE, fig.height=3.5, fig.width=5.5, fig.cap="`dat2` meets the mononicity assumption for Spearman's rho and Kendall's tau."}
-cs1$dat2 %>%
+cs$dat2 %>%
   count(income, tax_too_high) %>%
   ggplot(aes(x = income, y = tax_too_high, size = n)) +
   geom_point(color = "snow4", alpha = 0.6) +
@@ -144,8 +134,8 @@ Pearson's correlation requires no outliers. Both plots in Figure \@ref(fig:ccsca
 Bivariate normality is difficult to assess. If two variables are bivariate normal, they will each be individually normal as well. That's the best you can hope to check for. Use the Shapiro-Wilk test.
 
 ```{r collapse=TRUE}
-shapiro.test(cs1$dat1$time_tv)
-shapiro.test(cs1$dat1$cholesterol)
+shapiro.test(cs$dat1$time_tv)
+shapiro.test(cs$dat1$cholesterol)
 ```
 
 If a variable is not normally distributed, you can transform it, carry on regardless since the Pearson correlation is fairly robust to deviations from normality, or revert to Spearman and Kendall.
@@ -159,24 +149,24 @@ Calculate Pearson's correlation, Spearman's rho, or Kendall's tau. `dat` meets t
 `dat1` met the conditions for Pearson's correlation.
 
 ```{r}
-(cs1$cc_pearson <- 
-  cor.test(cs1$dat1$cholesterol, cs1$dat1$time_tv, method = "pearson")
+(cs$cc_pearson <- 
+  cor.test(cs$dat1$cholesterol, cs$dat1$time_tv, method = "pearson")
 )
 ```
 
-*r* = `r cs1$cc_pearson$estimate %>% scales::number(accuracy = .01)` falls in the range of a "moderate" linear relationship. $r^2$ = `r scales::percent(cs1$cc_pearson$estimate^2, accuracy = 1)` is the coefficient of determination. Interpret it as the percent of variability in one variable that is explained by the other. If you are not testing a hypothesis (HO: $\rho \ne 0$), you can report just report *r*. Otherwise, include the *p*-value. Report your results like this:
+*r* = `r cs$cc_pearson$estimate %>% scales::number(accuracy = .01)` falls in the range of a "moderate" linear relationship. $r^2$ = `r scales::percent(cs$cc_pearson$estimate^2, accuracy = 1)` is the coefficient of determination. Interpret it as the percent of variability in one variable that is explained by the other. If you are not testing a hypothesis (HO: $\rho \ne 0$), you can report just report *r*. Otherwise, include the *p*-value. Report your results like this:
 
 >A Pearson's product-moment correlation was run to assess the relationship between cholesterol concentration and daily time spent watching TV in males aged 45 to 65 years. One hundred participants were recruited.
 >
 >Preliminary analyses showed the relationship to be linear with both variables normally distributed, as assessed by Shapiro-Wilk's test (p > .05), and there were no outliers.
 >
->There was a statistically significant, moderate positive correlation between daily time spent watching TV and cholesterol concentration, *r*(`r cs1$cc_pearson$parameter`) = `r cs1$cc_pearson$estimate %>% scales::number(accuracy = .01)`, p < .0005, with time spent watching TV explaining `r scales::percent(cs1$cc_pearson$estimate^2, accuracy = 1)` of the variation in cholesterol concentration.
+>There was a statistically significant, moderate positive correlation between daily time spent watching TV and cholesterol concentration, *r*(`r cs$cc_pearson$parameter`) = `r cs$cc_pearson$estimate %>% scales::number(accuracy = .01)`, p < .0005, with time spent watching TV explaining `r scales::percent(cs$cc_pearson$estimate^2, accuracy = 1)` of the variation in cholesterol concentration.
 
 You wouldn't use Spearman's rho or Kendall's tau here since the more precise Pearson's correlation is available. But just out of curiosity, here are the correlations using those two measures.
 
 ```{r collapse=TRUE}
-cor(cs1$dat1$cholesterol, cs1$dat1$time_tv, method = "kendall")
-cor(cs1$dat1$cholesterol, cs1$dat1$time_tv, method = "spearman")
+cor(cs$dat1$cholesterol, cs$dat1$time_tv, method = "kendall")
+cor(cs$dat1$cholesterol, cs$dat1$time_tv, method = "spearman")
 ```
 
 Both Kendall and Spearman produced more conservative estimates of the strength of the relationship - Kendall especially so.
@@ -186,7 +176,7 @@ You probably wouldn't use linear regression here either because it describes the
 ```{r}
 lm(
   y ~ x, 
-  data = cs1$dat1 %>% mutate(y = scale(cholesterol), x = scale(time_tv))
+  data = cs$dat1 %>% mutate(y = scale(cholesterol), x = scale(time_tv))
 )
 ```
 
@@ -197,38 +187,259 @@ Data set `dat2` did not meet the conditions for Pearson's correlation, so use Sp
 Start with Spearman's rho. Recall that Spearman's rho is just the Pearson correlation applied to the ranks. Recall also that the Pearson's correlation is just the covariance divided by the product of the standard deviations. You can quickly calculate it by hand.
 
 ```{r}
-cov(rank(cs1$dat2$income), rank(cs1$dat2$tax_too_high)) /
-  (sd(rank(cs1$dat2$income)) * sd(rank(cs1$dat2$tax_too_high)))
+cov(rank(cs$dat2$income), rank(cs$dat2$tax_too_high)) /
+  (sd(rank(cs$dat2$income)) * sd(rank(cs$dat2$tax_too_high)))
 ```
 
 Use the function though. I don't get why `cor.test` requires `x` and `y` be numeric.
 
 ```{r}
-(cs1$spearman <- 
+(cs$spearman <- 
   cor.test(
-    as.numeric(cs1$dat2$tax_too_high), 
-    as.numeric(cs1$dat2$income), 
+    as.numeric(cs$dat2$tax_too_high), 
+    as.numeric(cs$dat2$income), 
     method = "spearman")
 )
 ```
 
 Interpret the statistic using the same rule of thumb as for Pearson's correlation. A rho over .5 is a strong correlation.
 
->A Spearman's rank-order correlation was run to assess the relationship between income level and views towards income taxes in 24 participants. Preliminary analysis showed the relationship to be monotonic, as assessed by visual inspection of a scatterplot. There was a statistically significant, strong positive correlation between income level and views towards income taxes, $r_s$ = `r cs1$spearman$estimate %>% scales::number(accuracy = .001)`, *p* = `r cs1$spearman$p.value %>% scales::number(accuracy = .001)`.
+>A Spearman's rank-order correlation was run to assess the relationship between income level and views towards income taxes in 24 participants. Preliminary analysis showed the relationship to be monotonic, as assessed by visual inspection of a scatterplot. There was a statistically significant, strong positive correlation between income level and views towards income taxes, $r_s$ = `r cs$spearman$estimate %>% scales::number(accuracy = .001)`, *p* = `r cs$spearman$p.value %>% scales::number(accuracy = .001)`.
 
 ##### Kendall's Tau {-}
 
 Recall that Kendall's tau is a function of concordant (C), discordant (D) and tied (Tx and Ty) pairs of observations. The manual calculation is a little more involved. Here is the function instead.
 
 ```{r}
-(cs1$kendall <- 
+(cs$kendall <- 
   cor.test(
-    as.numeric(cs1$dat2$tax_too_high), 
-    as.numeric(cs1$dat2$income), 
+    as.numeric(cs$dat2$tax_too_high), 
+    as.numeric(cs$dat2$income), 
     method = "kendall")
 )
 ```
 
-As with the case study on cholesterol and television, Kendall's tau was more conservative than Spearman's rho. $\tau_b$ = `r cs1$kendall$estimate %>% scales::number(accuracy = .001)` is still in the "strong" range, though just barely.
+As with the case study on cholesterol and television, Kendall's tau was more conservative than Spearman's rho. $\tau_b$ = `r cs$kendall$estimate %>% scales::number(accuracy = .001)` is still in the "strong" range, though just barely.
 
->A Kendall's tau-b correlation was run to assess the relationship between income level and views towards income taxes amongst 24 participants. Preliminary analysis showed the relationship to be monotonic, as assessed by visual inspection of a scatterplot. There was a statistically significant, strong positive correlation between income level and the view that taxes were too high, $\tau_b$ = `r cs1$kendall$estimate %>% scales::number(accuracy = .001)`, *p* = `r cs1$kendall$p.value %>% scales::number(accuracy = .001)`.
+>A Kendall's tau-b correlation was run to assess the relationship between income level and views towards income taxes amongst 24 participants. Preliminary analysis showed the relationship to be monotonic, as assessed by visual inspection of a scatterplot. There was a statistically significant, strong positive correlation between income level and the view that taxes were too high, $\tau_b$ = `r cs$kendall$estimate %>% scales::number(accuracy = .001)`, *p* = `r cs$kendall$p.value %>% scales::number(accuracy = .001)`.
+
+## Chi-Square Test of Independence {#chisq-independence}
+
+The **chi-square test of independence** tests whether two categorical variables are associated, or are instead *independent*^[The test is sometimes call the chi-square test for *association*.]. It tests whether the observed joint frequency counts $O_{ij}$ differ from expected frequency counts $E_{ij}$ under the *independence model* (the model of independent explanatory variables, $\pi_{ij} = \pi_{i+} \pi_{+j}$. The null hypothesis is $O_{ij} = E_{ij}$. The test assumes the two variables are independent^[Independence is usually true by assumption and/or construction. It can be violated by, for example, a sample that includes spouses where one spouse's status (e.g., preference for a vacation destination) may be related to the other spouse's status.] and that all cell counts are at least 5.
+
+Choose from two test statistics, Pearson $X^2$ (and the continuity adjusted $X^2$), and deviance *G*. As $n \rightarrow \infty$ their sampling distributions approach $\chi^2(df)$ with degrees of freedom (df) equal to the saturated model df $I \times J - 1$ minus the independence model df $(I - 1) + (J - 1)$, which you can algebraically solve for $df = (I - 1)(J - 1)$.
+
+The Pearson goodness-of-fit statistic is
+
+$$X^2 = \sum \frac{(O_{ij} - E_{ij})^2}{E_{ij}}$$
+
+where $O_{ij}$ is the observed count, and $E_{ij}$ is the product of the row and column marginal probabilities. The deviance statistic is 
+
+$$G = 2 \sum_{ij} O_{ij} \log \left( \frac{O_{ij}}{E_{ij}} \right)$$
+ 
+$X^2$ and *G* increase with the disagreement between the saturated model proportions $p_{ij}$ and the independence model proportions $\pi_{ij}$.
+
+## Fisher's Exact Test {#fisher-exact}
+
+Whereas the chi-squared and *G*-test rely on the approximation that the test statistic distribution approaches $\chi^2$ as $n \rightarrow \infty$, Fisher's exact test is an "exact test" in that the *p*-value is calculated exactly from the [hypergeometric distribution](https://bookdown.org/mpfoley1973/probability/hypergeometric.html). Therefore Fisher's test *should* only apply only to 2 x 2 tables. For some reason, it doesn't.^[It doesn't apply to just 2 x 2, so I need to figure out why.]
+
+The test assumes the row totals $n_{i+}$ and the column totals $n_{+j}$ are fixed by study design, and the expected values of at least 20% of cells in the table have expected cell count >5, and no expected cell count is 0.
+
+The famous example of the Fisher exact test is the "Lady tea testing" example. A lady claims she can guess whether the milk was poured into the cup before or after the tea. The experiment consists of 8 cups, 4 with milk poured first, 4 with milk poured second. The lady guesses correctly in 6 of the 8 cups.
+
+```{r}
+(tea <- matrix(c(3, 1, 1, 3), nrow = 2, 
+       dimnames = list(Guess = c("Milk", "Tea"),
+                       Truth = c("Milk", "Tea"))))
+```
+
+This is a hypergeometric distribution question because you want to know the probability of 3 or 4 successes in a sample of 4. If $X = k$ is the count of successful events in a sample of size $n$ *without replacement* from a population of size $N$ containing $K$ successes, then $X$ is a random variable with a hypergeometric distribution
+
+$$f_X(k|N, K, n) = \frac{{{K}\choose{k}}{{N-K}\choose{n-k}}}{{N}\choose{n}}.$$
+
+The formula follows from the frequency table of the possible outcomes. ${K}\choose{k}$ is the number of ways to get *k* successes in *K* draws. ${N-K}\choose{n-k}$ is the number of ways to fail to get *k* successes in *K* draws. And the denominator ${N}\choose{n}$ is the total of all ways to succeed and fail.
+
+```{r}
+tibble::tribble(
+  ~` `, ~Sampled, ~`Not Sampled`,  ~Total,
+  "success", "k", "K-k", "K",
+  "non-success", "n-k", "(N-K)-(n-k)", "N-K",
+  "Total", "n", "N-n", "N"
+) %>%
+  flextable::flextable() %>%
+  flextable::autofit()
+```
+
+Function `choose()` returns the binomial coefficient ${{n}\choose{k}} = \frac{n!}{k!(n-k)!}$. The probability of choosing correctly at least 3 times out of 4 is the number of combinations of *k* = 3 plus the number with *k* = 4 divided by the number of combinations of *any* outcome.
+
+```{r}
+k <- 3; n <- 4; K <- 4; N <- 8
+
+choose(K, k) * choose(N-K, n-k) / choose(N, n) +
+choose(K, k+1) * choose(N-K, n-(k+1)) / choose(N, n)
+```
+
+`phyper()` does this.^[k-1 because it returns the probability of >k and we want >=k).]
+
+```{r}
+(pi <- phyper(q = k-1, m = K, n = N-K, k = n, lower.tail = FALSE))
+```
+
+The *p*-value from Fisher's exact test is calculated this way.
+
+```{r}
+fisher.test(tea, alternative = "greater")
+```
+
+The odds ratio at the bottom is the odds of success divided by the odds of non-success. The sample odds ratio is (3/1) / (1/3) = `r (3/1) / (1/3)`, but the documentation for `fisher.test()` explains that this it calculates the *conditional maximum likelihood estimate*.^[I don't really know what that means. [Brownlee](https://machinelearningmastery.com/what-is-maximum-likelihood-estimation-in-machine-learning/) might help.]
+
+## Case Study: Chi-Square, Fisher
+
+```{r include=FALSE}
+# Gender vs Competition
+# https://statistics.laerd.com/premium/spss/or2x2/odds-ratio-2x2-in-spss.php
+cs$or2x2 <- read.spss("./input/odds-ratio-2x2-individual-scores.sav", to.data.frame = TRUE)
+
+# Same data, already summarized! Do no use this.
+# https://statistics.laerd.com/premium/spss/cstfa/chi-square-test-for-association-in-spss.php
+cs$cstfa <- read.spss("./input/chi-square-test-for-association-frequencies.sav", to.data.frame = TRUE)
+
+# Gender vs Competition again, but this time with small cell counts
+# https://statistics.laerd.com/premium/spss/fet2x2/fishers-exact-test-in-spss.php
+cs$fet2x2 <- read.spss("./input/fishers-exact-test-2x2-individual-scores.sav", to.data.frame = TRUE)
+```
+
+A researcher investigates whether males and females enrolled in an Exercise Science degree course differ in the type of exercise then engage, competitive or non-competitive. They survey 25 males and 25 females. 
+
+```{r}
+cs$or2x2 %>% 
+  gtsummary::tbl_cross(
+    percent = "row",
+    label = list(comp ~ "Competitive")
+  ) %>%
+  gtsummary::add_p()
+```
+
+#### Conditions {-}
+
+Use the Chi-Square test of independence for nominal, independent variables. The test requires all cell counts to be greater than 5. If your data does not meet this condition, consider collapsing some levels. If you collapse all the way to a 2 x 2 cross-tabulation and still do not have at least 5 counts per cell, use Fisher's exact test.
+
+Use Fisher's exact test for *dichotomous* nominal, independent variables. The test is valid for *cross-sectional* samples, but not for prospective or retrospective samples.
+
+#### Test {-}
+
+##### Chi-Square {-}
+
+To see what's going on, here is chi-square test done by hand. The expected values are the joint probabilities from the independence model (e.g., $E(\mathrm{male}, {\mathrm{yes}}) = \pi_{\mathrm{male}} \times \pi_{\mathrm{yes}} \times n$).
+
+```{r collapse=TRUE}
+exer_table <- cs$or2x2 %>% table()
+expected <- marginSums(exer_table, 1) %*% t(marginSums(exer_table, 2)) / sum(exer_table)
+(X2 <- sum((exer_table - expected)^2 / expected))
+(df <- (2 - 1) * (2 - 1))
+pchisq(X2, df, lower.tail = FALSE)
+```
+
+And the *G* test.
+
+```{r collapse=TRUE}
+(G <- 2 * sum(exer_table * log(exer_table / expected)))
+pchisq(G, df, lower.tail = FALSE)
+```
+
+The `chisq.test()` function applies the Yates continuity correction by default to correct for situations with small cell counts.  The Yates continuity correction  subtracts 0.5 from the $O_{ij} - E_{ij}$ differences.  Set `correct = FALSE` to suppress Yates. The Yates continuity correction only applies to 2 x 2 tables.
+
+```{r}
+(cs$or2x2_chisq.test <- chisq.test(exer_table, correct = FALSE))
+```
+
+Calculate the *G* test with `DescTools::GTest()`.
+
+```{r}
+(cs$or2x2_g.test <- DescTools::GTest(exer_table, correct = "none"))
+```
+
+As a side note, if the cell size >5 condition is violated, you can use Monte Carlo simulation.
+
+```{r}
+chisq.test(exer_table, correct = FALSE, simulate.p.value = TRUE)
+```
+
+##### Fisher {-}
+
+The documentation for `fisher.test()` explains that the *p*-value is based on the the first element of the contingency table "*with non-centrality parameter given by the odds ratio.*" I don't understand the odds ratio business and cannot figure out how it is calculated. It says in the documentation for the `estimate` value that "*Note that the conditional Maximum Likelihood Estimate (MLE) rather than the unconditional MLE (the sample odds ratio) is used.*", so that may hold the answer.
+
+At least the *p*-value I can calculate by hand.
+
+```{r}
+phyper(q = exer_table[1, 1] - 1,  # k minus 1
+       m = sum(exer_table[1, ]),  # K
+       n = sum(exer_table[2, ]),  # N - K
+       k = sum(exer_table[, 1]),  # n
+       lower.tail = FALSE) * 2
+```
+
+```{r}
+(cs$or2x2_fisher.test <- fisher.test(exer_table))
+```
+
+##### Post-Test: Phi, Cramer's V {-}
+
+The problem with the chi-square test for association is that it does not measure the *strength* of any association. Two measures of associate are often calculated after the chi-squared or Fisher tests.
+
+Cramer's V is derived from the chi-square statistic. It restricts the statistic to a range of 0 to 1. ^[[This tutorial](https://methods.sagepub.com/base/download/DatasetStudentGuide/cramers-v-lfsp-2015-r) says both variables should have more than two levels, but doesn't explain why.] Values under .1 are considered poor evidence of association; >.2 are "moderately strong" evidence.
+
+$$V = \sqrt{\frac{\chi^2 / n}{\mathrm{min}(I, J) - 1}}$$
+
+```{r collapse=TRUE}
+# by hand
+sqrt(cs$or2x2_chisq.test$statistic / sum(exer_table) / (min(2, 2) - 1))
+
+# from package
+(cs$or2x2_v <- rcompanion::cramerV(exer_table))
+```
+
+The Phi Coefficient is defined
+
+$$\Phi = \sqrt{\frac{AD-BC}{(A+B)(C+D)(A+C)(B+D)}}$$
+
+where A, B, C, and D are the four values of the 2 x 2 contingency table. 
+
+```{r}
+matrix(c("A", "C", "B", "D"), nrow = 2)
+```
+Similar to a Pearson Correlation Coefficient, a Phi Coefficient takes on values between -1 and 1.
+
+```{r collapse=TRUE}
+# by hand
+det(matrix(exer_table, nrow = 2)) / 
+  sqrt(prod(c(marginSums(exer_table, 1), marginSums(exer_table, 2))))
+
+# from package
+(cs$or2x2_phi <- psych::phi(exer_table))
+```
+##### Reporting {-}
+
+>A chi-square test for association was conducted between gender and preference for performing competitive sport. All expected cell frequencies were greater than five. There was a statistically significant association between gender and preference for performing competitive sport, ($X^2$(1) = `r number(cs$or2x2_chisq.test$statistic, .001)`, *p* = `r number(cs$or2x2_chisq.test$p.value, .001)`. There was a moderately strong association between gender and preference for performing competitive sport, *V* = `r number(cs$or2x2_v, .001)`.
+
+> A Fisher's Exact test was conducted between gender and preference for performing competitive sport. There was a statistically significant association between gender and preference for performing competitive sport, *p* = `r number(cs$or2x2_fisher.test$p.value, .001)`.
+
+## Kruskal's Lambda
+## Relative Risk
+## Odds Ratio
+Calculate relative risks for *dichotomous* nominal, independent variables when one variable is independent, the other dependent. Relative risks are valid for *prospective* and *retrospective cohort designs*, *randomized controlled trials (RCTs)*, and some types of *cross-sectional studies*, but not with case-control studies.
+
+Calculate odds ratios as an alternative to relative risk. It makes the same assumptions. Unlike relative risk, it is valid for *all* study designs.
+
+
+```{r}
+cs$or2
+# Smoking vs Lung Cancer
+# https://statistics.laerd.com/premium/spss/rr2x2/relative-risk-2x2-in-spss.php
+cs$rr2x2 <- read.spss(
+  "./input/relative-risk-2x2-individual-scores.sav", 
+  to.data.frame = TRUE
+)
+
+```
+

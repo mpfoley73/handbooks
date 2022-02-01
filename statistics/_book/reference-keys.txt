@@ -72,7 +72,13 @@ ancova
 kruskalwallis-test
 pairwise.prop.test
 association
-pearsons-correlation
-spearmans-rho
-kendals-tau
+pearson
+spearman
+kendall
 case-study-pearson-spearman-kendall
+chisq-independence
+fisher-exact
+case-study-chi-square-fisher
+kruskals-lambda
+relative-risk
+odds-ratio
