@@ -1,6 +1,7 @@
 ```{r setup, include=FALSE}
 library(tidyverse)
 library(glue)
+library(patchwork)
 ```
 
 
@@ -573,4 +574,53 @@ $$SE = \frac{\sigma}{\sqrt{n}}$$
 
 The *t*-distribution is essentially an approximation of the normal distribution acknowledging that we only have a sample estimate of the true population standard deviation in how we calculate the standard error.
 
+## Weibull
 
+Weibull distributions are used in time-to-event models.
+
+> If $X$ is the time to failure in a process in which the failure rate is proportional to a power of time defined by shape $k$ and scale $\lambda$ parameters, then $X$ is a random variable with a Weibull distribution $X \sim  \mathrm{WB}(k, \lambda)$ 
+> 
+> $$ f(X = x; k, \lambda) = \begin{cases} 
+\frac{k}{\lambda} \left(\frac{x}{\lambda}\right)^{k-1} e^{-(x / \lambda)^k}, & x \ge 0 \\
+0, & x < 0
+\end{cases}$$
+
+$k$ is called the *hazard rate*. If *k* < 1 the failure rate decreases over time, as is the case with significant infant mortality or defective items. If *k* = 1 the failure rate is constant, as when external event cause failure. If *k* > 1 the failure rate accelerates, as with aging processes.
+
+There are several alternative parameterizations ([Wikipedia](https://en.wikipedia.org/wiki/Weibull_distribution)). The common one for survival analysis replaces the scale parameter with a rate parameter $\beta = 1 / \lambda$. Then for *x* $\ge$ 0, 
+
+$$f(X = x; k, \beta) = \beta k (\beta x)^{k-1} e^{-(\beta x)^k}$$
+with cumulative distribution function
+$$F(x; k, \beta) = 1 - e^{-(\beta x)^k}$$
+and hazard function 
+$$h(x; k, \beta) = \beta k (\beta x)^{k-1}.$$
+
+```{r}
+p1 <- data.frame(x = seq(from = .05, to = 2.5, by = .01)) %>%
+  mutate(`k = 0.5` = dweibull(x, .5),
+         `k = 1` = dweibull(x, 1),
+         `k = 1.5` = dweibull(x, 1.5),
+         `k = 5` = dweibull(x, 5)) %>%
+  pivot_longer(cols = -x) %>%
+  ggplot(aes(x = x, y = value, color = name)) + 
+  geom_line() +
+  scale_colour_hue(h = c(90, 270)) +
+  theme(legend.position = "top") +
+  labs(x = NULL, y = "PDF", color = NULL)
+
+p2 <- data.frame(x = seq(from = 0, to = 2.5, by = .01)) %>%
+  mutate(`k = 0.5` = pweibull(x, .5),
+         `k = 1` = pweibull(x, 1),
+         `k = 1.5` = pweibull(x, 1.5),
+         `k = 5` = pweibull(x, 5)) %>%
+  pivot_longer(cols = -x) %>%
+  ggplot(aes(x = x, y = value, color = name)) + 
+  geom_line(show.legend = FALSE) +
+  scale_colour_hue(h = c(90, 270)) +
+  labs(x = NULL, y = "CDF")
+
+p1 + p2 +
+  patchwork::plot_annotation(title = "Weibull")
+```
+
+More [here](https://www.weibull.com/basics/lifedata.htm).

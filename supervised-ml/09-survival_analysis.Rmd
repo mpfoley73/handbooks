@@ -1,0 +1,340 @@
+# Survival Analysis
+
+These notes rely on the [Survival Analysis in R](https://campus.datacamp.com/courses/survival-analysis-in-r) DataCamp course, [STHDA](http://www.sthda.com/english/wiki/survival-analysis), [BJC](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC2394262/), and Applied Survival Analysis Using R [@Moore2016].
+
+Survival analysis models time to event. It differs from linear regression in two respects. Event times are typically skewed right with many early events and few late ones. This violates linear regression's normality assumption. time-to-event outcomes have a [Weibull](https://bookdown.org/mpfoley1973/probability/weibull.html) or unknown distribution.  Survival analysis models also deal with censoring (unknown starting event and/or ending event).  These factors make survival analysis more complicated than linear regression.
+
+Most survival analyses use the `survival` package for modeling and the `survminer` package for visualization.
+
+```{r message=FALSE, warning=FALSE}
+library(tidyverse)
+library(survival)
+library(survminer)
+```
+
+
+A typical survival analysis uses Kaplan-Meier plots to visualize survival curves, log-rank tests to compare survival curves among groups, and Cox proportional hazards regression to describe the effect of variables on survival. 
+
+
+## Basic Concepts
+
+This section reviews the fundamentals of survival analysis, including the hazard probability density, and survival functions.
+
+You can specify the survival distribution function either as a *survival function* or as a *hazard function*.  Define $F(t) = Pr(T \le t), \hspace{3mm} 0 < t < \infty$ as the cumulative risk function, the probability of dying on or before time $t$.  Then the survival function is the probability of *surviving* up to time $t$, 
+
+$$S(t) = 1 - F(t) = pr(T > t), \hspace{3mm} 0 < t < \infty.$$
+
+The hazard function is the instantaneous death rate given survival up to time $t$,
+
+$$h(t) = \lim_{\delta \rightarrow 0}{\frac{pr(t < T < t + \delta|T > t)}{\delta}}.$$
+
+The survival function and the hazard function are related.  The probability of dying during the interval $(t, t + \delta)$, $f(t) = F'(t)$, is the probability of dying during the interval given survival up to point $t$ times the probability of surviving up to point $t$, $f(t) = h(t) S(t)$.
+
+$S(t)$ is also the exponent of the negative cumulative hazard function,
+
+$$S(t) = e^{-H(t)}.$$
+
+You can use the survival function to estimate the mean and median survival times.  The mean survival time is $E(T) = \int S(t)dt$.  The median survival time is $S(t) = 0.5$.
+
+
+## Survival Curve Estimation
+
+There are parametric and non-parametric methods to estimate a survivor curve.  The usual non-parametric method is the *Kaplan-Meier* (KM) estimator.  The usual parametric method is the *Weibull* distribution, of which the exponential distribution is a special case.  In between the two is the *Cox proportional hazards model*, the most common way to estimate a survivor curve.
+
+### Kaplan-Meier
+
+The Kaplan-Meier estimator for the survival function is
+
+$$\hat{S} = \prod_{i: t_i < t}{\frac{n_i - d_i}{n_i}}$$
+
+where $n_i$ is the number of persons under observation at time $i$ and $d_i$ is the number of individuals dying at time $i$.  The Kaplan-Meier curve falls only when a subject dies, not when a subject is censored.  Confidence limits can be calculated using the "delta" method to obtain the variance of $\log \left(\hat{S}(t) \right)$ (see p27 of Moore).
+
+Calculate the Kaplan-Meier survival function estimate with the `survfit()` function. Here is an example using the `lung` data from the `survival` package to death of 228 patients witha advanced lung cancer.  Column `status` indicates whether or not a person in the study has died (1 = censored, 2 = dead).
+
+```{r}
+data(lung, package = "survival")
+head(lung)
+```
+
+`survfit()` creates survival curves from a formula or from a previously fitted Cox model.  The formula below is an intercept-only model.  Structure the response variable as a `Surv` object.  
+
+```{r}
+km_fit <- survfit(Surv(time, status) ~ sex, data = lung)
+km_fit
+```
+
+The printed `survfit` object shows there were 138 records (patients) for males (`sex=1`) and 90 records for females (`sex=2`), and 112 events (deaths) for males and 53 events for females.  It also shows the 95% CI in days for the median time to event.
+
+The `survfit` object contains more variables, including detailed `time` points with the number at risk `n.risk`, events `n.event`, and censors `n.censor` at each time point and strata `strata`.
+
+```{r warning=FALSE}
+data.frame(
+  strata = km_fit$strata,
+  time = km_fit$time,
+  n.risk = km_fit$n.risk,
+  n.event = km_fit$n.event,
+  n.censor = km_fit$n.censor,
+  surv = km_fit$surv,
+  upper = km_fit$upper,
+  lower = km_fit$lower
+) %>% head()
+```
+
+Plot the fitted model with `ggsurvplot()`.  A vertical drop in the curves indicates an event. The vertical tick mark on the curves means that a patient was censored.
+
+```{r warning=FALSE, fig.height=7, fig.width=6}
+ggsurvplot(
+  km_fit,
+  linetype = "strata", # Change line type by groups
+  pval = TRUE,
+  conf.int = TRUE,
+  risk.table = TRUE,
+  surv.median.line = "hv", # median horizontal and vertical ref lines
+  ggtheme = theme_bw(),
+  palette = c("#E7B800", "#2E9FDF"),
+  title = "Kaplan-Meier Survival Function Estimate"
+)
+```
+
+Reading the figure, you can see the median survival is 270 days for `sex=1` and 426 days for `sex=2`.  These key values are available from the `summary()` object.
+
+```{r}
+summary(km_fit)$table
+```
+
+`ggsurvplot()` can plot the cumulative risk function (aka "cumulative incidence" or "cumulative events"), $F(t) = 1 - S(t)$, with argument `fun = "event"`, and the cumulative hazard function, $H(t) = -\log(S(t)).$, with argument `fun = "cumhaz"`.
+
+```{r}
+ggsurvplot(
+  km_fit,
+  fun = "event",
+  linetype = "strata", # Change line type by groups
+  pval = TRUE,
+  conf.int = TRUE,
+  ggtheme = theme_bw(),
+  palette = c("#E7B800", "#2E9FDF"),
+  title = "Kaplan-Meier Cumulative Risk Function Estimate"
+)
+```
+
+```{r}
+ggsurvplot(
+  km_fit,
+  fun = "cumhaz",
+  linetype = "strata", # Change line type by groups
+  pval = TRUE,
+  conf.int = TRUE,
+  ggtheme = theme_bw(),
+  palette = c("#E7B800", "#2E9FDF"),
+  title = "Kaplan-Meier Cumulative Hazard Function Estimate"
+)
+```
+
+`ggsurvplot()` can produce faceted plots for more complicated analyses.  For example, fit a survival curve to the `survival::colon` data set with predictors `sex`, `rx`, and `adhere`.
+
+```{r}
+km_fit_colon <- survfit(Surv(time, status) ~ sex + rx + adhere, data = colon)
+
+p <- km_fit_colon %>%
+  ggsurvplot(fun = "event", 
+             conf.int = TRUE,
+             ggtheme = theme_bw()) 
+p$plot + theme(legend.position = "right") + facet_grid(rx ~ adhere)
+```
+
+#### Log-Rank Test
+
+Compare survival curves with the log-rank test ($H_0$: no difference). The log rank test is a non-parametric test, so it makes no assumptions about the survival distributions. The log rank test compares the observed and expected ($H_0$) number of events in each group. The log rank test statistic is approximately chi-square distributed.
+
+Function `survdiff()` performs the log-rank test.
+
+```{r}
+km_diff <- survdiff(Surv(time, status) ~ sex, data = lung)
+km_diff
+```
+
+The chi-sq test statistic is 10.3 on one d.f., for a p-value of 0.001, so yes, males and females had different survival patterns.
+
+
+### Weibull
+
+Kaplan-Meier curves and logrank tests are examples of univariate analysis. They describe the survival as a function of a single categorical factor variable. Weibull and other parametric models describe the function of *multiple* covariates.
+
+Several parametric distributions are available for modeling survival data.  The exponential distribution is the easiest to use because it has a time-independent function,
+
+$$\log h_i(t) = \alpha + \beta X_i$$
+or
+
+$$h_i(t) = e^{\left(\alpha + \beta X_i \right)} = \lambda$$
+
+where $i$ is the observation number.   The constant $\alpha$ is a kind of baseline log-hazard, because $\log h_i(t) = \alpha$, or $h_i(t) = e^\alpha$, when $X$ is zero.
+
+The cumulative hazard is $H(t) = \int_0^t \lambda dt = \lambda t$ and the corresponding survival function is 
+
+$$S(t) = e^{-H(t)} = e^{-\lambda t}.$$
+
+The expected survival time is $E(T) = \int_0^\infty S(t)dt = \int_0^\infty d^{-\lambda t} dt = 1 / \lambda.$.  The median survival time is $S(t) = e^{-\lambda t} = 0.5$, or $t_{med} = \log(2) / \lambda$.  
+
+The Weibull distribution is more appropriate for modeling lifetimes, however.  The Weibull hazard function is $h(t) = \alpha \lambda (\lambda t)^{\alpha - 1} = \alpha \lambda^\alpha t^{\alpha-1}$.  
+
+```{r}
+data.frame(t = rep(1:80, 3),
+           alpha = c(rep(1.5, 80), rep(1, 80), rep(0.75, 80)),
+           lambda = rep(0.03, 240)) %>%
+  mutate(
+    f = dweibull(x = t, shape = alpha, scale = 1 / 0.03),
+    S = pweibull(q = t, shape = alpha, scale = 1 / 0.03, lower.tail = FALSE),
+    h = f / S  # same as alpha * lambda^alpha * t^(alpha-1)
+  ) %>%
+  ggplot(aes(x = t, y = h, color = as.factor(alpha))) +
+  geom_line() +
+  theme(legend.position = "top") +
+  labs(y = "hazard", x = "time", color = "alpha",
+       title = "Weibul hazard function at varying levels of alpha",
+       subtitle = "Lambda = 0.03",
+       caption = "alpha = 1 is special case of exponential function.")
+```
+
+The cumulative hazard function is $H(t) = (\lambda t)^\alpha$ and the corresponding survival function is
+
+$$S(t) = e^{-(\lambda t)^\alpha}.$$
+
+The exponential distribution is a special case of the Weibull where $\alpha = 1$.  The expected survival time is $E(t) = \frac{\Gamma (1 + 1 / \alpha)}{\lambda}$.  The median survival time is $t_{med} = \frac{[\log(2)]^{1 / \alpha}}{\lambda}$
+
+The Kaplan-Meier estimate is used mainly as a descriptive tool.  The Weibull model produces a smooth survival curve instead of a step function.  The Weibull model assumes a Weibull distribution.  
+
+Fit a Weibull model with the `survreg()` function.
+
+```{r}
+data(GBSG2, package = "TH.data")
+wb <- survreg(Surv(time, cens) ~ 1, data = GBSG2)
+
+# 90% of patients survive beyond time point 385
+# Alternatively, 10% of patients die at time 385
+predict(wb, type = "quantile", p = 1 - 0.9, newdata = data.frame(1))
+# The median survival time is 1694
+predict(wb, type = "quantile", p = 1 - 0.5, newdata = data.frame(1))
+
+surv <- seq(.99, .01, by = -.01)
+t <- predict(wb, type = "quantile", p = 1 - surv, newdata = data.frame(1))
+head(data.frame(time = t, surv = surv))
+
+surv_wb <- data.frame(time = t, surv = surv, 
+                      upper = NA, lower = NA, std.err = NA)
+ggsurvplot_df(fit = surv_wb, surv.geom = geom_line)
+```
+
+Fit a Weibull model controlling for hormonal therapy `horTh` and tumor size `tsize`.
+
+```{r}
+wbmod <- survreg(Surv(time, cens) ~ horTh + tsize, data = GBSG2)
+
+coef(wbmod)
+summary(wbmod)
+
+surv <- seq(.99, .01, by = -.01)
+newdata <- expand.grid(
+    horTh = levels(GBSG2$horTh),
+    tsize = quantile(GBSG2$tsize, probs = c(0.25, 0.50, 0.75))
+)
+t <- predict(wbmod, type = "quantile", p = 1 - surv, newdata = newdata)
+
+surv_wbmod <- surv_wbmod_wide <- cbind(newdata, t) %>%
+    pivot_longer(names_to = "surv_id", values_to = "time", cols = -c(1:2)) %>%
+    mutate(tsize = as.numeric(tsize),
+           surv_id = as.factor(as.numeric(surv_id))) %>%
+    data.frame()
+surv_wbmod$surv = surv[as.numeric(surv_wbmod$surv_id)]
+surv_wbmod$upper = NA
+surv_wbmod$lower = NA
+surv_wbmod$std.err = NA
+surv_wbmod$strata = NA
+surv_wbmod[, c("upper", "lower", "std.err", "strata")] <- NA
+ggsurvplot_df(surv_wbmod, surv.geom = geom_line,
+  linetype = "horTh", color = "tsize", legend.title = NULL)
+```
+
+Interpret the coefficient as the probability of surviving falls by 0.012 per unit increase in the tumor size and increases by 0.312 if taking hormonal therapy.
+
+You can fit other models with the `dist = c("lognormal", "exponential")` parameter.
+
+
+### Cox
+
+Whereas parametric models specify the baseline hazard function, $\alpha(t) = \log h_0(t)$, the Cox proportional hazards model is semi-parametric in that it leaves it unspecified.  
+
+$$\log h_i(t) = \alpha(t) + \beta X_i$$
+
+or
+
+$$h_i(t) = h_0(t) \cdot e^{X_i \beta} = h_0(t) \psi_i$$
+
+The $e^{\beta_j}$ values are called the hazard ratios.  A positive $e^{\beta_j}$ means the hazard increases with the covariate. The proportionality of the model comes from the lack of time dependence in the $X$ variables.  Two ratio of the hazard functions of two individuals is 
+
+$$\frac{h_i(t)}{h_{i'}(t)} = \frac{h_0(t) \cdot e^{X_i \beta}}{h_0(t) \cdot e^{X_{i'} \beta}}$$
+
+Remarkably, even though the baseline hazard is unspecified, the Cox model can still be estimated by the method of partial likelihood. Consider the first failure time, $t_1$.  The probability that patient $i$ is the one to fail is the proportion of patient $i$'s hazard divided by the sum of the hazards of all $R_1$ patients at risk,
+
+$$p_1 = \frac{h_i(t_1)}{\sum_{k \in R_1} h_k(t_1)} = \frac{h_0(t_1) \psi_i}{\sum_{k \in R_1} h_0(t_1) \psi_k} = \frac{\psi_i}{\sum_{k \in R_1} \psi_k}$$
+
+The next failure event has a reduced $R_2$ patients at risk.  The partial likelihood for $D$ failure times is the product $L_i = p_1 p_2 \cdots p_D$. The Cox model uses maximum partial likelihood estimation to find the value of $\phi$ that maximizes the likelihood function.
+
+Fit a Cox proportional hazards model with `coxph()`.  Here is a simple Cox proportional hazards model for a single covariate, `sex`.
+
+```{r}
+lung_cox <- coxph(Surv(time, status) ~ sex, data = lung)
+summary(lung_cox)
+```
+
+The Wald statistic (z) is the ratio of each regression coefficient to its standard error (`z = coef/se(coef)`), just as with linear regression.
+
+The negative coefficient estimator sign means that the hazard (risk of death) decreases with increasing values of the variable. `sex` is encoded as a 1 = male, 2 = female, so sex = -0.5310 means females have a lower risk of death than males.
+
+The exponentiated coefficients (`exp(coef)`) are the hazard ratios, the effect-size of the covariates. Being female (sex=2) reduces the hazard by a factor of 0.5880 (41%).
+
+Below the coefficients estimators table is a table of hazard ratio Confidence intervals. 
+
+The last section of the summary object is three tests for the overall significance of the model: the likelihood-ratio test, Wald test, and score logrank statistics. These three methods are asymptotically equivalent. The Likelihood ratio test has better behavior for small sample sizes, so it is generally preferred.
+
+A multivariate analysis works the same way.  Here is the Cox model with two additional covariates: `age` and `ph.ecog`.
+
+```{r}
+lung_cox_2 <- coxph(Surv(time, status) ~ age + sex + ph.ecog, data = lung)
+summary(lung_cox_2)
+```
+
+The p-values for all three overall tests (likelihood, Wald, and score) are significant, indicating that the model is significant (not all $\beta$ values are 0). 
+
+Having fit a Cox model to the data, it’s possible to visualize the predicted survival proportion at any given time for a particular risk group. Function `survfit()` estimates the survival proportion, by default at the mean values of covariates.
+
+```{r}
+#ggsurvplot(survfit(lung_cox_2), data = lung, palette = "#2E9FDF", ggtheme = theme_minimal())
+```
+
+To display the effects of one or more particular covariates, construct a data frame with test cases and pass to `survfit()` with the `newdata` argument.
+
+```{r}
+newdata <- expand.grid(
+    sex = unique(lung$sex),
+#    age = quantile(lung$age, probs = c(0.25, 0.50, 0.75)),
+    age = median(lung$age),
+    ph.ecog = 1
+)
+rownames(newdata) <- c("male", "female")
+
+# Create survival curves.  The rownames show up in the model
+lung_pred <- survfit(lung_cox_2, newdata = newdata, data = lung)
+
+# surv_summary() creates the data.frame with a summary of the survfit() results, including columns like time (survival time) and surv (survival probability).
+lung_pred0 <- surv_summary(lung_pred)
+# get the corresponding new_data cols
+lung_pred1 <- cbind(lung_pred0, newdata[as.character(lung_pred0$strata), ])
+ggsurvplot_df(
+  lung_pred1, 
+  color = "sex", 
+  legend.labs = c("M", "F"),
+  legend.title = "Sex", 
+  conf.int = TRUE, 
+  ggtheme = theme_minimal())
+```
+
