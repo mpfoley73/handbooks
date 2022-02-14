@@ -595,32 +595,28 @@ $$F(x; k, \beta) = 1 - e^{-(\beta x)^k}$$
 and hazard function 
 $$h(x; k, \beta) = \beta k (\beta x)^{k-1}.$$
 
+The "survival curve" is the compliment to the CDF: 
+$$\begin{eqnarray}
+S(x; k, \beta) &=& 1 - F(x; k, \beta) \\
+&=& e^{-(\beta x)^k}
+\end{eqnarray}$$
+
+The probability of failing at time $x = t$ is the probability of surviving to time time multiplied by the hazard of failing when $x = t$, $f(t; k, \beta) = S(t; k, \beta) \cdot h(t; k, \beta)$.
+
 ```{r}
-p1 <- data.frame(x = seq(from = .05, to = 2.5, by = .01)) %>%
-  mutate(`k = 0.5` = dweibull(x, .5),
-         `k = 1` = dweibull(x, 1),
-         `k = 1.5` = dweibull(x, 1.5),
-         `k = 5` = dweibull(x, 5)) %>%
-  pivot_longer(cols = -x) %>%
-  ggplot(aes(x = x, y = value, color = name)) + 
+expand.grid(x = seq(from = .05, to = 2.5, by = .01),
+                   k = c(.5, 1, 1.5, 5)) %>%
+  mutate(f = dweibull(x, k),
+         F = pweibull(x, k),
+         S = pweibull(x, k, lower.tail = FALSE),
+         h = f / S) %>%
+  pivot_longer(cols = c(f:h)) %>%
+  ggplot(aes(x = x, y = value, color = factor(k))) +
   geom_line() +
+  facet_wrap(vars(name), scales = "free_y") +
   scale_colour_hue(h = c(90, 270)) +
   theme(legend.position = "top") +
-  labs(x = NULL, y = "PDF", color = NULL)
-
-p2 <- data.frame(x = seq(from = 0, to = 2.5, by = .01)) %>%
-  mutate(`k = 0.5` = pweibull(x, .5),
-         `k = 1` = pweibull(x, 1),
-         `k = 1.5` = pweibull(x, 1.5),
-         `k = 5` = pweibull(x, 5)) %>%
-  pivot_longer(cols = -x) %>%
-  ggplot(aes(x = x, y = value, color = name)) + 
-  geom_line(show.legend = FALSE) +
-  scale_colour_hue(h = c(90, 270)) +
-  labs(x = NULL, y = "CDF")
-
-p1 + p2 +
-  patchwork::plot_annotation(title = "Weibull")
+  labs(x = NULL, y = NULL, color = "k", title = "Weibull (lambda = 1))")
 ```
 
 More [here](https://www.weibull.com/basics/lifedata.htm).

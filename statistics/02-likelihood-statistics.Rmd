@@ -1,5 +1,9 @@
 # Likelihood Statistics
 
+```{r include=FALSE}
+library(tidyverse)
+```
+
 Likelihood functions are an approach to statistical inference (along with Frequentist and Bayesian). Likelihoods are functions of a data distribution parameter. For example, the binomial likelihood function is 
 
 $$L(\theta) = \frac{n!}{x!(n-x)!}\cdot \theta^x \cdot (1-\theta)^{n-x}$$
@@ -37,7 +41,6 @@ round(z, 3)
 
 Compare competing estimates of $\theta$ with the *likelihood ratio*. The likelihood of $\theta$ = .8 vs $\theta$ = .5 (fair coin) is $\frac{L(\theta = 0.8)}{L(\theta = 0.5)}$ = `r scales::number(dbinom(8, 10, .8) / dbinom(8, 10, .5), accuracy = .01)`.
 
-
 A likelihood ratio of >= 8 is *moderately strong* evidence for an alternative hypothesis. A likelihood ratio of >= 32 is *strong* evidence for the alternative hypothesis. Keep in mind that likelihood ratios are *relative* evidence of H1 vs H0 - both hypotheses may be quite unlikely!
 
 A set of studies usually include both positive and negative test results. You can see this from the likelihood plots below. These are the likelihood curves produced from x = [0..3] successes in a sample of 3. Think of this as the likelihood of [0..3] positive findings in 3 studies based on an $\alpha$ = .05 level of significance and a .80 1 - $\beta$ statistical power of the study. 
@@ -69,4 +72,15 @@ data.frame(
 ```
 
 The blue lines demarcates the points where mixed results are as likely as unanimous results. A set of studies are likely to produce unanimous results only if the number of studies is fairly high $(\gt 1 - n / (n+1))$ or low $(< n / (n + 1))$. 
+
+## Maximum Likelihood Estimation
+
+Suppose a process follows an exponential probability distribution, $e^{\lambda t}$, but you do not know the parameter value, $\lambda$. You can estimate the value from the observations by comparing the actual outcomes to those produced by the range of possible $\lambda$'s and choosing the $\lambda$ the *maximizes* the likelihood of producing the observed outcome.
+
+The likelihood the underlying exponential distribution parameter value is $\lambda$ given $n$ observations, is the product of the probability densities for each outcome,
+
+$$\begin{eqnarray}
+L(\lambda; t_1, t_2, \dots, t_n) &=& f(t_1, \lambda) \cdot f(t_2, \lambda) \cdots f(t_n, \lambda) \\
+&=& \Pi_{i=1}^n f(t_i, \lambda)
+\end{eqnarray}$$
 
