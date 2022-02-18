@@ -75,12 +75,27 @@ The blue lines demarcates the points where mixed results are as likely as unanim
 
 ## Maximum Likelihood Estimation
 
-Suppose a process follows an exponential probability distribution, $e^{\lambda t}$, but you do not know the parameter value, $\lambda$. You can estimate the value from the observations by comparing the actual outcomes to those produced by the range of possible $\lambda$'s and choosing the $\lambda$ the *maximizes* the likelihood of producing the observed outcome.
+Suppose a process $T$ is the time to event of a process following an exponential probability distribution ([notes](https://bookdown.org/mpfoley1973/probability/exponential.html)), $f(T = t; \lambda) = \lambda e^{-\lambda t}$. Fitting a model to the data means estimating the distribution's parameter, $\lambda$. The way this is typically done is by the process of *maximum likelihood estimation* (MLE). MLE compares the observed outcomes to those produced by the range of possible parameter values within the parameter space $\lambda \in \Lambda$ and chooses the parameter value that maximizes the likelihood of producing the observed outcome, $\hat{\lambda} = \underset{\lambda \in \Lambda}{\arg\max} \hat{L}_t(\lambda, t)$.
 
-The likelihood the underlying exponential distribution parameter value is $\lambda$ given $n$ observations, is the product of the probability densities for each outcome,
+For the exponential distribution, the likelihood that $\lambda$ produces the observed outcomes is the product of the probability densities for each observation because they are a sequence of independent variables.
 
 $$\begin{eqnarray}
-L(\lambda; t_1, t_2, \dots, t_n) &=& f(t_1, \lambda) \cdot f(t_2, \lambda) \cdots f(t_n, \lambda) \\
-&=& \Pi_{i=1}^n f(t_i, \lambda)
+L(\lambda; t_1, t_2, \dots, t_n) &=& f(t_1; \lambda) \cdot f(t_2; \lambda) \cdots f(t_n; \lambda) \\
+&=& \Pi_{i=1}^n f(t_i; \lambda) \\
+&=& \Pi_{i=1}^n \lambda e^{-\lambda t_i} \\
+&=& \lambda^n \exp \left(-\lambda \sum_{i=1}^n t_i \right)
 \end{eqnarray}$$
 
+That is difficult to optimize, but the log of it is simple.
+
+$$l(\lambda; t_1, t_2, \dots, t_n) = n \ln(\lambda) - \lambda \sum_{i=1}^n t_i$$
+
+Maximize the log-likelihood equation by setting its derivative to zero and solving for $\lambda$.
+
+$$\begin{eqnarray}
+\frac{d}{d \lambda} l(\lambda; t_1, t_2, \dots, t_n) &=& \frac{d}{d \lambda} \left( n \ln(\lambda) - \lambda \sum_{i=1}^n t_i \right) \\
+0 &=& \frac{n}{\lambda} - \sum_{i=1}^n t_i \\
+\lambda &=& \frac{n}{\sum_{i=1}^n t_i}
+\end{eqnarray}$$
+
+$\lambda$ is the reciprocal of the sample mean.

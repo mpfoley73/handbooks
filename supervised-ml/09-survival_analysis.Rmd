@@ -2,88 +2,90 @@
 
 These notes rely on the [Survival Analysis in R](https://campus.datacamp.com/courses/survival-analysis-in-r) DataCamp course, [STHDA](http://www.sthda.com/english/wiki/survival-analysis), [BJC](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC2394262/), and Applied Survival Analysis Using R [@Moore2016].
 
-Survival analysis models time to event. It differs from linear regression in two respects. Event times are typically skewed right with many early events and few late ones and are modeled as a [Weibull](https://bookdown.org/mpfoley1973/probability/weibull.html) distribution. This violates linear regression's normality assumption. Time-to-event outcomes also incur censoring: an unknown starting event (left censoring) and/or ending event (right censoring). Censuring can occur if the event has not happened yet, the subject is lost to follow-up during the study period, or some other event occurs that prevents further follow-up.
+Survival analysis models time to event. It differs from linear regression in two respects. Event times are typically skewed right with many early events and few late ones. This violates linear regression's normality assumption. Time-to-event outcomes also incur censoring: an unknown starting event (left censoring) and/or ending event (right censoring). Censuring occurs if the event has not yet happened or another event prevents further follow-up.
 
-A typical survival analysis uses Kaplan-Meier (KM) plots to visualize survival curves, log-rank tests to compare survival curves among groups, and Cox proportional hazards regression to describe the effect of variables on survival. In R, use the `survival` package for modeling and the `survminer` package for visualization.
+A typical survival analysis uses Kaplan-Meier (KM) plots to visualize survival curves, log-rank tests to compare survival curves among groups, and Cox proportional hazards regression to describe the effect of explanatory variables on survival. In R, use the **survival** package for modeling and the **survminer** package for visualization.
 
 ```{r message=FALSE, warning=FALSE}
 library(tidyverse)
 library(survival)
 library(survminer)
-library(broom)
-library(patchwork)
 ```
 
 ## Basic Concepts
 
-Let $T^*$ be a random variable representing the time to failure, and let $U$ be a random variable representing the time to a sensoring event, $\delta$ (right-sensoring). Your study observes whichever comes first, $T = \mathrm{min}(T^*, U)$.
-
-Your data set will probably look something like this data set from **survival**. `time` is $T$ and `status` is $\delta = I[T^* < U]$.
+Let $T^*$ be a random variable representing the time to failure, and $U$ be a random variable representing the time to a sensoring event (right-sensoring). The study observes whichever comes first, $T = \mathrm{min}(T^*, U)$. The data set will look something like this one, where `time` is $T$ and `status` is $\delta = I[T^* < U]$ (1 = not-failed, 2 = failed).
 
 ```{r}
-survival::aml %>% head()
+survival::lung %>% head()
 ```
 
 
-Sensoring sometimes occurs when subjects are monitored for a fixed period of time (Type I), or a pre-specified level of failures occur (Type II), or the subject drops out for a reason other than failure (random).
+Sensoring sometimes occurs when subjects are monitored for a fixed period of time (Type I), a pre-specified level of failures is reached, halting the study (Type II), or the subject drops out for a reason other than failure (random censoring).
 
-You can specify the survival distribution function either as a *survival function* or as a *hazard function*. Let $F(t) = Pr(T \le t)$ be the cumulative risk function, the probability of failing on or before time $t$. Then the survival function is the probability of *surviving* up to time $t$, 
+You can specify the survival distribution function either as a *survival function* or as a *hazard function*. Let $F(t) = Pr(T \le t)$ be the cumulative risk function, the probability of failing on or before time $t$. The survival function, $S(t)$, is its complement. 
 
 $$S(t) = 1 - F(t) = P(T > t), \hspace{3mm} 0 < t < \infty.$$
 
-The hazard function is the instantaneous failure rate given survival up to time $t$,
+The hazard function is the instantaneous failure rate at $t$ given survival up to $t$,
 
 $$h(t) = \lim_{\delta \rightarrow 0}{\frac{P(t < T < t + \delta|T > t)}{\delta}}.$$
 
-The survival function and the hazard function are related.  The probability of dying during the interval $(t, t + \delta)$, $f(t) = F'(t)$, is the probability of dying during the interval given survival up to point $t$ times the probability of surviving up to point $t$, $f(t) = h(t) S(t)$.
+The functions are related by the probability multiplication rule, $P(AB) = P(A|B)P(B)$. The probability of failure at $t$, $f(t) = F'(t)$, is the probability of failure at $t$ given survival up to $t$ multiplied by the probability of surviving up to $t$.
 
-$S(t)$ is also the exponent of the negative cumulative hazard function,
+$$f(t) = h(t) S(t)$$
+
+$S(t)$ is also the negative exponent of the cumulative hazard function,
 
 $$S(t) = e^{-H(t)}.$$
 
-You can use the survival function to estimate the mean and median survival times.  The mean survival time is $E(T) = \int S(t)dt$.  The median survival time is $S(t) = 0.5$.
+Use the survival function to estimate the mean survival time, $E(T) = \int S(t)dt$, and median survival time, $S(t) = 0.5$.
 
-As a quick example, the exponential distribution is an easy way to model survival data. It has a constant hazard, $h(t) = \lambda$. The cumulative hazard is $H(t) = \int_0^t \lambda du = \lambda t$. The survival function is $S(t) = e^{-\lambda t}$. The probability of failure at time $t$ is $f(t) = \lambda e^{-\lambda t}$. The expected time to failure is $E = \int_0^\infty e^{-\lambda t} = 1 / \lambda$ and the median time to failure is $S(t) = e^{-\lambda t} = .5$, or $t_{med} = log(2) / \lambda$.
+Take the exponential distribution as a quick example. It has a constant hazard, $h(t) = \lambda$. The cumulative hazard is $H(t) = \int_0^t \lambda du = \lambda t$. The survival function is $S(t) = e^{-\lambda t}$. The probability of failure at time $t$ is $f(t) = \lambda e^{-\lambda t}$. The expected time to failure is $E(t) = \int_0^\infty e^{-\lambda t} dt = 1 / \lambda$, and the median time to failure is $S(t) = e^{-\lambda t} = .5$, or $t_{med} = \log(2) / \lambda$.
 
 ## Survival Curve Estimation
 
-There are parametric and non-parametric methods to estimate a survivor curve.  The usual non-parametric method is the *Kaplan-Meier* (KM) estimator.  The usual parametric method is the *Weibull* distribution, of which the exponential distribution is a special case.  In between the two is the *Cox proportional hazards model*, the most common way to estimate a survivor curve.
+There are parametric and non-parametric methods to estimate a survival curve.  The usual non-parametric method is the *Kaplan-Meier* estimator.  The usual parametric method is the *Weibull* distribution. In between is the most common way to estimate a survivor curve, the *Cox proportional hazards* model.
 
 ### Kaplan-Meier
 
-The Kaplan-Meier estimator for the survival function is the product over failure times of the conditional probabilities of surviving to the next failure time.
+The Kaplan-Meier (KM) estimator for the survival function is the product over failure times of the conditional probabilities of surviving to the next failure time.
 
 $$\hat{S} = \prod_{i: t_i < t}{\frac{n_i - d_i}{n_i}}$$
 
-where $n_i$ is the number of subjects at risk at time $i$ and $d_i$ is the number failing. The Kaplan-Meier curve falls only when a subject fails, not when a subject is censored. Confidence limits can be calculated using the "delta" method to obtain the variance of $\log \left(\hat{S}(t) \right)$.
+where $n_i$ is the number of subjects at risk at time $i$ and $d_i$ is the number failing. The KM curve falls only when a subject fails, not when a subject is censored. Confidence limits are calculated using the "delta" method to obtain the variance of $\log \left(\hat{S}(t) \right)$.
 
-Calculate the Kaplan-Meier survival function estimate with `survival::survfit()`. The `survival::lung` data set contains the `status` (1 = censored, 2 = dead) of 228 advanced lung cancer patients. `survfit()` operates on a `Surv` object, created by `Surv()`. The event indicator should normally be a numeric 0/1 coding, but for historical reasons 1/2 works too as is used here.^[See neat discussion in Note section of `Surv()` help file.]
+Calculate $\hat{S}$ with `survival::survfit()`. The `lung` data set contains the `status` (1 = censored, 2 = dead) of 228 advanced lung cancer patients. `survfit()` operates on a `Surv` object, created by `Surv()`. The event indicator should normally be a numeric 0/1 coding, but for historical reasons 1/2 works too as is used here.^[See neat discussion in Note section of `Surv()` help file.] `?Surv()` explains that it treats factor event variables as multiple endpoint data, so leave it as numeric. It's okay to define explanatory variables as factors though.
 
 ```{r}
-survival::lung %>% select(time, status, sex) %>% head()
+lung_1 <- survival::lung %>%
+  mutate(sex = factor(sex, levels = c(1, 2), labels = c("Male", "Female")))
+
+lung_1 %>% head()
 ```
 
-`survfit()` creates survival curves from a formula or from a previously fitted Cox model.
+`survfit()` creates survival curves from a formula or from a previously fitted Cox model. If the CI crosses zero, you can cap it, or use the complimentary log-log transformation parameter `conf.type = "log-log"`. This one doesn't need it.
 
 ```{r}
-# If the CI crosses zero, you can cap them, or use the complimentary log-log
-# transformation, `conf.type = "log-log"`. This one doesn't need it.
 # km_fit <- survfit(Surv(time, status) ~ sex, data = lung, conf.type = "log-log")
-km_fit <- survfit(Surv(time, status) ~ sex, data = lung)
+km_fit <- survfit(Surv(time, status) ~ sex, data = lung_1)
 km_fit
 ```
 
-The `survfit` object shows 112 of 138 males (`sex=1`) and 53 of 90 females (`sex=2`) had a failure event (died). The 95% CI is around the median time to event. `broom::tidy()` shows the time line. At time 11 there were 138 males at risk and 3 died, *S*(11) = 3/138 = .978. At time 12 1 of the 135 died, *S*(12) = *S*(11) $\cdot$ 1/135 = .971.
+112 of 138 males and 53 of 90 females had a failure event (died). The median survival is `r km_fit %>% summary %>% pluck("table") %>% .["sex=Male", "median"]` days for males and `r km_fit %>% summary %>% pluck("table") %>% .["sex=Female", "median"]` days for females. The 95% CI is around the median time to event. Retrieve these values from the `summary()$table` object.
+
+`broom::tidy()` returns the number at risk and number of failures and censors at each event time. At time 11, 3 of the 138 males at risk died, so survival at time 11 is *S*(11) = 1 - 3/138 = .978. At time 12, 1 of the 135 that remained died, so *S*(12) = *S*(11) $\cdot$ (1/135) = .971, and so on.
 
 ```{r}
 km_fit %>% broom::tidy()
 ```
 
-Use **survminer** to plot the fitted model. Vertical drops indicate an event. The vertical tick mark on the curves means that a patient was censored.
+**survminer** does a good job plotting KM models. Vertical drops indicate failure events and vertical ticks indicate censoring events.
 
 ```{r warning=FALSE}
 ggsurvplot(
   km_fit,
+  fun = "pct",
   linetype = "strata", # Change line type by groups
   pval = TRUE,
   conf.int = TRUE,
@@ -96,15 +98,13 @@ ggsurvplot(
 )
 ```
 
-The median survival is `r km_fit %>% summary %>% pluck("table") %>% .["sex=1", "median"]` days for `sex=1` and `r km_fit %>% summary %>% pluck("table") %>% .["sex=2", "median"]` days for sex=2. These key values are available from the `summary()` object.
+`ggsurvplot()` can also plot the cumulative risk function, $F(t) = 1 - S(t)$, with parameter `fun = "event"`, and the cumulative hazard function, $H(t) = -\log(S(t))$, with parameter `fun = "cumhaz"`.
 
-```{r}
-summary(km_fit)$table
-```
+<!-- The colons (::::, :::) create a style html within document -->
+:::: {style="display: grid; grid-template-columns: 1fr 1fr; grid-column-gap: 10px;"}
 
-`ggsurvplot()` can plot the cumulative risk function (aka "cumulative incidence" or "cumulative events"), $F(t) = 1 - S(t)$, with argument `fun = "event"`, and the cumulative hazard function, $H(t) = -\log(S(t)).$, with argument `fun = "cumhaz"`.
-
-```{r}
+::: {}
+```{r echo=FALSE}
 ggsurvplot(
   km_fit,
   fun = "event",
@@ -113,9 +113,13 @@ ggsurvplot(
   conf.int = TRUE,
   ggtheme = theme_bw(),
   palette = c("#E7B800", "#2E9FDF"),
-  title = "Kaplan-Meier Cumulative Risk Function Estimate"
+  title = "Cumulative Risk"
 )
+```
+:::
 
+::: {}
+```{r echo=FALSE}
 ggsurvplot(
   km_fit,
   fun = "cumhaz",
@@ -124,37 +128,52 @@ ggsurvplot(
   conf.int = TRUE,
   ggtheme = theme_bw(),
   palette = c("#E7B800", "#2E9FDF"),
-  title = "Kaplan-Meier Cumulative Hazard Function Estimate"
+  title = "Cumulative Hazard"
 )
 ```
+:::
 
-`ggsurvplot()` can produce faceted plots for more complicated analyses.  For example, fit a survival curve to the `survival::colon` data set with predictors `sex`, `rx`, and `adhere`.
+::::
+
+### Log-Rank Test
+
+It's not immediately obvious how to compare two survival distributions, since they can cross, diverge, etc. When observations do not follow a defined parametric distribution, use a non-parametric test. In this case, the log-rank test is the solution.
+
+For each event time, you could construct a 2x2 contingency table between failure/non-failure and curves 0/1. Holding the margins as fixed, then the probability of observing $d_{0i}$ failures in curve 0 at time $i$ follows a [hypergeometric](https://bookdown.org/mpfoley1973/probability/hypergeometric.html) distribution.
+
+|              |Control           |Treatment         |Total         |
+|--------------|------------------|------------------|--------------|
+|Failures      |$d_{0i}$          |$d_{1i}$          |$d_i$         |
+|non-Failures  |$n_{0i} - d_{0i}$ |$n_{1i} - d_{1i}$ |$n_i - d_i$   |
+|Total         |$n_{0i}$          |$n_{1i}$          |$n_i$         |
+
+$$f(d_{0i} | n_{0i}, n_{1i}, d_i) = \frac{{{n_{0i}}\choose{d_{0i}}}{{n_{1i}}\choose{d_{1i}}}}{{n_i}\choose{d_i}}$$
+
+The expected value is $e_{0i} = E(d_{0i}) = \frac{d_i}{n_i} \cdot n_{0i}$ with variance $v_{0i} = Var(d_{0i}) = d_{i} \cdot \frac{n_{0i}}{n_i}  \cdot \frac{n_{1i}}{n_i} \cdot \frac{n_i - d_i}{n_i - 1}$. 
+
+The log-rank test statistic is the sum of the differences between the observed expected failures, $U_0 = \sum (d_{0i} - e_{0i})$, normalized by dividing by the square-root of its variance, $V_0 = Var({U_0}) = \sum v_{0i}$.
+
+$$U = \frac{U_0}{\sqrt{V_0}} \sim N(0, 1)$$
+
+or equivalently, its square, a chi-square random variable with one degree of freedom.
+
+$$U^2 = \frac{U_0^2}{V_0} \sim \chi_1^2$$
 
 ```{r}
-km_fit_colon <- survfit(Surv(time, status) ~ sex + rx + adhere, data = colon)
-
-p <- km_fit_colon %>%
-  ggsurvplot(fun = "event", 
-             conf.int = TRUE,
-             ggtheme = theme_bw()) 
-p$plot + theme(legend.position = "right") + facet_grid(rx ~ adhere)
-```
-
-Compare survival curves with the log-rank test ($H_0$: no difference). The log rank test is a non-parametric test, so it makes no assumptions about the survival distributions. The log rank test compares the observed and expected ($H_0$) number of events in each group. The log rank test statistic is approximately chi-square distributed.
-
-```{r}
-km_diff <- survdiff(Surv(time, status) ~ sex, data = lung)
-km_diff
+survdiff(Surv(time, status) ~ sex, data = lung_1)
 ```
 
 The chi-sq test statistic is 10.3 on one d.f., for a p-value of 0.001, so yes, males and females had different survival patterns.
 
-
-### Weibull
+### Parametric Models
 
 Kaplan-Meier curves and logrank tests are examples of univariate analysis. They describe survival as a function of a single categorical factor variable. Weibull and other parametric models describe the function of *multiple* covariates.
 
-Several parametric distributions are available for modeling survival data.  The exponential distribution is the easiest to use because it is time-independent.
+Parametric models are less common than KM and Cox because they are less flexible. But the process follows the parametric distribution, these models are preferable because they are easier to work with. They have fixed parameters and you use standard likelihood theory for parameter estimation.
+
+#### Exponential
+
+The exponential distribution is the easiest to use because it has a time-independent hazard function.
 
 $$\begin{eqnarray}
 \log h(t) &=& \alpha + \beta X \\
@@ -162,15 +181,51 @@ h(t) &=& e^{\left(\alpha + \beta X \right)} \\
 &=& \lambda
 \end{eqnarray}$$
 
-The constant $\alpha$ is a kind of baseline log-hazard, because $\log h(t) = \alpha$, or $h(t) = e^\alpha$, when $X$ is zero.
-
-The cumulative hazard is $H(t) = \int_0^t \lambda dt = \lambda t$ and the corresponding survival function is 
+Interpret $\alpha$ as the baseline log-hazard because $\log h(t) = \alpha$, or $h(t) = e^\alpha$, when $X$ is zero. The cumulative hazard is $H(t) = \int_0^t \lambda dt = \lambda t$ and the corresponding survival function is 
 
 $$S(t) = e^{-H(t)} = e^{-\lambda t}.$$
 
-The expected survival time is $E(T) = \int_0^\infty S(t)dt = \int_0^\infty e^{-\lambda t} dt = 1 / \lambda.$.  The median survival time is $S(t) = e^{-\lambda t} = 0.5$, or $t_{med} = \log(2) / \lambda$.  
+The expected survival time is $E(T) = \int_0^\infty S(t)dt = \int_0^\infty e^{-\lambda t} dt = 1 / \lambda.$. The median survival time is $S(t) = e^{-\lambda t} = 0.5$, or $t_{med} = \log(2) / \lambda$.
 
-The [Weibull distribution](https://bookdown.org/mpfoley1973/probability/weibull.html) is more appropriate for modeling lifetimes, however. Its hazard function is 
+Given a data set for a process that follows an exponential distribution, the survival curve is fit using *maximimum likelihood estimation* (MLE). My notes [here](https://bookdown.org/mpfoley1973/statistics/maximum-likelihood-estimation.html) explain MLE for the exponential distribution. The survival version is a little more complicated because of censoring. The likelihood that $\lambda$ produces the observed outcomes is the product of the probability densities for each observation because they are a sequence of independent variables. Let $\delta_i = 1$ for unsensored observations and $0$ for censored. 
+
+$$
+L(\lambda; t_1, t_2, \dots, t_n) = \Pi_{i=1}^n f(t_i; \lambda)^{\delta_i} S(t_i; \lambda)^{1-\delta_i}
+$$
+
+Substituting $f(t) = h(t) S(t)$, and then substituting $h(t) = \lambda$ and $S(t) = e^{-\lambda t}$ and simplifying,
+
+$$\begin{eqnarray}
+L(\lambda; t_1, t_2, \dots, t_n) &=& \Pi_{i=1}^n h(t_i; \lambda)^{\delta_i} S(t_i; \lambda) \\
+&=& \Pi_{i=1}^n \lambda^{\delta_1} e^{-\lambda t_i} \\
+&=& \lambda^{\sum \delta_i} \exp \left(-\lambda \sum_{i=1}^n t_i \right)
+\end{eqnarray}$$
+
+Simplify the notation by letting $d = \sum \delta_i$, the total number of failures, and $V = \sum t_i$, the number of person-years (or days or whatever).
+
+$$L(\lambda; t_1, t_2, \dots, t_n) = \lambda^d e^{-\lambda V}$$
+
+That is difficult to optimize, but the log of it is simple.
+
+$$l(\lambda; t_1, t_2, \dots, t_n) = d \ln(\lambda) - \lambda V$$
+
+Maximize the log-likelihood equation by setting its derivative to zero and solving for $\lambda$.
+
+$$\begin{eqnarray}
+\frac{d}{d \lambda} l(\lambda; t_1, t_2, \dots, t_n) &=& \frac{d}{d \lambda} \left(d \ln(\lambda) - \lambda V \right) \\
+0 &=& \frac{d}{\lambda} - V \\
+\lambda &=& \frac{d}{V}
+\end{eqnarray}$$
+
+$\lambda$ is the reciprocal of the sample mean, person-years divided by failures.
+
+The second derivative, $-\frac{d}{\lambda^2}$, is approximately the negative of the variance of $\lambda$.
+
+$$V(\lambda) = d / V^2$$
+
+#### Weibull
+
+Although the exponential function is convenient, the [Weibull distribution](https://bookdown.org/mpfoley1973/probability/weibull.html) is more appropriate for modeling lifetimes. Its hazard function is 
 
 $$\begin{eqnarray}
 h(t) &=& \alpha \lambda (\lambda t)^{\alpha - 1} \\
@@ -181,19 +236,32 @@ The cumulative hazard function is $H(t) = (\lambda t)^\alpha$ and the correspond
 
 $$S(t) = e^{-(\lambda t)^\alpha}.$$
 
-The exponential distribution is a special case of the Weibull where $\alpha = 1$.  The expected survival time is $E(t) = \frac{\Gamma (1 + 1 / \alpha)}{\lambda}$. The median survival time is $t_{med} = \frac{[\log(2)]^{1 / \alpha}}{\lambda}$.
+The exponential distribution is a special case of the Weibull where $\alpha = 1$. The expected survival time is $E(t) = \frac{\Gamma (1 + 1 / \alpha)}{\lambda}$. The median survival time is $t_{med} = \frac{[\log(2)]^{1 / \alpha}}{\lambda}$.
 
-The Kaplan-Meier estimate is used mainly as a descriptive tool. The Weibull model produces a smooth survival curve instead of a step function. The Weibull model assumes a Weibull distribution. Whereas KM is fit with `survfit()`, Weibull is fit with `survreg().
+Whereas the Kaplan-Meier estimate produces a step function, the Weibull model produces a smooth survival curve. Fit Weibull with `survreg()` (KM is fit with `survfit()`).
 
 ```{r}
-wb_fit <- survreg(Surv(time, status) ~ sex, data = lung)
+dat <- lung %>% mutate(sex = factor(sex, levels = c(1, 2), labels = c("Male", "Female")))
+wb_fit <- survreg(Surv(time, status) ~ sex, data = dat)
 summary(wb_fit) 
 ```
 
 ```{r}
-expand.grid(sex = c(1, 2), time = 1:1000)
-wb_fit %>% predict(newdata = expand.grid(sex = c(1,2), time = 1:1000)) %>%
-  ggsurvplot(surv.geom = geom_line)
+dat <- tibble(
+  sex = c(rep("Male", 99), rep("Female", 99)),
+  s = rep(1 - seq(.01, .99, by = .01), 2),
+  pred = map2(sex, s, ~predict(wb_fit, type = "quantile", p = 1 - .y, se = TRUE, 
+                               newdata = data.frame(sex = .x))),
+  t = map_dbl(pred, ~pluck(.x, "fit")),
+  se = map_dbl(pred, ~pluck(.x, "se.fit")),
+  ucl = t + 1.96*se,
+  lcl = t - 1.96*se
+  ) 
+  
+ggplot() +
+  geom_line(data = dat, aes(x = t, color = sex, y = s)) +
+  geom_line(data = dat, aes(x = ucl, color = sex, y = s), linetype = 2) +
+  geom_line(data = dat, aes(x = lcl, color = sex, y = s), linetype = 2)
 ```
 
 
@@ -202,7 +270,7 @@ Use `predict()` to get survival expectations.
 
 ```{r collapse=TRUE}
 # 90% of subjects fail by time 
-wb_fit %>% predict(type = "quantile", p = .9, newdata = data.frame(sex = c(1, 2)))
+wb_fit %>% predict(type = "quantile", p = .9, newdata = data.frame(sex = factor(c(1, 2), levels = "Male", "Female")))
 ```
 
 
