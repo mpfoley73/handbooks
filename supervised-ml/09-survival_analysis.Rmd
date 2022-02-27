@@ -10,6 +10,8 @@ A typical survival analysis uses Kaplan-Meier (KM) plots to visualize survival c
 library(tidyverse)
 library(survival)
 library(survminer)
+library(scales)
+library(gtsummary)
 ```
 
 ## Basic Concepts
@@ -43,11 +45,9 @@ Use the survival function to estimate the mean survival time, $E(T) = \int S(t)d
 
 Take the exponential distribution as a quick example. It has a constant hazard, $h(t) = \lambda$. The cumulative hazard is $H(t) = \int_0^t \lambda du = \lambda t$. The survival function is $S(t) = e^{-\lambda t}$. The probability of failure at time $t$ is $f(t) = \lambda e^{-\lambda t}$. The expected time to failure is $E(t) = \int_0^\infty e^{-\lambda t} dt = 1 / \lambda$, and the median time to failure is $S(t) = e^{-\lambda t} = .5$, or $t_{med} = \log(2) / \lambda$.
 
-## Survival Curve Estimation
-
 There are parametric and non-parametric methods to estimate a survival curve.  The usual non-parametric method is the *Kaplan-Meier* estimator.  The usual parametric method is the *Weibull* distribution. In between is the most common way to estimate a survivor curve, the *Cox proportional hazards* model.
 
-### Kaplan-Meier
+## Kaplan-Meier
 
 The Kaplan-Meier (KM) estimator for the survival function is the product over failure times of the conditional probabilities of surviving to the next failure time.
 
@@ -135,9 +135,20 @@ ggsurvplot(
 
 ::::
 
-### Log-Rank Test
+The KM analysis is valid under certain conditions.
 
-It's not immediately obvious how to compare two survival distributions, since they can cross, diverge, etc. When observations do not follow a defined parametric distribution, use a non-parametric test. In this case, the log-rank test is the solution.
+* The event status consists of two mutually exclusive and collectively exhaustive states: "censored" or "event".
+* The time to an event or censorship should be clearly defined and precisely measured.
+* Left-censoring (unknown starting point) should be minimized or avoided.
+* Censoring event causes should be independent of the event.
+* There are no secular trends (e.g., staggered starting times and introduction of new therapies).
+* The amount and pattern of censorship should be similar per group.
+
+The first four assumptions relate to study design and cannot be tested, but the secular trends assumption can be tested by running multiple Kaplan-Meier tests for different time intervals of the study, and the censorship pattern assumption can also be tested.
+
+## Log-Rank Test
+
+It's not immediately obvious how to compare two survival distributions, since they can cross, diverge, etc. When observations do not follow a defined parametric distribution, use a non-parametric test. In this case, the log-rank test is the solution. The alternative hypothesis, termed the Lehmann alternative, is that one survival distribution is uniformly higher than the other, $H_A : S_1(t) = [S_0(t)]^\psi$. Equivalently, the hazard functions are proportional, $h_1(t) = \psi h_0(t)$. $H_0 : \psi = 1$.
 
 For each event time, you could construct a 2x2 contingency table between failure/non-failure and curves 0/1. Holding the margins as fixed, then the probability of observing $d_{0i}$ failures in curve 0 at time $i$ follows a [hypergeometric](https://bookdown.org/mpfoley1973/probability/hypergeometric.html) distribution.
 
@@ -165,13 +176,11 @@ survdiff(Surv(time, status) ~ sex, data = lung_1)
 
 The chi-sq test statistic is 10.3 on one d.f., for a p-value of 0.001, so yes, males and females had different survival patterns.
 
-### Parametric Models
+## Exponential
 
 Kaplan-Meier curves and logrank tests are examples of univariate analysis. They describe survival as a function of a single categorical factor variable. Weibull and other parametric models describe the function of *multiple* covariates.
 
 Parametric models are less common than KM and Cox because they are less flexible. But the process follows the parametric distribution, these models are preferable because they are easier to work with. They have fixed parameters and you use standard likelihood theory for parameter estimation.
-
-#### Exponential
 
 The exponential distribution is the easiest to use because it has a time-independent hazard function.
 
@@ -223,7 +232,7 @@ The second derivative, $-\frac{d}{\lambda^2}$, is approximately the negative of 
 
 $$V(\lambda) = d / V^2$$
 
-#### Weibull
+## Weibull
 
 Although the exponential function is convenient, the [Weibull distribution](https://bookdown.org/mpfoley1973/probability/weibull.html) is more appropriate for modeling lifetimes. Its hazard function is 
 
@@ -329,27 +338,40 @@ Interpret the coefficient as the probability of surviving falls by 0.012 per uni
 You can fit other models with the `dist = c("lognormal", "exponential")` parameter.
 
 
-### Cox
+## Cox
 
-Whereas parametric models specify the baseline hazard function, $\alpha(t) = \log h_0(t)$, the Cox proportional hazards model is semi-parametric in that it leaves it unspecified.  
+The Cox proportional hazards model expresses the expected hazard at time t, $h(t)$, as a baseline hazard, $h_0(t)$, multiplying the exponential of a linear combination of parameters.
 
-$$\log h_i(t) = \alpha(t) + \beta X_i$$
+$$h(t) = h_0(t) \cdot e^{X \beta}$$
 
-or
+The model is analogous to the [logistic regression](https://bookdown.org/mpfoley1973/supervised-ml/generalized-linear-models-glm.html#logistic-regression) model. Rearranging,
 
-$$h_i(t) = h_0(t) \cdot e^{X_i \beta} = h_0(t) \psi_i$$
+$$\ln \left[ \frac{h(t)}{h_0(t)} \right] = X \beta$$
 
-The $e^{\beta_j}$ values are called the hazard ratios.  A positive $e^{\beta_j}$ means the hazard increases with the covariate. The proportionality of the model comes from the lack of time dependence in the $X$ variables.  Two ratio of the hazard functions of two individuals is 
+Whereas logistic regression predicts the *log odds* of the response, Cox regression predicts the *log relative hazard* (relative to the unspecified baseline). The model is estimated by the process of partial likelihood.
+
+$\beta$ is the change in the log relative hazard associated with a one unit change in $X$. Its antilog is the hazard ratio (HR). A positive $e^{\beta_j}$ means the hazard increases with the covariate. 
+
+$$
+\begin{eqnarray}
+(x_b - x_a) \beta &=& \ln \left[ \frac{h_b(t)}{h_0(t)} \right] - \ln \left[ \frac{h_a(t)}{h_0(t)} \right] \\
+\beta &=& \ln \left[ \frac{h_b(t)}{h_a(t)} \right] \\
+e^\beta &=& \frac{h_b(t)}{h_a(t)} \\
+ &=& \mathrm{HR}
+\end{eqnarray}
+$$
+
+The proportionality of the model comes from the lack of time dependence in the $X$ variables. The ratio of the hazard functions of two individuals is 
 
 $$\frac{h_i(t)}{h_{i'}(t)} = \frac{h_0(t) \cdot e^{X_i \beta}}{h_0(t) \cdot e^{X_{i'} \beta}}$$
 
-Remarkably, even though the baseline hazard is unspecified, the Cox model can still be estimated by the method of partial likelihood. Consider the first failure time, $t_1$.  The probability that patient $i$ is the one to fail is the proportion of patient $i$'s hazard divided by the sum of the hazards of all $R_1$ patients at risk,
+Even though the baseline hazard is unspecified, the Cox model can still be estimated by the method of partial likelihood. Consider the first failure time, $t_1$. The probability that subject $i$ is the one to fail is the ratio of $i$'s hazard and the sum of hazards for all $R_1$ subjects at risk,
 
 $$p_1 = \frac{h_i(t_1)}{\sum_{k \in R_1} h_k(t_1)} = \frac{h_0(t_1) \psi_i}{\sum_{k \in R_1} h_0(t_1) \psi_k} = \frac{\psi_i}{\sum_{k \in R_1} \psi_k}$$
 
-The next failure event has a reduced $R_2$ patients at risk.  The partial likelihood for $D$ failure times is the product $L_i = p_1 p_2 \cdots p_D$. The Cox model uses maximum partial likelihood estimation to find the value of $\phi$ that maximizes the likelihood function.
+The next failure event has a reduced $R_2$ subjects at risk. The partial likelihood for $D$ failure times is the product $L_i = p_1 p_2 \cdots p_D$. The Cox model uses maximum partial likelihood estimation to find the value of $\psi$ that maximizes the likelihood function.
 
-Fit a Cox proportional hazards model with `coxph()`.  Here is a simple Cox proportional hazards model for a single covariate, `sex`.
+Fit a Cox proportional hazards model with `coxph()`.
 
 ```{r}
 lung_cox <- coxph(Surv(time, status) ~ sex, data = lung)
@@ -407,4 +429,142 @@ ggsurvplot_df(
   conf.int = TRUE, 
   ggtheme = theme_minimal())
 ```
+
+The Cox model is valid under certain conditions.
+
+* Censoring event causes should be independent of the event.
+* There is a multiplicative relationship between the predictors and the hazard.
+* The hazard ratio is constant over time.
+
+## Case Study: KM + Cox
+
+```{r include=FALSE}
+cs_dat <- cancer %>%
+  filter(!is.na(ph.ecog)) %>%
+  mutate(
+    ph.ecog = factor(
+      ph.ecog,
+      levels = c(0, 1, 2, 3, 4),
+      labels = c("Asymptomatic", "Ambulatory", "In bed <50%", "In bed >50%", "Bedridden")),
+    ph.ecog = fct_drop(ph.ecog),
+    ph.ecog = fct_lump_n(ph.ecog, n = 2, other_level = "Bedridden")
+  )
+```
+
+The guidelines for reporting the Kaplan-Meier test are from Laerd's Kaplan-Meier using SPSS Statistics [@Laerd2015]. The data is from `survival::cancer`. A researcher investigates differences in all-cause mortality between men and women diagnosed with advanced lung cancer. `r nrow(cs_dat) %>% comma(1)` participants aged `r min(cs_dat$age)` to `r max(cs_dat$age)` are monitored up to three years until time of death. The participants are segmented into three groups according to their ECOG performance score: *asymptomatic*, *symptomatic but completely ambulatory*, and *bedridden at least part of the day*. The study results are controlled for participant age.
+
+```{r}
+(t1 <- cs_dat %>%
+  mutate(status = factor(status, levels = c(1, 2), labels = c("censored", "died"))) %>%
+  tbl_summary(by = "ph.ecog", include = vars(time, status, ph.ecog, age)) %>%
+  add_overall())
+```
+
+### KM
+
+KM survival analyses require 1) binary outcomes (event or censoring), 2) defined times to events, 3) minimal left-censoring, 4) censoring independence, 5) no secular trends, and 6) similar censorship patterns per group. The first five requirements can be verified outside the data. The sixth can be verified in the data by checking for a similar amount and pattern of censorship per group.
+
+The participant censoring plot shows censored cases are equally spread over time and not too dissimilar for the *asymptomatic* and *ambulatory* groups, but the *bedridden* group had a low number of censoring events.
+
+> Censored cases were negatively associated with symptom severity, *asymptomatic*, `r gtsummary::inline_text(t1, variable = status, level = "censored", column = "Asymptomatic")`, *symptomatic but completely ambulatory*, `r gtsummary::inline_text(t1, variable = status, level = "censored", column = "Ambulatory")`, and *bedridden*, `r gtsummary::inline_text(t1, variable = status, level = "censored", column = "Bedridden")` study groups. 
+
+```{r fig.height=4, fig.width=6.5}
+cs_dat %>%
+  filter(status == 1 | ph.ecog == "In bed >50%") %>%
+  ggplot(aes(x = time, y = ph.ecog)) +
+  geom_point() +
+  theme_light() +
+  labs(title = "Participant Censoring")
+```
+
+Construct a KM plot to get a feel for the data. The cumulative survival is negatively associated with the ECOG performance score. There is no substantial crossing of the survival curves (that would affect the power of the statistical tests). The curves are similarly shaped. The log-rank test is ideal for similarly shaped distributions and distributions that do not cross. The Breslow, and Tarone-Ware tests are more sensitive alternatives.
+
+```{r fig.height=7, fig.width=6.5}
+km_fit <- survfit(Surv(time, status) ~ ph.ecog, data = cs_dat)
+
+km_fit %>%
+  ggsurvplot(
+    # data = cs_dat,
+    fun = "pct",
+    # linetype = "strata", # Change line type by groups
+    # pval = TRUE,
+    # conf.int = TRUE,
+    risk.table = TRUE,
+    fontsize = 3, # used in risk table
+    surv.median.line = "hv", # median horizontal and vertical ref lines
+    ggtheme = theme_light(),
+    palette = c("goldenrod", "sienna", "tomato"),
+    title = "Kaplan-Meier Survival Function Estimate",
+    legend.title = "",
+    legend.labs = levels(cs_dat$ph.ecog)
+  )
+```
+
+The fitted KM model summary table shows the median survival times.
+
+```{r}
+(km_smry <- summary(km_fit) %>% pluck("table"))
+```
+
+> Participants that were asymptomatic had a median survival time of `r km_smry["ph.ecog=Asymptomatic", "median"]` days (95% CI, `r km_smry["ph.ecog=Asymptomatic", "0.95LCL"]` to `r km_smry["ph.ecog=Asymptomatic", "0.95UCL"]` days). This was longer than the ambulatory group, `r km_smry["ph.ecog=Ambulatory", "median"]` days (95% CI, `r km_smry["ph.ecog=Ambulatory", "0.95LCL"]` to `r km_smry["ph.ecog=Ambulatory", "0.95UCL"]` days) and bedridden group, `r km_smry["ph.ecog=Bedridden", "median"]` days (95% CI, `r km_smry["ph.ecog=Bedridden", "0.95LCL"]` to `r km_smry["ph.ecog=Bedridden", "0.95UCL"]` days).
+
+Determine whether there are significant differences in the fitted survival distributions using a log-rank test (and/or Breslow and Tarone-Ware). If there are differences, run a pairwise comparison post-hoc test to determine which curves differ.
+
+The log-rank test weights the difference at each time point equally. Compared to the other two tests, it places greater emphasis on differences at later rather than earlier time points. The Breslow test (aka generalized Wilcoxon or Gehan) weights the differences by the number at risk at each time point. The effect is to place greater weight on the differences at earlier time points. The Tarone-Ware test weights differences the same way as Breslow, but takes the square root of the number at risk. Breslow and Tarone-Ware are in the **coin** package.
+
+```{r}
+(km_diff <- survdiff(Surv(time, status) ~ ph.ecog, data = cs_dat))
+```
+
+```{r}
+coin::logrank_test(Surv(time, status) ~ ph.ecog, data = cs_dat, type = "Tarone-Ware")
+coin::logrank_test(Surv(time, status) ~ ph.ecog, data = cs_dat, type = "Gehan-Breslow")
+```
+
+> A log rank test was run to determine if there were differences in the survival distribution for the different types of intervention. The survival distributions for the three interventions were statistically significantly different, $\chi^2$(2) = `r km_diff$chisq %>% number(.1)`, *p* < .001.
+
+The log rank test is an ombnibus test. Create a pairwise comparisons table to see which groups differed.
+
+```{r}
+(km_pairwise <- survminer::pairwise_survdiff(Surv(time, status) ~ ph.ecog, data = cs_dat))
+```
+
+Adjust the statistical significance to compensate for making multiple comparisons with a Bonferroni correction. There are three comparisons so divide .05 by 3, so the significance is p < .0167.
+
+> Pairwise log rank comparisons were conducted to determine which intervention groups had different survival distributions. A Bonferroni correction was made with statistical significance accepted at the p < .017 level. There was a statistically significant difference in survival distributions for the aymptomatic vs bedridden, *p* < .001 and ambulatory vs bedridden, *p* = `r km_pairwise$p.value["Bedridden", "Ambulatory"] %>% number(.001)` groups. However, the survival distributions for the asymptomatic vs ambulatory group was not statistically significant, *p* = `r km_pairwise$p.value["Ambulatory", "Asymptomatic"] %>% number(.001)`, 
+
+### Cox
+
+```{r}
+km_fit <- coxph(Surv(time, status) ~ ph.ecog, data = cs_dat)
+km_fit %>% 
+  gtsummary::tbl_regression()
+cox_fit <- cs_dat %>%
+  coxph(Surv(time, status) ~ ph.ecog, data = .)
+# Create survival curves.  The rownames show up in the model
+cox_preds <- survfit(cox_fit, newdata = list(ph.ecog = levels(cs_dat$ph.ecog)), data = cs_dat) %>%
+  surv_summary() %>%
+  mutate(strata = case_when(strata == 1 ~ "intervention=hypnotherapy programme",
+                            strata == 2 ~ "nicotine patch",
+                            strata == 3 ~ "e-cigarette"))
+
+```
+
+```{r}
+gtsummary::tbl_survfit(
+  list(
+    survfit(Surv(time, status) ~ 1, data = cs_dat),
+    survfit(Surv(time, status) ~ ph.ecog, data = cs_dat),
+    survfit(Surv(time, status) ~ age, data = cs_dat)
+  ),
+  probs = 0.5,
+  label_header = "**Median Survival**"
+) %>%
+  gtsummary::add_n() %>%
+  gtsummary::add_nevent()
+```
+
+### Reporting
+
+> Participants were randomly assigned to three different interventions in order to quit smoking: a hypnotherapy programme (n = 50), wearing nicotine patches (n = 50) and using e-cigarettes (n = 50). Kaplan-Meier survival analysis (Kaplan & Meier, 1958) was conducted to compare the three different interventions for their effectiveness in preventing smoking resumption. A similar percentage of censored cases was present in the hypnotherapy (12.0%), nicotine patch (14.0%) and e-cigarette (14.0%) intervention groups and the pattern of censoring was similar. Participants that underwent the hypnotherapy programme had a median time to smoking resumption of 69.0 (95% CI, 45.2 to 92.8) days. This was longer than the groups receiving nicotine patches or e-cigarettes, which had identical median times to smoking resumption of 9.0 (95% CI, 6.6 to 11.4) days and 9.0 (95% CI, 7.1 to 10.9) days, respectively. A log rank test was conducted to determine if there were differences in the survival distributions for the different types of intervention. The survival distributions for the three interventions were statistically significantly different, χ2(2) = 25.818, p < .0005. Pairwise log rank comparisons were conducted to determine which intervention groups had different survival distributions. A Bonferroni correction was made with statistical significance accepted at the p < .0167 level. There was a statistically significant difference in survival distributions for the hypnotherapy vs nicotine patch intervention, χ2(1) = 11.035, p = .001, and hypnotherapy vs e-cigarette intervention, χ2(1) = 29.003, p < .0005. However, the survival distributions for the e-cigarette and nicotine patch interventions were not statistically significantly different, χ2(1) = 1.541, p = .214.
 

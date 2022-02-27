@@ -390,7 +390,7 @@ $$\gamma_{ij} = F(\eta_{ij}), \hspace{5 mm} \eta_{ij} = \theta_j - x_i^\mathrm{T
 where $\gamma_{ij} = P(Y_i \le j) = \pi_{i1} + \cdots + \pi_{ij}$. $\eta_{ij}$ is a linear predictor with $J-1$ intercepts. $F$ is the inverse link function. The regression models the logit link function of $\gamma_{ij}$.
 
 $$\mathrm{logit}(\gamma_{ij}) = \log \left[\frac{P(Y_i \le j)}{P(Y_i \gt j)} \right] = \theta_j - x_i^\mathrm{T}\beta$$
-The cumulative logit is the log-odds of the cumulative probabilities that the response is in category $\le j$ versus $\gt j$. $\theta_j$ is the log-odds when $x_i^\mathrm{T}=0$ and $\beta$ is the increase in the log odds attributed to a one unit increase in $x_i^\mathrm{T}=0$. Notice $\beta$ is the same for all $j$. 
+The cumulative logit is the log-odds of the cumulative probabilities that the response is in category $\le j$ versus $\gt j$. $\theta_j$ is the log-odds when $x_i^\mathrm{T}=0$ and $\beta$ is the increase in the log odds attributed to a one unit increase in $x_i^\mathrm{T}$. Notice $\beta$ is the same for all $j$. 
 
 Once you fit the model, you will either generate predicted values or evaluate the coefficient estimators. The predicted value is a log-odds by default (useless), so you will at least take exponential to get the odds. From there you can solve for the probability, 
 
