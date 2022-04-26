@@ -1,22 +1,36 @@
 # Survival Analysis
 
-These notes rely on the [Survival Analysis in R](https://campus.datacamp.com/courses/survival-analysis-in-r) DataCamp course, [STHDA](http://www.sthda.com/english/wiki/survival-analysis), [BJC](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC2394262/), and Applied Survival Analysis Using R [@Moore2016].
+These notes rely on the [Survival Analysis in R](https://campus.datacamp.com/courses/survival-analysis-in-r) DataCamp course, [STHDA](http://www.sthda.com/english/wiki/survival-analysis), [BJC](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC2394262/), Applied Survival Analysis Using R [@Moore2016], [Emily Zabor](https://www.emilyzabor.com/tutorials/survival_analysis_in_r_tutorial.html), and Clark et al ([1](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC2394262)).
 
-Survival analyses model time to event. They differ from linear regression in two respects. Event times are typically skewed right with many early events and few late ones, violating linear regression's normality assumption. Survival analyses must also manage censoring, an unknown starting event (left censoring) and/or ending event (right censoring). Censuring occurs if the event has not yet happened or another event prevents further follow-up.
+Survival analyses model time to event. They differ from linear regression in two respects. Event times are typically skewed right with many early events and few late ones, violating linear regression's normality assumption. Survival analyses must also manage censoring, an unknown starting event (left censoring) and/or ending event (right censoring). Censuring occurs if the event does not take place by the end of the study window, or the subject is in some way lost to follow-up. In the figure below, subjects 3, 5, 9, and 15 either did not have the event or dropped out of the study. Censored observations do not reveal their total time to event, but they do reveal at least their minimum.
 
-A typical survival analysis uses Kaplan-Meier (KM) plots to visualize survival curves, log-rank tests to compare survival curves among groups, and Cox proportional hazards regression to describe the effect of explanatory variables on survival. In R, use the **survival** package for modeling and **survminer** for visualization. **gtsummary** also has functions for data summarization.
+```{r echo=FALSE}
+library(tidyverse)
+
+survival::lung[81:100,] %>%
+  mutate(subject = factor(row_number()),
+         status = factor(status, levels = c(1, 2), labels = c("Censor", "Event"))) %>%
+  ggplot(aes(y = subject)) +
+  geom_segment(aes(yend = subject, x = 0, xend = time), size = 2, color = "darkgray") +
+  geom_point(aes(x = time, color = status), size = 3) +
+  theme_light() +
+  theme(legend.position = "top") +
+  labs(title = "Survival Data - How to handle censoring?", x = "days",
+       y = "Subject", color = NULL)
+```
+
+A typical survival analysis uses Kaplan-Meier (KM) plots to visualize survival curves, log-rank tests to compare survival curves among groups, and Cox proportional hazards regression to describe the effect of explanatory variables on survival. In R, use the **survival** package for modeling, **survminer** for visualization, and **gtsummary** for summarization.
 
 ```{r message=FALSE, warning=FALSE}
-library(tidyverse)
 library(scales)
 library(survival)
 library(survminer)
 library(gtsummary)
 ```
 
-## Basic Concepts
+## Basics
 
-Let $T^*$ be a random variable representing the time until the event, and $U$ be a random variable representing the time until censoring (right-censoring). The observed value, $T$, is whichever comes first, $T = \mathrm{min}(T^*, U)$. The `lung` data set is typical, with variable `time` equaling $T$ and `status` equaling $\delta = I[T^* < U]$ where 1 = No (i.e., censored), and 2 = Yes (i.e., event occurred).
+Let $T^*$ be a random variable representing the time until the event, and $U$ be a random variable representing the time until (right) censoring. The observed value is whichever comes first, $T = \mathrm{min}(T^*, U)$. The `lung` data set is typical, with `time` representing $T$ and `status` representing $\delta = I[T^* < U]$ (1 = censored, 2 = event).
 
 ```{r}
 survival::lung %>% head()
@@ -33,9 +47,9 @@ The hazard function is the instantaneous event rate at $t$ given survival up to 
 
 $$h(t) = \lim_{\delta \rightarrow 0}{\frac{P(t < T < t + \delta|T > t)}{\delta}}.$$
 
-The functions are related by the multiplication rule, $P(AB) = P(A|B)P(B)$. The event probability at $t$, $f(t) = F'(t)$, is the conditional event probability of the event ocurring at $t$ given survival up to $t$ multiplied by the probability of survival up to $t$.
+The functions are related by the multiplication rule, $P(AB) = P(A|B)P(B)$. The event probability at $t$, $f(t) = F'(t)$, is the probability of the event at $t$ given survival up to $t$ multiplied by the probability of survival up to $t$.
 
-$$f(t) = h(t) S(t)$$
+$$f(t) = h(t) S(t).$$
 
 $h(t)dt = \frac{f(t)}{S(t)}dt$ is useful for describing the prognosis for a subject who has survived through a period of time. $S(t)$ is also the negative exponent of the cumulative hazard function,
 
@@ -53,15 +67,13 @@ The Kaplan-Meier (KM) estimator for the survival function is the product over fa
 
 $$\hat{S}(t) = \prod_{i: t_i < t}{\frac{n_i - d_i}{n_i}}$$
 
-where $n_i$ is the number of subjects at risk at time $i$ and $d_i$ is the number incurring the event. The KM curve falls only when an event occurs, not when a subject is censored. Confidence limits are calculated using the "delta" method to obtain the variance of $\log \hat{S}(t)$.
+where $n_i$ is the number of subjects at risk at time $i$ and $d_i$ is the number incurring the event. I.e., $\hat{S}(t)$ is the sum-product of the survival proportions at each time interval. The KM curve falls only when an event occurs, not when a subject is censored. Confidence limits are calculated using the "delta" method to obtain the variance of $\log \hat{S}(t)$.
 
-Calculate $\hat{S}(t)$ with `survival::survfit()`. Data set `lung` records the `status` (1 = censored, 2 = dead) of 228 lung cancer patients. `survfit()` operates on a `Surv` object, created by `Surv()`. Event indicators can be coded as 0|1 or 1|2.^[See neat discussion in Note section of `Surv()` help file.] Explanatory variables can be defined as factors, but the documentation for `Surv()` explains that it treats factor *event* variables as multiple endpoint data, so leave `status` numeric.
+Calculate $\hat{S}(t)$ with `survival::survfit()`. Data set `lung` records the `status` (1 = censored, 2 = dead) of 228 lung cancer patients. `survfit()` operates on a `Surv` object, created by `Surv()`. Explanatory variables can be defined as factors, but the event indicator must be numeric and coded as 0|1 or 1|2.^[See neat discussion in Note section of `Surv()` help file.]
 
 ```{r}
 lung_1 <- survival::lung %>%
   mutate(sex = factor(sex, levels = c(1, 2), labels = c("Male", "Female")))
-
-head(lung_1)
 ```
 
 `survfit()` creates survival curves from a formula or from a previously fitted Cox model. If the confidence interval crosses zero, you can cap it, or specify the log-log transformation parameter `conf.type = "log-log"`. This one doesn't need it.
@@ -72,22 +84,26 @@ km_fit <- survfit(Surv(time, status) ~ sex, data = lung_1)
 km_fit
 ```
 
-112 of 138 males and 53 of 90 females died. The median survival time was `r km_fit %>% summary %>% pluck("table") %>% .["sex=Male", "median"]` days for males and `r km_fit %>% summary %>% pluck("table") %>% .["sex=Female", "median"]` days for females. The 95% CI is defined around the median time to event. Retrieve these values from the `summary()$table` object. E.g., `summary(km_fit)$table[1, "events"]` = `r summary(km_fit)$table[1, "events"]`.
+112 of the 138 males and 53 of the 90 females died. The median survival times were `r km_fit %>% summary %>% pluck("table") %>% .["sex=Male", "median"]` days for males and `r km_fit %>% summary %>% pluck("table") %>% .["sex=Female", "median"]` days for females. The 95% CI is defined around the median time to event. Retrieve these values from the `summary()$table` object. E.g., `summary(km_fit)$table[1, "0.95LCL"]` = `r summary(km_fit)$table[1, "0.95LCL"]`. You can also use `summary()` with the `time` parameter to estimate survival up until a point in time.
 
-`broom::tidy()` summarizes the data by recorded time, returning the number at risk, the number of events, and the number censored. At time *t* = 11, 3 of the 138 males at risk died, so the KM estimate of survival at *t* = 11 is $S(11) = 1 - \frac{3}{138} = .978$. At *t* = 12, 1 of the 135 that remained died, so $S(12) = S(11) \cdot \frac{1}{135} = .971$, and so on.
+```{r}
+summary(km_fit, time = 300)
+```
+
+`broom::tidy()` summarizes the data by each event time in the data. At time *t* = 11, 3 of the 138 males at risk died, so $S(11) = 1 - \frac{3}{138} = .978$. At *t* = 12, 1 of the 135 that remained died, so $S(12) = S(11) \cdot \frac{1}{135} = .971$, and so on.
 
 ```{r}
 km_fit %>% broom::tidy()
 ```
 
-Don't yield to the temptation to construct your own ggplot - **survminer** does a good job plotting KM models. Vertical drops indicate events and vertical ticks indicate censoring.
+Don't construct your own ggplot - **survminer** does a good job plotting KM models. Vertical drops indicate events and vertical ticks indicate censoring.
 
 ```{r warning=FALSE}
 ggsurvplot(
   km_fit,
   fun = "pct",
   linetype = "strata", # Change line type by groups
-  pval = TRUE, 
+  pval = FALSE, 
   pval.method = TRUE,
   conf.int = TRUE,
   risk.table = TRUE,
@@ -165,7 +181,7 @@ $$f(d_{Ai} | n_{Ai}, n_{Bi}, d_i) = \frac{{{n_{Ai}}\choose{d_{Ai}}}{{n_{Bi}}\cho
 
 The expected value is $e_{Ai} = E(d_{Ai}) = \frac{d_i}{n_i} \cdot n_{0i}$ with variance $v_{Ai} = Var(d_{Ai}) = d_{i} \cdot \frac{n_{Ai}}{n_i}  \cdot \frac{n_{1i}}{n_i} \cdot \frac{n_i - d_i}{n_i - 1}$. 
 
-The log-rank test statistic is the sum of the differences between the observed and expected failures, $U_0 = \sum (d_{Ai} - e_{Ai})$, normalized by dividing by the square-root of its variance, $V_0 = Var({U_0}) = \sum v_{Ai}$.
+The log-rank test statistic is the sum of the differences between the observed and expected events, $U_0 = \sum (d_{Ai} - e_{Ai})$, normalized by dividing by the square-root of its variance, $V_0 = Var({U_0}) = \sum v_{Ai}$.
 
 $$U = \frac{U_0}{\sqrt{V_0}} \sim N(0, 1)$$
 
@@ -174,10 +190,10 @@ $U^2$ is a chi-square random variable with one degree of freedom.
 $$U^2 = \frac{U_0^2}{V_0} \sim \chi_1^2$$
 
 ```{r}
-survdiff(Surv(time, status) ~ sex, data = lung_1)
+(km_diff <- survdiff(Surv(time, status) ~ sex, data = lung_1))
 ```
 
-The *p*-value for $\chi_1^2 = 10.3$ is 0.001, so reject $H_0$ that males and females have identical survival patterns.
+The *p*-value for $\chi_1^2$ = `r comma(km_diff$chisq, .1)` is `1 - pchisq(km_diff$chisq, length(km_diff$n) - 1)` = `r comma(1 - pchisq(km_diff$chisq, length(km_diff$n) - 1), .001)`, so reject $H_0$ that males and females have identical survival patterns.
 
 ## Common Distributions
 
@@ -346,11 +362,11 @@ You can fit other models with the `dist = c("lognormal", "exponential")` paramet
 
 The Cox proportional hazards model expresses the expected hazard, $h(t)$, as an unspecified baseline hazard, $h_0(t)$, multiplied by the exponential of a linear combination of parameters, $\psi = e^{X\beta}$.
 
-$$h(t) = h_0(t) \cdot e^{X \beta} = \psi h_0(t)$$
+$$h(t) = h_0(t) \cdot e^{X \beta} = \psi h_0(t).$$
 
 $h(t)$ is unspecified because it cancels out of the model. To see this, consider a hypothetical data set where 6 participants are assumed to fall into one of two hazards: participants 1, 2, and 3 have $h_0$ and 4, 5, and 6 have $\psi h_0$. Working through the event occurrences, the survival function is the product of each of the failure probabilities. Suppose participant 1 fails first. $p_1 = \frac{h_0(t_1)}{3 \cdot h_0(t_1) + 3 \psi \cdot h_0(t_1)}$. Suppose participant 2 censors, then participant 4 fails. $p_2 = \frac{\psi h_0(t_2)}{1 \cdot h_0(t_2) + 3 \psi \cdot h_0(t_2)}$. Now participant 3 fails. $p_3 = \frac{h_0(t_3)}{1 \cdot h_0(t_3) + 2 \psi \cdot h_0(t_3)}$. Notice how $h_0(t)$ cancels in each ratio. The partial likelihood is the product of the failure probabilities, $L(\psi) = \frac{\psi}{(3 + 3 \psi)(1 + 3 \psi)(1 + 2 \psi)}$. 
 
-Find the value of $\psi$ that maximizes $L(\psi)$. $L(\psi)$ is difficult to optimize, but its log is easier. $l(\beta) = X \beta - \log (3 + 3 e^{X\beta}) - \log (1 + 3 e^{X\beta}) - \log (1 + 2 e^{X\beta})$. A function will search for the $\beta$ producing the global max. 
+Find the value of $\psi$ that maximizes $L(\psi)$. $L(\psi)$ is difficult to optimize, but its log is easier. $l(\beta) = X \beta - \log (3 + 3 e^{X\beta}) - \log (1 + 3 e^{X\beta}) - \log (1 + 2 e^{X\beta})$. A function searches for the $\beta$ producing the global max. 
 
 The proportionality of the model comes from the lack of time dependence in the $X$ variables. The ratio of the hazard functions of two individuals is 
 
@@ -364,11 +380,11 @@ There are three ways to test $H_0 : \beta = 0$: the Wald test, the score test, a
 
 * The likelihood ratio test statistic equals $2 [l(\beta = \hat{\beta}) - l(\beta = 0)]$. It has a chi-square distribution with one degree of freedom.
 
-The Cox proportional hazards model is analogous to the [logistic regression](https://bookdown.org/mpfoley1973/supervised-ml/generalized-linear-models-glm.html#logistic-regression) model. Rearranging,
+The Cox proportional hazards model is analogous to the [logistic regression](https://bookdown.org/mpfoley1973/supervised-ml/generalized-linear-models-glm.html#logistic-regression) model. Rearranging $h(t) = h_0(t) \cdot e^{X \beta}$,
 
-$$\ln \left[ \frac{h(t)}{h_0(t)} \right] = X \beta$$
+$$\ln \left[ \frac{h(t)}{h_0(t)} \right] = X \beta.$$
 
-Whereas logistic regression predicts the *log odds* of the response, Cox regression predicts the *log relative hazard* (relative to the unspecified baseline). $\beta$ is the change in the log of the relative hazard associated with a one unit change in $X$. Its antilog is the hazard ratio (HR). A positive $e^{\beta_j}$ means the hazard increases with the covariate. 
+Whereas logistic regression predicts the *log odds* of the response, Cox regression predicts the *log relative hazard* (relative to the unspecified baseline) of the response. $\beta$ is the change in the log of the relative hazard associated with a one unit change in $X$. Its antilog is the hazard ratio (HR). A positive $e^{\beta_j}$ means the hazard increases with the covariate. 
 
 $$
 \begin{eqnarray}
@@ -379,16 +395,21 @@ e^\beta &=& \frac{h_b(t)}{h_a(t)} \\
 \end{eqnarray}
 $$
 
-Fit a Cox proportional hazards model with `coxph()`. Returning to the `lung` data set,
+Fit a Cox proportional hazards model with `coxph()`.
 
 ```{r}
-dat <- lung %>% mutate(sex = factor(sex, levels = c(1, 2), labels = c("Male", "Female")))
+dat <- lung %>% 
+  mutate(
+    sex = factor(sex, levels = c(1, 2), labels = c("Male", "Female")),
+    ph.ecog = factor(ph.ecog, levels = c(0, 1, 2, 3), 
+                     labels = c("asymptomatic", "ambulatory", "bedlow", "bedhigh"))
+  )
 
 cox_fit <- coxph(Surv(time, status) ~ sex, data = dat)
 summary(cox_fit)
 ```
 
-A negative coefficient estimator means the hazard decreases with increasing values of the variable. Females have a log hazard of death equal to `r comma(coef(cox_fit)[1], .0001)` of that of males. The exponential is the hazard ratio, the effect-size of the covariate. Being female reduces the hazard by a factor of `exp(coef(cox_fit)[1])` = `r comma(exp(coef(cox_fit)[1]), .001)` (`r percent(1 - exp(coef(cox_fit)[1]), 1)`).
+A negative coefficient estimator means the hazard decreases with increasing values of the variable. Females have a log hazard of death equal to `coef(cox_fit)[1]` = `r comma(coef(cox_fit)[1], .0001)` of that of males. The exponential is the hazard ratio, the effect-size of the covariate. Being female reduces the hazard by a factor of `exp(coef(cox_fit)[1])` = `r comma(exp(coef(cox_fit)[1]), .001)` (`r percent(1 - exp(coef(cox_fit)[1]), .1)`). I.e., at any given time, `r comma(exp(coef(cox_fit)[1]), .001)` times as many females die as males.
 
 The last section of the summary object is the three tests for the overall significance of the model. These three methods are asymptotically equivalent. The Likelihood ratio test has better behavior for small sample sizes, so it is generally preferred.
 
@@ -402,44 +423,95 @@ cox_fit %>%
 A multivariate analysis works the same way.  Here is the Cox model with two additional covariates: `age` and `ph.ecog`.
 
 ```{r}
-lung_cox_2 <- coxph(Surv(time, status) ~ age + sex + ph.ecog, data = lung)
-summary(lung_cox_2)
+cox_fit_2 <- coxph(Surv(time, status) ~ age + sex + ph.ecog, data = dat)
+summary(cox_fit_2)
 ```
 
 The p-values for all three overall tests (likelihood, Wald, and score) are significant, indicating that the model is significant (not all $\beta$ values are 0). 
 
-Having fit a Cox model to the data, it’s possible to visualize the predicted survival proportion at any given time for a particular risk group. Function `survfit()` estimates the survival proportion, by default at the mean values of covariates.
+A **landmark** analysis measures survival *after a milestone period*. E.g., I data set may have survival times after a disease onset, but a treatment typically starts after 90 days. In that case, you want to subset the persons surving at least 90 days and then subtract 90 from all the times. In a KM analysis manually adjust the data. In `coxph()` use the `subset` argument.
 
-```{r}
-#ggsurvplot(survfit(lung_cox_2), data = lung, palette = "#2E9FDF", ggtheme = theme_minimal())
-```
-
-To display the effects of one or more particular covariates, construct a data frame with test cases and pass to `survfit()` with the `newdata` argument.
-
-```{r}
-newdata <- expand.grid(
-    sex = unique(lung$sex),
-#    age = quantile(lung$age, probs = c(0.25, 0.50, 0.75)),
-    age = median(lung$age),
-    ph.ecog = 1
+```{r eval=FALSE}
+coxph(
+  Surv(time, status) ~ age + sex + ph.ecog, 
+  subset = time > 90, 
+  data = dat
 )
-rownames(newdata) <- c("male", "female")
-
-# Create survival curves.  The rownames show up in the model
-lung_pred <- survfit(lung_cox_2, newdata = newdata, data = lung)
-
-# surv_summary() creates the data.frame with a summary of the survfit() results, including columns like time (survival time) and surv (survival probability).
-lung_pred0 <- surv_summary(lung_pred)
-# get the corresponding new_data cols
-lung_pred1 <- cbind(lung_pred0, newdata[as.character(lung_pred0$strata), ])
-ggsurvplot_df(
-  lung_pred1, 
-  color = "sex", 
-  legend.labs = c("M", "F"),
-  legend.title = "Sex", 
-  conf.int = TRUE, 
-  ggtheme = theme_minimal())
 ```
+
+Visualize the fitted Cox model for each risk group. Function `survfit()` estimates survival at the mean values of covariates by default. That's usually not useful, so instead pass a dataframe with test cases into the `newdata` argument.
+
+```{r}
+# Predictions will be for all levels of sex and ph.ecog, but only at the median
+# age.
+new_data <- expand.grid(
+    sex = unique(dat$sex),
+    age = median(dat$age),
+    ph.ecog = levels(dat$ph.ecog)
+) %>% mutate(
+  # strata is our key to join back to the fitted values.
+  strata = as.factor(row_number())
+)
+
+# Create fitted survival curves at the covariate presets.
+lung_pred_0 <- survfit(cox_fit_2, newdata = new_data, data = dat)
+
+# `surv_summary()` is like `summary()` except that it includes risk table info,
+# confidence interval attributes, and pivots the strata longer.
+lung_pred_1 <- surv_summary(lung_pred_0)
+
+# The cases are labeled "strata", but `survsummary()` doesn't label what the 
+# strata are! Get it from new_data.
+lung_pred_2 <- lung_pred_1 %>% inner_join(new_data, by = "strata")
+
+# Now use ggplot() just like normal.
+lung_pred_2 %>%
+  ggplot(aes(x = time, y = surv, color = sex, fill = sex)) +
+  geom_line() +
+  geom_ribbon(aes(ymin = lower, ymax = upper), alpha = 0.4) +
+  facet_wrap(facets = vars(ph.ecog)) +
+  theme_light() +
+  labs(title = "Cox fitted model",
+       subtitle = "Age held at median.")
+```
+
+If a covariate changes over time, you need to modify the underlying data set. `tmerge()` lengthens the data set for the relevant time spans for the time-dependent covariate. Helper functions `event()` and `tdc()` modify the outcome and time-dependent covariates.
+
+The BMT data set from the **SemiCompRisks** package is a good example. `T1` and `delta1` are the time and event indicator variables. `TA` and `deltaA` are time and event indicators for a secondary disease.
+
+```{r}
+data(BMT, package = "SemiCompRisks")
+
+dat <- BMT %>%
+  rowid_to_column("subject_id") %>%
+  select(subject_id, T1, delta1, TA, deltaA)
+
+dat %>% filter(subject_id %in% c(1, 2, 15, 18))
+```
+
+`tmerge()` merges two data sets, usually the same ones, and expands the time/event vars.
+
+```{r}
+dat_2 <- tmerge(
+  data1 = dat,
+  data2 = dat,
+  id = subject_id,
+  death = event(T1, delta1),
+  agvhd = tdc(TA)
+)
+
+dat_2 %>% filter(subject_id %in% c(1, 2, 15, 18))
+```
+
+Define the Cox model Surv object with the start and end times.
+
+```{r}
+dat_2 %>% 
+  coxph(Surv(time = tstart, time2 = tstop, event = death) ~ agvhd, data = .) %>% 
+  gtsummary::tbl_regression(exp = TRUE)
+```
+
+From [Emily Zabor's tutorial](https://www.emilyzabor.com/tutorials/survival_analysis_in_r_tutorial.html), use a landmark analysis to visualize a covariate and Cox for modeling.
 
 The Cox model is valid under certain conditions.
 
@@ -517,6 +589,20 @@ The fitted KM model summary table shows the median survival times.
 (km_smry <- summary(km_fit) %>% pluck("table"))
 ```
 
+```{r}
+gtsummary::tbl_survfit(
+  list(
+    survfit(Surv(time, status) ~ 1, data = cs_dat),
+    survfit(Surv(time, status) ~ ph.ecog, data = cs_dat)
+    # survfit(Surv(time, status) ~ age, data = cs_dat)
+  ),
+  probs = 0.5,
+  label_header = "**Median Survival**"
+) %>%
+  gtsummary::add_n() %>%
+  gtsummary::add_nevent()
+```
+
 > Participants that were asymptomatic had a median survival time of `r km_smry["ph.ecog=Asymptomatic", "median"]` days (95% CI, `r km_smry["ph.ecog=Asymptomatic", "0.95LCL"]` to `r km_smry["ph.ecog=Asymptomatic", "0.95UCL"]` days). This was longer than the ambulatory group, `r km_smry["ph.ecog=Ambulatory", "median"]` days (95% CI, `r km_smry["ph.ecog=Ambulatory", "0.95LCL"]` to `r km_smry["ph.ecog=Ambulatory", "0.95UCL"]` days) and bedridden group, `r km_smry["ph.ecog=Bedridden", "median"]` days (95% CI, `r km_smry["ph.ecog=Bedridden", "0.95LCL"]` to `r km_smry["ph.ecog=Bedridden", "0.95UCL"]` days).
 
 Determine whether there are significant differences in the fitted survival distributions using a log-rank test (and/or Breslow and Tarone-Ware). If there are differences, run a pairwise comparison post-hoc test to determine which curves differ.
@@ -548,40 +634,41 @@ Adjust the statistical significance to compensate for making multiple comparison
 
 Report the results like this.
 
-> Men and women diagnosed with advanced lung cancer were monitored up to three years until time of death. Participants were classified into three groups according to their ECOG performance score: *asymptomatic* (n = `r cs_dat %>% count(ph.ecog) %>% filter(ph.ecog == "Asymptomatic") %>% pull(n)`), *symptomatic but completely ambulatory* (n = `r cs_dat %>% count(ph.ecog) %>% filter(ph.ecog == "Ambulatory") %>% pull(n)`), and *bedridden at least part of the day* (n = `r cs_dat %>% count(ph.ecog) %>% filter(ph.ecog == "Bedridden") %>% pull(n)`. Kaplan-Meier survival analysis (Kaplan & Meier, 1958) was conducted to compare the three different ECOG performance scores for their relationship with survival. Censored cases were negatively associated with symptom severity, *asymptomatic*, `r gtsummary::inline_text(t1, variable = status, level = "censored", column = "Asymptomatic")`, *symptomatic but completely ambulatory*, `r gtsummary::inline_text(t1, variable = status, level = "censored", column = "Ambulatory")`, and *bedridden*, `r gtsummary::inline_text(t1, variable = status, level = "censored", column = "Bedridden")` study groups. Participants that were asymptomatic had a median survival time of `r km_smry["ph.ecog=Asymptomatic", "median"]` days (95% CI, `r km_smry["ph.ecog=Asymptomatic", "0.95LCL"]` to `r km_smry["ph.ecog=Asymptomatic", "0.95UCL"]` days). This was longer than the ambulatory group, `r km_smry["ph.ecog=Ambulatory", "median"]` days (95% CI, `r km_smry["ph.ecog=Ambulatory", "0.95LCL"]` to `r km_smry["ph.ecog=Ambulatory", "0.95UCL"]` days) and bedridden group, `r km_smry["ph.ecog=Bedridden", "median"]` days (95% CI, `r km_smry["ph.ecog=Bedridden", "0.95LCL"]` to `r km_smry["ph.ecog=Bedridden", "0.95UCL"]` days). A log rank test was run to determine if there were differences in the survival distribution for the different types of intervention. The survival distributions for the three interventions were statistically significantly different, $\chi^2$(2) = `r km_diff$chisq %>% number(.1)`, *p* < .001. Pairwise log rank comparisons were conducted to determine which intervention groups had different survival distributions. A Bonferroni correction was made with statistical significance accepted at the *p* < .017 level. There was a statistically significant difference in survival distributions for the aymptomatic vs bedridden, *p* < .001, and ambulatory vs bedridden, *p* = `r km_pairwise$p.value["Bedridden", "Ambulatory"] %>% number(.001)`, groups. However, the survival distributions for the asymptomatic vs ambulatory group were not statistically significant, *p* = `r km_pairwise$p.value["Ambulatory", "Asymptomatic"] %>% number(.001)`
+> `r nrow(cs_dat) %>% comma(1)` Men and women diagnosed with advanced lung cancer aged `r min(cs_dat$age)` to `r max(cs_dat$age)` were monitored up to three years until time of death. Participants were classified into three groups according to their ECOG performance score: *asymptomatic* (n = `r cs_dat %>% count(ph.ecog) %>% filter(ph.ecog == "Asymptomatic") %>% pull(n)`), *symptomatic but completely ambulatory* (n = `r cs_dat %>% count(ph.ecog) %>% filter(ph.ecog == "Ambulatory") %>% pull(n)`), and *bedridden at least part of the day* (n = `r cs_dat %>% count(ph.ecog) %>% filter(ph.ecog == "Bedridden") %>% pull(n)`). A Kaplan-Meier survival analysis (Kaplan & Meier, 1958) was conducted to compare survival times among the three ECOG performance scores. Censored cases were negatively associated with symptom severity, *asymptomatic*, `r gtsummary::inline_text(t1, variable = status, level = "censored", column = "Asymptomatic")`, *symptomatic but completely ambulatory*, `r gtsummary::inline_text(t1, variable = status, level = "censored", column = "Ambulatory")`, and *bedridden*, `r gtsummary::inline_text(t1, variable = status, level = "censored", column = "Bedridden")` study groups. Participants that were asymptomatic had a median survival time of `r km_smry["ph.ecog=Asymptomatic", "median"]` days (95% CI, `r km_smry["ph.ecog=Asymptomatic", "0.95LCL"]` to `r km_smry["ph.ecog=Asymptomatic", "0.95UCL"]` days). This was longer than the ambulatory group, `r km_smry["ph.ecog=Ambulatory", "median"]` days (95% CI, `r km_smry["ph.ecog=Ambulatory", "0.95LCL"]` to `r km_smry["ph.ecog=Ambulatory", "0.95UCL"]` days) and bedridden group, `r km_smry["ph.ecog=Bedridden", "median"]` days (95% CI, `r km_smry["ph.ecog=Bedridden", "0.95LCL"]` to `r km_smry["ph.ecog=Bedridden", "0.95UCL"]` days). A log rank test was run to determine if there were differences in the survival distribution for the different types of intervention. The survival distributions for the three interventions were statistically significantly different, $\chi^2$(2) = `r km_diff$chisq %>% number(.1)`, *p* < .001. Pairwise log rank comparisons were conducted to determine which intervention groups had different survival distributions. A Bonferroni correction was made with statistical significance accepted at the *p* < .017 level. There was a statistically significant difference in survival distributions for the aymptomatic vs bedridden, *p* < .001, and ambulatory vs bedridden, *p* = `r km_pairwise$p.value["Bedridden", "Ambulatory"] %>% number(.001)`, groups. However, the survival distributions for the asymptomatic vs ambulatory group were not statistically significant, *p* = `r km_pairwise$p.value["Ambulatory", "Asymptomatic"] %>% number(.001)`
 
 ### Cox
 
-The Cox proportional hazards model will estimate
+The Cox proportional hazards model describes the effect of explanatory variables on survival and can include controlling variables. Add `age` as a controlling variable.
 
 ```{r}
-km_fit <- coxph(Surv(time, status) ~ ph.ecog, data = cs_dat)
-km_fit %>% 
-  gtsummary::tbl_regression()
-cox_fit <- cs_dat %>%
-  coxph(Surv(time, status) ~ ph.ecog, data = .)
-# Create survival curves.  The rownames show up in the model
-cox_preds <- survfit(cox_fit, newdata = list(ph.ecog = levels(cs_dat$ph.ecog)), data = cs_dat) %>%
+cox_fit <- coxph(Surv(time, status) ~ ph.ecog + age, data = cs_dat)
+(cox_tbl <- cox_fit %>% gtsummary::tbl_regression(exponentiate = TRUE))
+```
+
+```{r}
+gtsummary::inline_text(cox_tbl, variable = ph.ecog, level = "Ambulatory")
+```
+
+Using a Cox proportional hazards regression analysis, we find the association between ECOG and survival time statistically significant with a Bedridden estimate of `r gtsummary::inline_text(cox_tbl, variable = ph.ecog, level = "Bedridden")` relative to Asymptomatic. The hazard ratio for Ambulatory was not statistically significant, `r gtsummary::inline_text(cox_tbl, variable = ph.ecog, level = "Ambulatory")`.
+ 
+```{r}
+survfit(cox_fit, newdata = list(ph.ecog = levels(cs_dat$ph.ecog),
+                                             age = rep(median(cs_dat$age), 3)), data = cs_dat) %>%
   surv_summary() %>%
-  mutate(strata = case_when(strata == 1 ~ "intervention=hypnotherapy programme",
-                            strata == 2 ~ "nicotine patch",
-                            strata == 3 ~ "e-cigarette"))
-
+  ggsurvplot_df(
+    fun = "pct",
+    # linetype = "strata", # Change line type by groups
+    # conf.int = TRUE,
+    surv.median.line = "hv", # median horizontal and vertical ref lines
+    ggtheme = theme_light(),
+    palette = c("goldenrod", "sienna", "tomato"),
+    title = "Fitted Cox model at Median Participant Age.",
+    legend.title = "",
+    legend.labs = levels(cs_dat$ph.ecog)
+  )
 ```
 
-```{r}
-gtsummary::tbl_survfit(
-  list(
-    survfit(Surv(time, status) ~ 1, data = cs_dat),
-    survfit(Surv(time, status) ~ ph.ecog, data = cs_dat),
-    survfit(Surv(time, status) ~ age, data = cs_dat)
-  ),
-  probs = 0.5,
-  label_header = "**Median Survival**"
-) %>%
-  gtsummary::add_n() %>%
-  gtsummary::add_nevent()
-```
+
 
 ### Reporting
 
