@@ -668,9 +668,27 @@ survfit(cox_fit, newdata = list(ph.ecog = levels(cs_dat$ph.ecog),
   )
 ```
 
-
-
 ### Reporting
 
 > Participants were randomly assigned to three different interventions in order to quit smoking: a hypnotherapy programme (n = 50), wearing nicotine patches (n = 50) and using e-cigarettes (n = 50). Kaplan-Meier survival analysis (Kaplan & Meier, 1958) was conducted to compare the three different interventions for their effectiveness in preventing smoking resumption. A similar percentage of censored cases was present in the hypnotherapy (12.0%), nicotine patch (14.0%) and e-cigarette (14.0%) intervention groups and the pattern of censoring was similar. Participants that underwent the hypnotherapy programme had a median time to smoking resumption of 69.0 (95% CI, 45.2 to 92.8) days. This was longer than the groups receiving nicotine patches or e-cigarettes, which had identical median times to smoking resumption of 9.0 (95% CI, 6.6 to 11.4) days and 9.0 (95% CI, 7.1 to 10.9) days, respectively. A log rank test was conducted to determine if there were differences in the survival distributions for the different types of intervention. The survival distributions for the three interventions were statistically significantly different, χ2(2) = 25.818, p < .0005. Pairwise log rank comparisons were conducted to determine which intervention groups had different survival distributions. A Bonferroni correction was made with statistical significance accepted at the p < .0167 level. There was a statistically significant difference in survival distributions for the hypnotherapy vs nicotine patch intervention, χ2(1) = 11.035, p = .001, and hypnotherapy vs e-cigarette intervention, χ2(1) = 29.003, p < .0005. However, the survival distributions for the e-cigarette and nicotine patch interventions were not statistically significantly different, χ2(1) = 1.541, p = .214.
+
+## Discrete Time Survival Analysis
+
+(*notes from [here](https://data.princeton.edu/wws509/notes/c7s6).*)
+
+Cox proposed an extension to the proportional hazards model to discrete times using logistic regression:
+
+$$
+\frac{h(t;x)}{1 - h(t;x)} = \frac{h_0(t)}{1 - h_0(t)} e^{xb}
+$$
+
+where $h_0(t)$ is the baseline hazard at $t$ and $e^{xb}$ is the relative risk associated with the covariate values $x$. The log of each side is the logit of the hazard,
+
+$$
+\mathrm{logit} \{h(t;x)\} = \mathrm{logit \{h_0(t)\}} + xb
+$$
+
+The model treats time as a discrete factor by introducing a parameter $\alpha = \mathrm{logit \{h_0(t)\}}$ for each possible event time, $t$. Parameter interpretation is the same as other logistic regression. 
+
+An alternative extension to the proportional hazards model starts from the survival function
 
