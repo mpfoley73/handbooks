@@ -4,18 +4,30 @@ These notes rely on the [Survival Analysis in R](https://campus.datacamp.com/cou
 
 Survival analyses model time to event. They differ from linear regression in two respects. Event times are typically skewed right with many early events and few late ones, violating linear regression's normality assumption. Survival analyses must also manage censoring, an unknown starting event (left censoring) and/or ending event (right censoring). Censuring occurs if the event does not take place by the end of the study window, or the subject is in some way lost to follow-up. In the figure below, subjects 3, 5, 9, and 15 either did not have the event or dropped out of the study. Censored observations do not reveal their total time to event, but they do reveal at least their minimum.
 
-```{r echo=FALSE}
+```{r echo=FALSE, message=FALSE, warning=FALSE}
 library(tidyverse)
 
 survival::lung[81:100,] %>%
-  mutate(subject = factor(row_number()),
-         status = factor(status, levels = c(1, 2), labels = c("Censor", "Event"))) %>%
-  ggplot(aes(y = subject)) +
-  geom_segment(aes(yend = subject, x = 0, xend = time), size = 2, color = "darkgray") +
-  geom_point(aes(x = time, color = status), size = 3) +
+  mutate(
+    subject = factor(row_number()),
+    status = factor(status, levels = c(1, 2), labels = c("Censor", "Event")),
+    start_time = age * 4,
+    time = case_when(
+      subject == 3 ~ time + 750,
+      subject == 5 ~ time + 100,
+      subject == 9 ~ time + 200,
+      subject == 15 ~ time + 400,
+      TRUE ~ time
+    )
+  ) %>%
+  ggplot(aes(y = fct_rev(subject))) +
+  geom_segment(aes(yend = fct_rev(subject), x = start_time, xend = start_time + time), size = 2, color = "darkgray") +
+  geom_point(aes(x = start_time), color = "gray60", size = 2.5) +
+  geom_point(aes(x = start_time + time, color = status), size = 3) +
+  geom_vline(aes(xintercept = 1075), color = "gray60", linetype = 2, size = 1) +
   theme_light() +
   theme(legend.position = "top") +
-  labs(title = "Survival Data - How to handle censoring?", x = "days",
+  labs(title = "Survival Data - How to handle censoring?", x = "observation period",
        y = "Subject", color = NULL)
 ```
 
@@ -30,12 +42,11 @@ library(gtsummary)
 
 ## Basics
 
-Let $T^*$ be a random variable representing the time until the event, and $U$ be a random variable representing the time until (right) censoring. The observed value is whichever comes first, $T = \mathrm{min}(T^*, U)$. The `lung` data set is typical, with `time` representing $T$ and `status` representing $\delta = I[T^* < U]$ (1 = censored, 2 = event).
+Let $T^*$ be a random variable representing the time until the event, and $U$ be a random variable representing the time until (right) censoring. The observed value is whichever event comes first, $T = \mathrm{min}(T^*, U)$. The `lung` data set is typical, with `time` representing $T$ and `status` representing $\delta = I[T^* < U]$ (1 = censored, 2 = event).
 
 ```{r}
 survival::lung %>% head()
 ```
-
 
 Censoring sometimes occurs when subjects are monitored for a fixed period of time (Type I), the study is halted after a pre-specified level of events are reached (Type II), or the subject drops out for a reason other than the event of interest (random censoring).
 
@@ -47,11 +58,17 @@ The hazard function is the instantaneous event rate at $t$ given survival up to 
 
 $$h(t) = \lim_{\delta \rightarrow 0}{\frac{P(t < T < t + \delta|T > t)}{\delta}}.$$
 
-The functions are related by the multiplication rule, $P(AB) = P(A|B)P(B)$. The event probability at $t$, $f(t) = F'(t)$, is the probability of the event at $t$ given survival up to $t$ multiplied by the probability of survival up to $t$.
+An instantaneous event rate has no intuitive appeal, but think of it in discrete time where $\delta > 0$. $h(t + \delta)$ is the *conditional probability* of an event at the discrete interval $t + \delta$, conditioned on those at risk during that interval.
+
+The survival and hazard functions are related by the multiplication rule, $P(AB) = P(A|B)P(B)$. The event probability at $t$, $f(t) = F'(t)$, is the probability of the event at $t$ given survival up to $t$ multiplied by the probability of survival up to $t$.
 
 $$f(t) = h(t) S(t).$$
 
-$h(t)dt = \frac{f(t)}{S(t)}dt$ is useful for describing the prognosis for a subject who has survived through a period of time. $S(t)$ is also the negative exponent of the cumulative hazard function,
+Again, in discrete terms, survival up to interval $t$ is the sum product of the survival probabilities at each preceding period, $S(t) = \Pi_{i = 1}^t [1 - h(t)]$. It is the complement of the cumulative risk.
+
+Rearranging, $h(t)dt = \frac{f(t)}{S(t)}dt$ describes the prognosis for a subject who has survived through time $t$. 
+
+$S(t)$ is also the negative exponent of the cumulative hazard function,
 
 $$S(t) = e^{-H(t)}.$$
 
@@ -519,6 +536,19 @@ The Cox model is valid under certain conditions.
 * There is a multiplicative relationship between the predictors and the hazard.
 * The hazard ratio is constant over time.
 
+## Discrete Time
+
+Cox extended the proportional hazards model to discrete times using logistic regression. Times are discrete when the events they mark refer to an interval rather than an instant (e.g., grade when dropped out of school). 
+
+Recall that for continuous times the Cox proportional hazards model fits $h(t) = h_0(t) \cdot e^{X\beta}$, and taking the log and rearranging describes a linear relationship between the *log relative hazard* and the predictor variables, $\ln \left[ \frac{h(t)}{h_0(t)} \right] = X\beta$. The antilog of $\beta$ is a hazard ratio (relative risk).
+
+Fit a discrete-time model to an *expanded data set* that has one record for each subject and relevant time interval, and a binary variable representing the status. E.g., if event times in the data set occur in the range [16, 24] and individual *i* has the event at *t* = 20, then *i*'s record would expand to five rows with *t* = [16, 20] and *status* = [0, 0, 0, 0, 1]. 
+
+The discrete-time model fits either a) the *logit* of the hazard at period *t*, $\ln \left[ \frac{h(t)}{1 - h(t)} \right] = \alpha + X \beta$, or the *complementary log-log*, $\ln (- \ln (1 - h(t))) = \alpha + X \beta$.^[This formulation is derived from the relationship between the survival function to a baseline survival, $S(t) = S_0(t)^\exp{Xb}$. See [German Rodriguez's course notes](https://data.princeton.edu/wws509/notes/c7s6).] $\alpha = \mathrm{logit}\hspace{1mm}h_0(t)$ is the logit of the baseline hazard. The model treats time as discrete by introducing one parameter $\alpha_j$ for the $j$ possible event times in the data set (that's why you expand the data set). The model fit is regular logistic regression. 
+
+Whereas the antilog of $\beta$ in the continuous model is the hazard ratio, in the logit model it is the *hazard odds ratio*. The Cox and logit models converge as $t \rightarrow 0$ because $\log(h(t) \sim \log \frac{h(t)}{1 - h(t)}$ as $t \rightarrow 0$. In the the complementary log-log model, the antilog of $\beta$ is the hazard ratio, just as in Cox. Specify the link function in `glm` with `family = binomial(link = "cloglog")`.
+
+
 ## Case Study: KM + Cox
 
 ```{r include=FALSE}
@@ -530,7 +560,8 @@ cs_dat <- cancer %>%
       levels = c(0, 1, 2, 3, 4),
       labels = c("Asymptomatic", "Ambulatory", "In bed <50%", "In bed >50%", "Bedridden")),
     ph.ecog = fct_drop(ph.ecog),
-    ph.ecog = fct_lump_n(ph.ecog, n = 2, other_level = "Bedridden")
+    ph.ecog = fct_lump_n(ph.ecog, n = 2, other_level = "Bedridden"),
+    patient_id = row_number()
   )
 ```
 
@@ -645,10 +676,6 @@ cox_fit <- coxph(Surv(time, status) ~ ph.ecog + age, data = cs_dat)
 (cox_tbl <- cox_fit %>% gtsummary::tbl_regression(exponentiate = TRUE))
 ```
 
-```{r}
-gtsummary::inline_text(cox_tbl, variable = ph.ecog, level = "Ambulatory")
-```
-
 Using a Cox proportional hazards regression analysis, we find the association between ECOG and survival time statistically significant with a Bedridden estimate of `r gtsummary::inline_text(cox_tbl, variable = ph.ecog, level = "Bedridden")` relative to Asymptomatic. The hazard ratio for Ambulatory was not statistically significant, `r gtsummary::inline_text(cox_tbl, variable = ph.ecog, level = "Ambulatory")`.
  
 ```{r}
@@ -668,27 +695,81 @@ survfit(cox_fit, newdata = list(ph.ecog = levels(cs_dat$ph.ecog),
   )
 ```
 
+### Discrete Time
+
+To fit a discrete time model, first create a discrete time data set, on record per relevant time period. You could do this by hand with `expand.grid()`
+
+```{r eval=FALSE}
+cs_glm_dat <- expand.grid(
+  time = seq(min(cs_dat$time), max(cs_dat$time), 1),
+  patient_id = unique(cs_dat$patient_id)
+) %>%
+  inner_join(cs_dat, by = "patient_id") %>%
+  filter(time.x <= time.y) %>%
+  mutate(status = if_else(time.x < time.y, 0, status - 1)) %>%
+  rename(time = time.x)
+```
+
+But `discSurv::dataLong` does this for you.
+
+```{r}
+cs_glm_dat <- cs_dat %>% 
+  mutate(status = status - 1) %>%
+  discSurv::dataLong("time", "status", timeAsFactor = FALSE)
+```
+
+For example, patient 1 died at time 306, so they have 306 rows in the new data set, with `y = 0` for all but the last row.
+
+```{r}
+cs_glm_dat %>% filter(obj == 1) %>% tail()
+```
+
+`glm()` fits either the `log(-log(1-hazard))` or `log(hazard / (1-hazard))` as a function of `time`, controlling for `ph.ecog` and `age`. The two links are similar here^[Full discussion on [Rens van de Schoot](https://www.rensvandeschoot.com/tutorials/discrete-time-survival/).].
+
+```{r}
+cs_glm_dat %>%
+  group_by(ph.ecog, timeInt) %>%
+  summarise(.groups = "drop", died = sum(y), at_risk = n()) %>%
+  mutate(
+    hazard = died / at_risk,
+    logit_hazard = log(hazard / (1 - hazard)),
+    cloglog_hazard = log(-log(1 - hazard))
+  ) %>%
+  pivot_longer(cols = c(logit_hazard, cloglog_hazard)) %>%
+  filter(!hazard %in% c(0, 1)) %>%
+  ggplot(aes(x = timeInt, y = value, color = ph.ecog)) +
+  geom_point() +
+  geom_smooth(method = "lm", formula = "y ~ x") +
+  facet_wrap(facets = vars(name)) +
+  theme_light()
+```
+
+```{r}
+logit_fit <- glm(
+  y ~ timeInt + ph.ecog + age, 
+  data = cs_glm_dat, 
+  family = binomial(link = "logit")
+)
+(logit_tbl <- logit_fit %>% gtsummary::tbl_regression(exponentiate = TRUE))
+```
+
+Using a discrete time logistic regression analysis with logit link function, we find the association between ECOG and survival time statistically significant with a Bedridden estimate of `r gtsummary::inline_text(logit_tbl, variable = ph.ecog, level = "Bedridden")` relative to Asymptomatic. The hazard odds ratio for Ambulatory was not statistically significant, `r gtsummary::inline_text(logit_tbl, variable = ph.ecog, level = "Ambulatory")`.
+
+```{r}
+cloglog_fit <- glm(
+  y ~ timeInt + ph.ecog + age, 
+  data = cs_glm_dat, 
+  family = binomial(link = "cloglog")
+)
+(cloglog_tbl <- cloglog_fit %>% gtsummary::tbl_regression(exponentiate = TRUE))
+```
+
+Using a discrete time logistic regression analysis with complementary log-log link function, we find the association between ECOG and survival time statistically significant with a Bedridden estimate of `r gtsummary::inline_text(cloglog_tbl, variable = ph.ecog, level = "Bedridden")` relative to Asymptomatic. The hazard ratio for Ambulatory was not statistically significant, `r gtsummary::inline_text(cloglog_tbl, variable = ph.ecog, level = "Ambulatory")`.
+
 ### Reporting
+
+The reporting below uses the Cox model rather than the discrete time model.
 
 > Participants were randomly assigned to three different interventions in order to quit smoking: a hypnotherapy programme (n = 50), wearing nicotine patches (n = 50) and using e-cigarettes (n = 50). Kaplan-Meier survival analysis (Kaplan & Meier, 1958) was conducted to compare the three different interventions for their effectiveness in preventing smoking resumption. A similar percentage of censored cases was present in the hypnotherapy (12.0%), nicotine patch (14.0%) and e-cigarette (14.0%) intervention groups and the pattern of censoring was similar. Participants that underwent the hypnotherapy programme had a median time to smoking resumption of 69.0 (95% CI, 45.2 to 92.8) days. This was longer than the groups receiving nicotine patches or e-cigarettes, which had identical median times to smoking resumption of 9.0 (95% CI, 6.6 to 11.4) days and 9.0 (95% CI, 7.1 to 10.9) days, respectively. A log rank test was conducted to determine if there were differences in the survival distributions for the different types of intervention. The survival distributions for the three interventions were statistically significantly different, χ2(2) = 25.818, p < .0005. Pairwise log rank comparisons were conducted to determine which intervention groups had different survival distributions. A Bonferroni correction was made with statistical significance accepted at the p < .0167 level. There was a statistically significant difference in survival distributions for the hypnotherapy vs nicotine patch intervention, χ2(1) = 11.035, p = .001, and hypnotherapy vs e-cigarette intervention, χ2(1) = 29.003, p < .0005. However, the survival distributions for the e-cigarette and nicotine patch interventions were not statistically significantly different, χ2(1) = 1.541, p = .214.
 
-## Discrete Time Survival Analysis
-
-(*notes from [here](https://data.princeton.edu/wws509/notes/c7s6).*)
-
-Cox proposed an extension to the proportional hazards model to discrete times using logistic regression:
-
-$$
-\frac{h(t;x)}{1 - h(t;x)} = \frac{h_0(t)}{1 - h_0(t)} e^{xb}
-$$
-
-where $h_0(t)$ is the baseline hazard at $t$ and $e^{xb}$ is the relative risk associated with the covariate values $x$. The log of each side is the logit of the hazard,
-
-$$
-\mathrm{logit} \{h(t;x)\} = \mathrm{logit \{h_0(t)\}} + xb
-$$
-
-The model treats time as a discrete factor by introducing a parameter $\alpha = \mathrm{logit \{h_0(t)\}}$ for each possible event time, $t$. Parameter interpretation is the same as other logistic regression. 
-
-An alternative extension to the proportional hazards model starts from the survival function
 
