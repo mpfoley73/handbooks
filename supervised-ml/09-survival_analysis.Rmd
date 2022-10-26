@@ -218,7 +218,7 @@ KM curves and logrank tests are univariate analyses. They describe survival as a
 
 ### Exponential
 
-The exponential distribution (notes)[https://bookdown.org/mpfoley1973/probability/exponential.html], $T \sim \mathrm{Exp}(\lambda)$, is the easiest to use because its hazard function is time-independent.
+The exponential distribution ([probability notes](https://bookdown.org/mpfoley1973/probability/exponential.html)), $T \sim \mathrm{Exp}(\lambda)$, is the easiest to use because its hazard function is time-independent.
 
 $$\begin{eqnarray}
 \log h(t) &=& \alpha + \beta X \\
@@ -230,9 +230,9 @@ Interpret $\alpha$ as the baseline log-hazard because when $X$ is zero $h(t) = e
 
 $$S(t) = e^{-H(t)} = e^{-\lambda t}.$$
 
-The expected survival time is $E(T) = \int_0^\infty S(t)dt = \int_0^\infty e^{-\lambda t} dt = 1 / \lambda.$. The median survival time is $S(t) = e^{-\lambda t} = 0.5$, or $t_{med} = \log(2) / \lambda$.
+The expected survival time is $E(T) = \int_0^\infty S(t)dt = \int_0^\infty e^{-\lambda t} dt = 1 / \lambda.$ The median survival time is $S(t) = e^{-\lambda t} = 0.5$, or $t_{med} = \log(2) / \lambda$.
 
-The survival curve is fit using *maximimum likelihood estimation* (MLE). My notes [here](https://bookdown.org/mpfoley1973/statistics/maximum-likelihood-estimation.html) explain MLE for the exponential distribution. Survival curve MLE is a little more complicated because of censoring. The likelihood $L$ that $\lambda$ produces the observed outcomes is the product of the probability densities for each observation because they are a sequence of independent variables. Let $\delta_i = [1, 0]$ for unsensored and censored observations. 
+The survival curve is fit using *maximimum likelihood estimation* (MLE). My [statistics notes](https://bookdown.org/mpfoley1973/statistics/maximum-likelihood-estimation.html) explain MLE for the exponential distribution. Survival curve MLE is a little more complicated because of censoring. The likelihood $L$ that $\lambda$ produces the observed outcomes is the product of the probability densities for each observation because they are a sequence of independent variables. Let $\delta_i = [1, 0]$ for unsensored and censored observations. 
 
 $$
 L(\lambda; t_1, t_2, \dots, t_n) = \Pi_{i=1}^n f(t_i; \lambda)^{\delta_i} S(t_i; \lambda)^{1-\delta_i}
