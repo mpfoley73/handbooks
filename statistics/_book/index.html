@@ -6,11 +6,10 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   <title>Statistical Inference</title>
   <meta name="description" content="Notes cobbled together from books, online classes, etc. to be used as quick reference for common work projects." />
-  <meta name="generator" content="bookdown 0.24 and GitBook 2.6.7" />
+  <meta name="generator" content="bookdown 0.29 and GitBook 2.6.7" />
 
   <meta property="og:title" content="Statistical Inference" />
   <meta property="og:type" content="book" />
-  
   
   <meta property="og:description" content="Notes cobbled together from books, online classes, etc. to be used as quick reference for common work projects." />
   
@@ -24,7 +23,7 @@
 <meta name="author" content="Michael Foley" />
 
 
-<meta name="date" content="2022-02-15" />
+<meta name="date" content="2022-10-27" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -33,7 +32,6 @@
   
 
 <link rel="next" href="statistical-inference.html"/>
-<script src="assets/header-attrs-2.11/header-attrs.js"></script>
 <script src="assets/jquery-3.6.0/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.4.6/dist/fuse.min.js"></script>
 <link href="assets/gitbook-2.6.7/css/style.css" rel="stylesheet" />
@@ -51,9 +49,11 @@
 
 
 
-<link href="assets/anchor-sections-1.0.1/anchor-sections.css" rel="stylesheet" />
-<script src="assets/anchor-sections-1.0.1/anchor-sections.js"></script>
-<link href="assets/tabwid-1.0.0/tabwid.css" rel="stylesheet" />
+<link href="assets/anchor-sections-1.1.0/anchor-sections.css" rel="stylesheet" />
+<link href="assets/anchor-sections-1.1.0/anchor-sections-hash.css" rel="stylesheet" />
+<script src="assets/anchor-sections-1.1.0/anchor-sections.js"></script>
+<link href="assets/tabwid-1.1.0/tabwid.css" rel="stylesheet" />
+<link href="assets/tabwid-1.1.0/scrool.css" rel="stylesheet" />
 <link href="assets/table1-1.0/table1_defaults.css" rel="stylesheet" />
 <script src="assets/kePrint-0.0.1/kePrint.js"></script>
 <link href="assets/lightable-0.0.1/lightable.css" rel="stylesheet" />
@@ -227,10 +227,10 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <h1 class="title">Statistical Inference</h1>
 <h2 class="subtitle"><em>Data Analyst Handbook</em></h2>
 <p class="author"><em>Michael Foley</em></p>
-<p class="date"><em>2022-02-15</em></p>
+<p class="date"><em>2022-10-27</em></p>
 </div>
-<div id="preface" class="section level1 unnumbered">
-<h1>Preface</h1>
+<div id="preface" class="section level1 unnumbered hasAnchor">
+<h1>Preface<a href="index.html#preface" class="anchor-section" aria-label="Anchor link to header"></a></h1>
 <p>These are notes from books, classes, tutorials, vignettes, etc. They contain mistakes, are poorly organized, and are sloppy on fundamentals. They should improve over time, but that’s all I can say for it. <em>Use at your own risk.</em></p>
 <p>The focus of this handbook is statistical inference, including population estimates, group comparisons, and regression modeling. Not included here: probability, machine learning, text mining, survey analysis, or survival analysis. These subjects frequently arise at work, but are distinct enough and large enough to warrant separate handbooks.</p>
 
@@ -305,7 +305,7 @@ gitbook.start({
     var script = document.createElement("script");
     script.type = "text/javascript";
     var src = "true";
-    if (src === "" || src === "true") src = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML";
+    if (src === "" || src === "true") src = "https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/latest.js?config=TeX-MML-AM_CHTML";
     if (location.protocol !== "file:")
       if (/^https?:/.test(src))
         src = src.replace(/^https?:/, '');
