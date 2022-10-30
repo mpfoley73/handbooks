@@ -1,0 +1,85 @@
+# Concepts
+
+```{r message=FALSE, warning=FALSE}
+library(tidyverse)
+library(scales)
+library(survival)
+library(survminer)
+```
+
+This chapter introduces survival analysis concepts.
+
+Let $T^*$ be a random variable representing the time until the event, and $U$ be a random variable representing the time until (right) censoring. The observed value is whichever event comes first, $T = \mathrm{min}(T^*, U)$. The time, $T$, and status, $\delta = I[T^* < U]$ (1 = censored, 2 = event), constitutes the response in a survival analysis. The `survival::lung` data set is typical, where `time` = $T$ and `status` = $\delta$, and the other variables are identifying features for the subject.
+
+```{r}
+survival::lung %>% head()
+```
+
+Censoring sometimes occurs when subjects are monitored for a fixed period of time (Type I), the study is halted after a pre-specified level of events are reached (Type II), or the subject drops out for a reason other than the event of interest (random censoring).
+
+You can specify the survival distribution either with a *survival function*, $S(t)$, or with a *hazard function*, $h(t)$^[Many texts represent hazard with the $\lambda$ symbol instead of $h$.]. Let $F(t) = P(T \le t)$ be the cumulative risk function (aka, cumulative incidence), the probability of the event occurring on or before time $t$. $S(t)$ is its complement, $S(t) = 1 - F(t)$. 
+
+$$S(t) = P(T > t).$$
+
+The hazard function is the instantaneous event rate at $t$ given survival up to $t$,
+
+$$h(t) = \lim_{\delta \rightarrow 0}{\frac{P(t < T < t + \delta|T > t)}{\delta}}.$$
+
+An instantaneous event rate has no intuitive appeal, but think of it in discrete time where $\delta > 0$. $h(t + \delta)$ is the *conditional probability* of an event at the discrete interval $t + \delta$, conditioned on those at risk during that interval.
+
+The survival and hazard functions are related by the multiplication rule, $P(AB) = P(A|B)P(B)$. The event probability at $t$, $f(t) = F'(t)$, is the probability of the event at $t$ given survival up to $t$ (the hazard function) multiplied by the probability of survival up to $t$ (the survival function).
+
+$$f(t) = h(t) S(t).$$
+
+Again in discrete terms, survival up to interval $t$ is the sum product of the survival probabilities at each preceding period, $S(t) = \Pi_{i = 1}^t [1 - h(t)]$. It is the complement of the cumulative risk.
+
+Rearranging, $h(t)dt = \frac{f(t)}{S(t)}dt$ describes the prognosis for a subject who has survived through time $t$. 
+
+$S(t)$ is also the negative exponent of the cumulative hazard function,
+
+$$S(t) = e^{-H(t)}.$$
+
+Taking the log and rearranging, $h(t) = \frac{d}{dt} [\log S(t)]$, the negative time derivative of the log cumulative hazard.
+
+Use the survival function to estimate the mean survival time, $E(T) = \int S(t)dt$, and median survival time, $S(t) = 0.5$.
+
+Take the exponential distribution as a quick example. It has a constant hazard, $h(t) = \lambda$. The cumulative hazard is $H(t) = \int_0^t \lambda du = \lambda t$. The survival function is $S(t) = e^{-\lambda t}$. The probability of failure at time $t$ is $f(t) = \lambda e^{-\lambda t}$. The expected time to failure is $E(t) = \int_0^\infty e^{-\lambda t} dt = 1 / \lambda$, and the median time to failure is $S(t) = e^{-\lambda t} = .5$, or $t_{med} = \log(2) / \lambda$.
+
+There are parametric and non-parametric methods to estimate a survival curve.  The usual non-parametric method is the *Kaplan-Meier* estimator.  The usual parametric method is the *Weibull* distribution. In between is the most common way to estimate a survivor curve, the *Cox proportional hazards* model.
+
+## Log-Rank Test {#logrank}
+
+It is not obvious how to compare two survival distributions because they can cross, diverge, etc. When observations do not follow a parametric distribution function, compare them with the non-parametric log-rank test. The alternative hypothesis, termed the Lehmann alternative, is that one survival distribution is uniformly higher than the other, $H_A : S_1(t) = [S_0(t)]^\psi$, or equivalently, the hazard functions are proportional, $h_1(t) = \psi h_0(t)$, with $H_A: \psi \ne 1$.
+
+At each $t$, you could construct a 2x2 contingency table between event/no-event and curves A and B. 
+
+|              |Curve A           |Curve B           |Total         |
+|--------------|------------------|------------------|--------------|
+|Event         |$d_{Ai}$          |$d_{Bi}$          |$d_i$         |
+|No Event      |$n_{Ai} - d_{0i}$ |$n_{Bi} - d_{1i}$ |$n_i - d_i$   |
+|Total         |$n_{Ai}$          |$n_{Bi}$          |$n_i$         |
+
+
+Holding the margins as fixed, the probability of observing $d_{Ai}$ events in curve A at time $i$ follows a [hypergeometric](https://bookdown.org/mpfoley1973/probability/hypergeometric.html) distribution.
+
+$$f(d_{Ai} | n_{Ai}, n_{Bi}, d_i) = \frac{{{n_{Ai}}\choose{d_{Ai}}}{{n_{Bi}}\choose{d_{Bi}}}}{{n_i}\choose{d_i}}$$
+
+The expected value is $e_{Ai} = E(d_{Ai}) = \frac{d_i}{n_i} \cdot n_{0i}$ with variance $v_{Ai} = Var(d_{Ai}) = d_{i} \cdot \frac{n_{Ai}}{n_i}  \cdot \frac{n_{1i}}{n_i} \cdot \frac{n_i - d_i}{n_i - 1}$. 
+
+The log-rank test statistic is the sum of the differences between the observed and expected events, $U_0 = \sum (d_{Ai} - e_{Ai})$, normalized by dividing by the square-root of its variance, $V_0 = Var({U_0}) = \sum v_{Ai}$.
+
+$$U = \frac{U_0}{\sqrt{V_0}} \sim N(0, 1)$$
+
+$U^2$ is a chi-square random variable with one degree of freedom.
+
+$$U^2 = \frac{U_0^2}{V_0} \sim \chi_1^2$$
+
+```{r}
+lung_1 <- survival::lung %>%
+  mutate(sex = factor(sex, levels = c(1, 2), labels = c("Male", "Female")))
+(km_diff <- survdiff(Surv(time, status) ~ sex, data = lung_1))
+```
+
+The *p*-value for $\chi_1^2$ = `r comma(km_diff$chisq, .1)` is `1 - pchisq(km_diff$chisq, length(km_diff$n) - 1)` = `r comma(1 - pchisq(km_diff$chisq, length(km_diff$n) - 1), .001)`, so reject $H_0$ that males and females have identical survival patterns.
+
+while the log-rank test can determine whether survival differs between groups, it does not estimate the effect size. It is a statistical, but not a clinical, assessment of the factor's impact [@Clark2003b]. 

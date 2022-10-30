@@ -1,0 +1,360 @@
+# Parametric {#parametric}
+
+```{r message=FALSE, warning=FALSE, include=FALSE}
+library(tidyverse)
+library(scales)
+library(flexsurv)
+library(survival)
+library(survminer)
+library(flextable)
+```
+
+The KM curve with logrank test is a univariate analyses describing the effect of a single categorical factor variable on survival. Parametric models, on the other hand, are able to describe the effect of *multiple* covariates. Fully-parametric models are less common than the semi-parametric Cox model (Chapter \@ref(semiparametric)) because they are less flexible, but if the process follows the parametric distribution these models are preferable because they estimate fewer parameters, allow you to extrapolate beyond the range of the data, and produce a more meaningful interpretation of the underlying mechanism in the model ([The Analysis Factor](https://www.theanalysisfactor.com/parametric-or-semi-parametric-models-in-survival-analysis/), @Zhongheng2016).
+
+[Devin Incerti](https://devinincerti.com/2019/06/18/parametric_survival.html) and [Tavish Srivastava](https://www.analyticsvidhya.com/blog/2015/05/comprehensive-guide-parametric-survival-analysis/) review parametric distributions commonly used in survival analyses. Table \@ref(tab:tbl03-1) below is a selected list of distributions that are reviewed in both articles and are included in the **survival** package. Not included below, but available in **survival** or **flexsurv** are the Gompertz, Gamma, log-logistic, and generalized gamma.
+
+```{r tbl03-1, echo=FALSE}
+tribble(
+  ~Distribution, ~`Hazard Shape`,
+  "Exponential", "Constant",
+  "Weibull (AFT)", "Monotonically Increasing/Decreasing",
+  # "Weibull (PH)", "Monotonically Increasing/Decreasing",
+  # "Gompertz", "Monotonically Increasing/Decreasing",
+  # "Gamma", "Monotonically Increasing/Decreasing",
+  "Log-normal", "Arc-shaped and Monotonically Decreasing",
+  # "Log-logistic", "Arc-shaped and Monotonically Decreasing",
+  # "Generalized gamma", "Arc-shaped, Bathtub-shaped, and Monotonically Increasing/Decreasing"
+) %>% 
+  flextable() %>%
+  set_caption("Distributions used in fully-parametric survival models.") %>%
+  autofit() 
+```
+
+Choose the distribution that best matches your a priori beliefs about the hazard function or choose the one with the lowest AIC ([The Analysis Factor](https://www.theanalysisfactor.com/parametric-or-semi-parametric-models-in-survival-analysis/)).
+
+```{r include=FALSE}
+plot_dist <- function(x) {
+  x %>%
+    pivot_longer(cols = -c(t, loc)) %>%
+    mutate(name = factor(name, levels = c("F (CDF)", "f (PDF)", "S", "h = f / S"))) %>%
+    ggplot(aes(x = t, y = value)) +
+    geom_line() +
+    facet_grid(cols = vars(loc), rows = vars(name), scales = "free_y") +
+    theme_light() +
+    theme(strip.background = element_rect(fill = "slategray")) +
+    labs(x = "Time", y = NULL)
+}
+```
+
+## Exponential
+
+The exponential distribution ([probability notes](https://bookdown.org/mpfoley1973/probability/exponential.html)), $T \sim \mathrm{Exp}(\lambda)$, is the easiest to use because its hazard function is time-independent. \@ref(fig:fig03-exp) shows a constant hazard function at two rates, $\lambda \in [1, 3]$, per unit of time. 
+
+```{r fig03-exp, fig.cap="The exponential distribution at two rates (1, 2)."}
+expand.grid(
+  t = seq(0.1, 10, .1),
+  loc = c(1, 3)
+) %>% 
+  mutate(
+    `F (CDF)` = pexp(t, rate = loc),
+    `f (PDF)` = dexp(t, rate = loc),
+    S = 1 - `F (CDF)`,
+    `h = f / S` = flexsurv::hexp(t, rate = loc),
+    loc = paste("rate:", loc)
+) %>%
+  plot_dist()
+```
+
+$$\begin{eqnarray}
+\log h(t) &=& \alpha + \beta X \\
+h(t) &=& e^{\left(\alpha + \beta X \right)} \\
+&=& \lambda
+\end{eqnarray}$$
+
+Interpret $\alpha$ as the baseline log-hazard because when $X$ is zero $h(t) = e^\alpha$. The cumulative hazard is $H(t) = \int_0^t \lambda dt = \lambda t$ and the corresponding survival function is 
+
+$$S(t) = e^{-H(t)} = e^{-\lambda t}.$$
+
+The expected survival time is $E(T) = \int_0^\infty S(t)dt = \int_0^\infty e^{-\lambda t} dt = 1 / \lambda.$ The median survival time is $S(t) = e^{-\lambda t} = 0.5$, or $t_{med} = \log(2) / \lambda$.
+
+The survival curve is fit using *maximimum likelihood estimation* (MLE). My [statistics notes](https://bookdown.org/mpfoley1973/statistics/maximum-likelihood-estimation.html) explain MLE for the exponential distribution. Survival curve MLE is a little more complicated because of censoring. The likelihood $L$ that $\lambda$ produces the observed outcomes is the product of the probability densities for each observation because they are a sequence of independent variables. Let $\delta_i = [1, 0]$ for unsensored and censored observations. 
+
+$$
+L(\lambda; t_1, t_2, \dots, t_n) = \Pi_{i=1}^n f(t_i; \lambda)^{\delta_i} S(t_i; \lambda)^{1-\delta_i}
+$$
+
+Substituting $f(t) = h(t) S(t)$, and then substituting $h(t) = \lambda$ and $S(t) = e^{-\lambda t}$ and simplifying,
+
+$$\begin{eqnarray}
+L(\lambda; t_1, t_2, \dots, t_n) &=& \Pi_{i=1}^n h(t_i; \lambda)^{\delta_i} S(t_i; \lambda) \\
+&=& \Pi_{i=1}^n \lambda^{\delta_1} e^{-\lambda t_i} \\
+&=& \lambda^{\sum \delta_i} \exp \left(-\lambda \sum_{i=1}^n t_i \right)
+\end{eqnarray}$$
+
+Simplify the notation by letting $d = \sum \delta_i$, the total number of events (or deaths or whatever), and $V = \sum t_i$, the number of person-years (or days or whatever).
+
+$$L(\lambda; t_1, t_2, \dots, t_n) = \lambda^d e^{-\lambda V}$$
+
+This form is difficult to optimize, but the log of it is simple.
+
+$$l(\lambda; t_1, t_2, \dots, t_n) = d \log(\lambda) - \lambda V$$
+
+Maximize the log-likelihood equation by setting its derivative to zero and solving for $\lambda$.
+
+$$\begin{eqnarray}
+\frac{d}{d \lambda} l(\lambda; t_1, t_2, \dots, t_n) &=& \frac{d}{d \lambda} \left(d \log(\lambda) - \lambda V \right) \\
+0 &=& \frac{d}{\lambda} - V \\
+\lambda &=& \frac{d}{V}
+\end{eqnarray}$$
+
+$\lambda$ is the reciprocal of the sample mean, person-years divided by failures.
+
+The second derivative, $-\frac{d}{\lambda^2}$, is approximately the negative of the variance of $\lambda$.
+
+$$V(\lambda) = d / V^2$$
+
+## Weibull
+
+Although the exponential function is convenient, the [Weibull distribution](https://bookdown.org/mpfoley1973/probability/weibull.html) is more appropriate for modeling lifetimes. 
+
+```{r fig03-weibull, fig.cap="The Weibull distribution at four rates (shapes) (0.5, 1, 1.5, 2)."}
+expand.grid(
+  t = seq(0.1, 10, .1),
+  loc = c(.5, 1, 1.5, 2)
+) %>% 
+  mutate(
+    `F (CDF)` = pweibull(t, shape = loc, scale = 2),
+    `f (PDF)` = dweibull(t, shape = loc, scale = 2),
+    S = 1 - `F (CDF)`,
+    `h = f / S` = flexsurv::hweibull(t, shape = loc, scale = 2),
+    loc = paste("shape:", loc)
+) %>%
+  plot_dist()
+```
+
+Its hazard function is 
+
+$$\begin{eqnarray}
+h(t) &=& \alpha \lambda (\lambda t)^{\alpha - 1} \\
+&=& \alpha \lambda^\alpha t^{\alpha-1}
+\end{eqnarray}$$  
+
+The cumulative hazard function is $H(t) = (\lambda t)^\alpha$ and the corresponding survival function is
+
+$$S(t) = e^{-(\lambda t)^\alpha}.$$
+
+The exponential distribution is a special case of the Weibull where $\alpha = 1$. The expected survival time is $E(t) = \frac{\Gamma (1 + 1 / \alpha)}{\lambda}$. The median survival time is $t_{med} = \frac{[\log(2)]^{1 / \alpha}}{\lambda}$.
+
+To measure the effects of covariates, it is preferable to substitute $\sigma = 1 / \alpha$ and $\mu = -\log \lambda$ so
+
+$$
+h(t) = \frac{1}{\sigma} e^{-\frac{\mu}{\sigma}} t^{\frac{1}{\sigma} - 1}
+$$
+
+and
+
+$$
+S(t) = e^{-e^{-\mu/\sigma}t^{1/\sigma}}
+$$
+
+## Log-normal
+
+```{r fig03-lognormal, fig.cap="The Log-normal distribution at four rates (mean logs) (0.5, 1, 1.5, 2)."}
+expand.grid(
+  t = seq(0.1, 10, .1),
+  loc = c(.5, 1, 1.5, 2)
+) %>% 
+  mutate(
+    `F (CDF)` = plnorm(t, meanlog = loc),
+    `f (PDF)` = dlnorm(t, meanlog = loc),
+    S = 1 - `F (CDF)`,
+    `h = f / S` = flexsurv::hlnorm(t, meanlog = loc),
+    loc = paste("Mean Log:", loc)
+) %>%
+  plot_dist()
+```
+
+## Distribution Selection
+
+Use the `flexsurv` package to model parametric distributions. This section demonstrates how to choose the distribution with the lung cancer data set from the `survival` package. `lung` records the status (1 censored, 2 dead) of `r nrow(survival::lung)` patients with advanced lung cancer. There are several covariates in the data set, but for this illustration we'll include just `ph.ecog`, the patient's level of functioning (0 = good, 5 = dead) and treat it as a factor variable.
+
+```{r}
+df_lung <- survival::lung %>% 
+  mutate(ph.ecog = factor(ph.ecog)) %>%
+  select(time, status, ph.ecog)
+head(df_lung)
+```
+
+Figure \@ref(fig:fig03-1) is the Kaplan-Meier cumulative hazard function estimate. The cumulative hazard rises more sharply at around time 500 then changes inflection again around time 700. 
+
+```{r fig03-1, fig.cap="Kaplan-Meier Cumulative Hazard Function Estimate."}
+km_fit <- survfit(Surv(time, status) ~ 1, data = df_lung)
+
+ggsurvplot(
+  km_fit,
+  data = df_lung,
+  fun = "cumhaz",
+  pval.method = TRUE,
+  conf.int = TRUE,
+  ggtheme = theme_light(),
+  title = "Kaplan-Meier Cumulative Hazard Function Estimate"
+)
+```
+
+Unfortunately, `survminer::ggsurplot()` does not plot the instantaneous hazard function. But the `epR::epi.insthaz()` does calculate instantaneous hazards. Figure \@ref(fig:fig03-2) is the hazard function we want to approximate with a parametric distribution.
+
+```{r fig03-2, fig.cap="Kaplan-Meier Hazard Function Estimate"}
+epiR::epi.insthaz(km_fit) %>%
+  ggplot(aes(x = time, y = hest)) + 
+  geom_smooth(color = "red", method = "loess", formula = "y ~ x") +
+  theme_light() +
+  labs(title = "Kaplan-Meier Hazard Function Estimate", 
+       x = "Time", y = "Instantaneous Hazard")
+```
+
+Use the `flexsurv` packages to estimate parametric survival curves.
+
+```{r}
+par_fits <- tibble(
+  dist_param = c("exp", "weibull", "gompertz", "gamma", "lognormal", "llogis", 
+                 "gengamma"),
+  dist_name = c("Exponential", "Weibull (AFT)", "Gompertz", "Gamma", 
+                "Lognormal", "Log-logistic", "Generalized gamma")
+) %>%
+  mutate(
+    fit = map(dist_param, ~flexsurvreg(Surv(time, status) ~ 1, data = df_lung, dist = .x)),
+    fit_smry = map(fit, ~summary(.x, type = "hazard", ci = FALSE, tidy = TRUE)),
+    AIC = map_dbl(fit, ~.x$AIC)
+  )
+```
+
+Figure \@ref(fig:fig03-3) shows the fitted curves. Which most closely resembles the KM hazard plot?
+
+```{r fig03-3, fig.cap="Parametric fits."}
+par_fits %>%
+  select(-c(dist_param, fit)) %>%
+  unnest(fit_smry) %>%
+  ggplot(aes(x = time, y = est, color = dist_name)) +
+  geom_line() +
+  theme_light() +
+  labs(title = "Parametric Distribution Fits to Lung Cancer Data.")
+```
+
+None of them seem great, but the bottom three curves (Exponential, Log-logistic, and Log-normal) seem especially poor choices. Using the AIC, best fit appears to be the Weibull model. 
+
+```{r}
+par_fits %>%
+  arrange(AIC) %>%
+  select(dist_name, AIC)
+```
+
+Use the Weibull (AFT) model then. What changes if you add `ph.ecog` to the model?
+
+```{r}
+weibull_fit <- flexsurvreg(Surv(time, status) ~ ph.ecog, data = df_lung, dist = "weibull")
+weibull_fit
+```
+
+``flexsurvreg()` defaults to only modeling the relationship between the covariates and the location parameter of the distribution. You can test whether the covariates affect the shape too by specifying the relationship with the `anc` parameter.
+
+```{r}
+weibull_fit_shape <- flexsurvreg(
+  Surv(time, status) ~ ph.ecog, 
+  anc = list(shape = ~ph.ecog),
+  data = df_lung, dist = "weibull")
+weibull_fit_shape
+```
+
+The 95% CIs for the shape estimators contain 0, so they do not belong in the model. Sticking with the original model, plot the effect of ECOG on survival.
+
+```{r}
+summary(weibull_fit, 
+        newdata = list(ph.ecog = levels(df_lung$ph.ecog)), 
+        type = "hazard", tidy = TRUE) %>%
+  ggplot(aes(x = time)) +
+  geom_line(aes(y = est, col = ph.ecog)) +
+  theme_light() +
+  theme(legend.position = "bottom") +
+  labs(x = "Days", y = "Hazard", color = "ECOG Performance Score",
+       title = "Fitted Values Plot") 
+```
+
+
+The log of the negative log of $S$, $\log[-\log(S_i)] = \alpha \log(\lambda) + \alpha \log(t_i) = \frac{\mu}{\sigma} + \frac{1}{\sigma} \log(t_i)$ is a linear function, so you can use it to determine whether the Weibull function is appropriate for your analysis. Return to the `lung` data set introduced in Kaplan-Meier section. Use the Kaplan-Meier estimate of the survival distribution to extract the survival estimates and each time, transform them to conform to the above equation, and fit a linear model.
+
+```{r}
+km_fit_1 <- survfit(Surv(time, status) ~ 1, data = lung)
+log_log_s <- log(-log(km_fit_1$surv))
+log_t <- log(km_fit_1$time)
+
+km_fit_1_lm <- lm(log_log_s ~ log_t)
+km_fit_1_lm %>%
+  broom::augment() %>%
+  ggplot(aes(x = log_t)) +
+  geom_point(aes(y = log_log_s)) +
+  geom_line(aes(y = .fitted), linetype = 2, color = "goldenrod") +
+  theme_light()
+```
+
+This is a decent fit. The coefficient estimates are 
+
+```{r}
+coef(km_fit_1_lm)
+```
+
+so $\mu = -\frac{`r comma(coef(km_fit_1_lm)[1], .001)`}{`r comma(coef(km_fit_1_lm)[2], .001)`} = `r comma(coef(km_fit_1_lm)[1] / coef(km_fit_1_lm)[2], .001)`$ and $\sigma = \frac{1}{`r comma(coef(km_fit_1_lm)[2], .001)`} = {`r comma(1 / coef(km_fit_1_lm)[2], .001)`}$.
+
+Compare two Weibull distributions using the accelerated failure time (AFT) model. This model assumes the survival time for the treatment group is a multiple, $e^\gamma$, of the control group survival time. The survival distributions in the AFT model are related as $S_1(t) = S_0(e^{-\gamma}t)$ and the hazards are related by $h_1(t) = e^{-\gamma}h_0(e^{-\gamma}t)$. In the case of the Weibull distribution, the relationship is $h_1(t) = e^{-\frac{\gamma}{\sigma}}h_0(t)$. Fit a Weibull model with `survreg()` (recall KM is fit with `survfit()`). Return to the original model using the `lung` data set to compare survival between males and females.
+
+```{r}
+dat <- lung %>% mutate(sex = factor(sex, levels = c(1, 2), labels = c("Male", "Female")))
+wb_fit <- survreg(Surv(time, status) ~ sex, data = dat, dist = "weibull")
+summary(wb_fit) 
+```
+
+$\hat{\gamma} = `r comma(coef(wb_fit)[2], .0001)`$, meaning females have longer times until death by a factor of $e^{\hat{\gamma}} = e^{`r comma(coef(wb_fit)[2], .0001)`} = `r comma(exp(coef(wb_fit)[2]), .01)`$. The scale parameter estimate is $\hat\sigma = `r summary(wb_fit) %>% pluck("scale") %>% comma(.001)`$, so the log proportional hazards is $\hat\beta = -\frac{\hat\gamma}{\hat\sigma} = \frac{`r comma(coef(wb_fit)[2], .0001)`}{`r summary(wb_fit) %>% pluck("scale") %>% comma(.001)`} = `r (coef(wb_fit)[2] / (summary(wb_fit) %>% pluck("scale"))) %>% comma(.001)`$. 
+
+The survival curve estimate is $\hat{S}(t) = e^{-e^{-\hat\mu/\hat\sigma}t^{1/\hat\sigma}}$, but $\hat\alpha = 1 / \hat\sigma$.
+
+```{r}
+new_dat <- expand.grid(
+  sex = levels(dat$sex), 
+  survival = seq(.01, .99, by = .01)
+  ) %>%
+  mutate(
+    pred = map2(sex, survival, 
+                ~predict(wb_fit, type = "quantile", p = 1 - .y, se = TRUE, 
+                         newdata = data.frame(sex = .x))),
+    t = map_dbl(pred, ~pluck(.x, "fit")),
+    se = map_dbl(pred, ~pluck(.x, "se.fit")),
+    ucl = t + 1.96 * se,
+    lcl = t - 1.96 * se
+  )
+
+palette_sex <- c("#E7B800", "#2E9FDF")
+names(palette_sex) <- c("Male", "Female")
+
+new_dat %>%
+  ggplot(aes(y = survival)) +
+  geom_line(aes(x = t, color = sex)) +
+  geom_ribbon(aes(xmin = lcl, xmax = ucl, fill = sex), alpha = 0.2) +
+  scale_color_manual(values = palette_sex) +
+  scale_fill_manual(values = palette_sex) +
+  theme_light()
+```
+
+Use `predict()` to get survival expectations. 
+
+
+```{r collapse=TRUE}
+# 90% of subjects fail by time 
+wb_fit %>% predict(type = "quantile", p = .9, newdata = data.frame(sex = levels(dat$sex)))
+```
+
+```{r}
+# Median survival times
+predict(wb_fit, type = "quantile", p = 1 - 0.5, newdata = data.frame(sex = levels(dat$sex)))
+```
+
+You can fit other models with the `dist = c("lognormal", "exponential")` parameter.
+

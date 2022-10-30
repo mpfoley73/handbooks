@@ -1,0 +1,13 @@
+# Discrete-Time {#discrete}
+
+Cox extended the proportional hazards model to discrete times using logistic regression. Times are discrete when the events they mark refer to an interval rather than an instant (e.g., grade when dropped out of school). Discrete-time survival models are applied to a person-period data set to predict the hazard of experiencing the failure event during the period intervals. @Suresh2022 demonstrates how these models are constructed.
+
+The semi-parametric Cox proportional hazards model relies on the assumption of proportional hazards, a faulty assumption if time-varying covariate effects are not modeled, or there is other unobserved heterogeneity.
+
+Recall that for continuous times the Cox proportional hazards model fits $h(t) = h_0(t) \cdot e^{X\beta}$, and taking the log and rearranging describes a linear relationship between the *log relative hazard* and the predictor variables, $\ln \left[ \frac{h(t)}{h_0(t)} \right] = X\beta$. The antilog of $\beta$ is a hazard ratio (relative risk).
+
+Fit a discrete-time model to an *expanded data set* that has one record for each subject and relevant time interval, and a binary variable representing the status. E.g., if event times in the data set occur in the range [16, 24] and individual *i* has the event at *t* = 20, then *i*'s record would expand to five rows with *t* = [16, 20] and *status* = [0, 0, 0, 0, 1]. 
+
+The discrete-time model fits either a) the *logit* of the hazard at period *t*, $\ln \left[ \frac{h(t)}{1 - h(t)} \right] = \alpha + X \beta$, or the *complementary log-log*, $\ln (- \ln (1 - h(t))) = \alpha + X \beta$.^[This formulation is derived from the relationship between the survival function to a baseline survival, $S(t) = S_0(t)^{\exp{Xb}}$. See [German Rodriguez's course notes](https://data.princeton.edu/wws509/notes/c7s6).] $\alpha = \mathrm{logit}\hspace{1mm}h_0(t)$ is the logit of the baseline hazard. The model treats time as discrete by introducing one parameter $\alpha_j$ for the $j$ possible event times in the data set (that's why you expand the data set). The model fit is regular logistic regression. 
+
+Whereas the antilog of $\beta$ in the continuous model is the hazard ratio, in the logit model it is the *hazard odds ratio*. The Cox and logit models converge as $t \rightarrow 0$ because $\log(h(t) \sim \log \frac{h(t)}{1 - h(t)}$ as $t \rightarrow 0$. In the the complementary log-log model, the antilog of $\beta$ is the hazard ratio, just as in Cox. Specify the link function in `glm` with `family = binomial(link = "cloglog")`.

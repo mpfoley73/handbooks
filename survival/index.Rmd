@@ -1,0 +1,58 @@
+--- 
+title: "Survival Analysis in R"
+author: "Michael Foley"
+date: "`r Sys.Date()`"
+site: bookdown::bookdown_site
+documentclass: book
+bibliography: [book.bib, packages.bib]
+url: https://bookdown.org/mpfoley1973/survival/
+# cover-image: path to the social sharing image like images/cover.jpg
+description: |
+  Concepts and application of surival analysis 
+  using R.
+link-citations: yes
+github-repo: handbooks/survival
+---
+
+# Introduction {-}
+
+Survival analyses model time-to-event. They differ from linear regression in two respects. Event times are typically skewed right with many early events and few late ones, violating linear regression's normality assumption. Survival analyses must also manage censoring, an unknown starting event (left censoring) and/or ending event (right censoring)^[@Clark2003a has discussion of censoring types. Right censoring is most common.]. Censoring occurs if the event does not take place by the end of the study window, or the subject is in some way lost to follow-up. In Figure \@ref(fig:fig-1), subjects 3, 5, 9, and 15 either did not have the event or dropped out of the study. Censored observations do not reveal their total time to event, but they do reveal at least their minimum.
+
+```{r fig-1, fig.cap='Censored observations still contain information. Excluding or ignoring this information can lead to biased and inefficient predictions.', echo=FALSE, message=FALSE, warning=FALSE}
+
+library(tidyverse)
+
+survival::lung[81:100,] %>%
+  mutate(
+    subject = factor(row_number()),
+    status = factor(status, levels = c(1, 2), labels = c("Censor", "Event")),
+    start_time = age * 4,
+    time = case_when(
+      subject == 3 ~ time + 750,
+      subject == 5 ~ time + 100,
+      subject == 9 ~ time + 200,
+      subject == 15 ~ time + 400,
+      TRUE ~ time
+    )
+  ) %>%
+  ggplot(aes(y = fct_rev(subject))) +
+  geom_segment(aes(yend = fct_rev(subject), x = start_time, xend = start_time + time), size = 2, color = "darkgray") +
+  geom_point(aes(x = start_time), color = "gray60", size = 2.5) +
+  geom_point(aes(x = start_time + time, color = status), size = 3) +
+  geom_vline(aes(xintercept = 1075), color = "gray60", linetype = 2, size = 1) +
+  theme_light() +
+  theme(legend.position = "top") +
+  labs(title = "Survival Data - How to handle censoring?", x = "observation period",
+       y = "Subject", color = NULL)
+```
+
+Some analyses treat time-to-event as a continuous outcome with survival times following a parametric distribution such as the Weibull (Chapter \@ref(parametric)). A more common approach is the *semi-parametric* model, with an unspecified time-to-event distribution estimated by non-parameteric methods coupled with covariate effects following a parametric distribution. The Cox proportional hazards model is a semi-parametric model (Chapter \@ref(semiparametric)). A third approach treats time-to-event as a series of person-periods with binary outcomes that follow a logit or cumulative log-log distribution. These models are called discrete-time models (Chapter \@ref(discrete)). A fourth approach employs machine learning models such as trees and SVMs to optimize predictive power at some expense of interpretability (Chapter \@ref(ml)). 
+
+Any of these approaches can produce accurate and efficient results [@Suresh2022], but the typical survival analysis uses Kaplan-Meier plots to visualize survival curves (Chapter \@ref(km)), log-rank tests to compare survival curves among groups, and Cox proportional hazards regression to describe the effect of explanatory variables on survival. In R, use the **survival** package to model, **survminer** to visualize, and **gtsummary** for summarize. The following chapters cover the general concepts underlying survival analysis and the four approaches to estimation.
+
+```{r include=FALSE}
+# automatically create a bib database for R packages
+knitr::write_bib(c(
+  .packages(), 'bookdown', 'knitr', 'rmarkdown'
+), 'packages.bib')
+```

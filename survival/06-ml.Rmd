@@ -1,0 +1,23 @@
+# Machine Learning {#ml}
+
+Machine learning (ML) algorithms model non-linear and complex covariate relationships with iterative optimization algorithms that minimize prediction error. The primary goal of ML is prediction. The downside is that it is often difficult to interpret covariate effects and interactions.
+
+## Random forest	
+
+Random forests are an ensemble of tree-based learners that are built using bootstrap samples of the training data and average the predictions from the individuals trees. In constructing the trees, a random subset of features is selected for evaluating the split criterion at each node. This leads to de-correlated individual trees that can improve predictive performance.
+
+## Boosting	
+
+Boosting are an ensemble of base learners that are constructed sequentially and are progressively reweighted to increase emphasis on observations with wrong predictions and high errors. Thus, the subsequent learners are more likely to correctly classify these mis-classified observations.
+
+## Support vector machines	
+
+Support vector machines (SVMs) use a kernel function to map input features into high-dimensional feature spaces where classification (survival) can be described by a hyperplane.
+
+## Penalized regression	
+
+Penalized regression provides a mathematical solution to applying regression methods to correlated features by using an ℓ2 penalty term (ridge). Additionally, can encourage sparsity by using an ℓ1 penalty (LASSO) to avoid overfitting and perform variable selection. A weighted combination of ℓ1 and ℓ2 penalties can be used to do both (elastic net).
+
+## Artificial neural networks	
+
+Artificial neural networks are comprised of node layers starting with input layer representing the data features, that feeds into one or more hidden layers, and ends with an output layer that presents the final prediction.
