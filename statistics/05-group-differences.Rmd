@@ -1,4 +1,4 @@
-# Two-Group Differences
+# Group Differences
 
 ```{r include=FALSE}
 library(tidyverse)
@@ -7,21 +7,21 @@ library(foreign)
 library(scales)
 library(janitor)
 library(flextable)
+library(broom)
 ```
 
-Use *independent samples* tests to either *describe* a variable's frequency or central tendency difference between two independent groups, or to *compare* the difference to a hypothesized value.
+This section presents a statistical tests of _comparison_. Which test to use depends on the structure of the data. Below is a guide to which test to use.
 
-If the data generating process produces continuous outcomes (interval or ratio) and the outcomes are symmetrically distributed, the difference in the sample means, $\hat{d} = \bar{x} - \bar{y}$, is a random variable centered at the population difference, $d = \mu_X - \mu_Y$. You can use a theoretical distribution (normal or student t) to estimate a 95% confidence interval (CI) around $d$, or compare $\hat{d}$ to an hypothesized population difference, $d_0$. If you (somehow) know the sampling distribution variances $\sigma^2_X$ and $\sigma^2_Y$, or the Central Limit Theorem (CLT) conditions hold, you can assume the random variable is normally distributed and use the *z*-test, otherwise assume the random variable has a student t distribution and use the *t*-test.^[The *t*-test returns nearly the same result as the *z*-test when the CLT holds, so in practice no one bothers with the *z*-test except as an aid to teach the *t*-test.] If the data generating process produces continuous outcomes that are *not* symmetrically distributed, use a non-parametric test like the Mann-Whitney U test.
+**Continuous (interval or ratio) and Ordinal Outcomes**
 
-If the data generating process produces discrete outcomes (counts), the sample count, $x$, is a random variable from a Poisson, binomial, normal, or multinomial distribution, or a random variable from a theoretical outcome. For two independent samples, the data can be organized into a two-way table - a frequency table for two categorical variables. If you have a single categorical predictor variable, you can test whether the joint frequency counts differ from the expected frequency counts in the saturated model. You analyze a two-way table one of two ways.
+- The **Independent samples _t_-test** (\@ref(ttest)) is the main way to compare a continuous dependent variable between the two levels of a binomial independent categorical variable. Revert to the nonparametric **Wilcoxon Rank Sum Test** (\@ref(wilcoxonranksum)) if the _t_-test assumptions fail. A special case arises when samples are paired. Paired samples are more like one-sample tests where the dependent variable is the _difference_ between the pairs. Use the **Paired Samples _t_-test** (\@ref(pairedttest)) or the nonparametric **Wilcoxon signed-rank test** (\@ref(wilcoxonsignedrank)).
+- If the independent categorical variable is multinomial, conduct an **ANOVA** (\@ref(anova)) test or the nonparametric **Kruskal-Wallace test** (\@ref(kw)).
 
-* If you only care about comparing two levels (like when the response variable is binary), conduct a proportion difference *z*-test or a Fisher exact-test.
+**Discrete (count) Outcomes**
 
-* If you want to compare the joint frequency counts to *expected* frequency counts under the *independence model* (the model of independent explanatory variables), conduct a Pearson's chi-squared independence test, or a *G*-test.
+- The **Chi-square test of homogeneity** (\@ref(chisqhomogeneity)) is the main way to compare a discrete dependent variable among the levels of a binomial or multinomial independent categorical variable. Revert to the nonparametric **Fisher's Exact Test** (\@ref(fisherexact)) if the sample size is small. Handle the special case of paired samples with the **Pairwise Prop Test** (\@ref(pairwiseproptest)) or the nonparametric **McNemar's test** (\@ref(mcnemar)).
 
-## Independent Samples (Continuous)
-
-### Independent Samples t-Test {-}
+## Independent Samples t-Test {#ttest}
 
 If a population measure *X* is normally distributed with mean $\mu_X$ and variance $\sigma_X^2$, and a population measure *Y* is normally distributed with mean $\mu_Y$ and variance $\sigma_Y^2$, then their difference is normally distributed with mean $d = \mu_X - \mu_Y$ and variance $\sigma_{XY}^2 = \sigma_X^2 + \sigma_Y^2$. By the CLT, as the sample sizes grow, a non-normally distributed *X* and *Y* will approach normality, and so will their difference.
 
@@ -35,13 +35,13 @@ The *t*-test assumes $d$ has a *t*-distribution around $\hat{d} = d$ with standa
 
 There is a complication with the *t*-test *SE* and degrees of freedom. If the sample sizes are small and the standard deviations from each population are similar (the ratios of $s_X$ and $s_Y$ are <2), pool the variances, $s_p^2 = \frac{(n_X - 1) s_X^2 + (n_Y-1) s_Y^2}{n_X + n_Y-2}$, so that $SE = s_p \sqrt{\frac{1}{n_X} + \frac{1}{n_Y}}$ and the degrees of freedom (df) = $n_X + n_Y - 2$ (the **pooled variances t-test**). Otherwise, $SE = \sqrt{\frac{s_X^2}{n_X} + \frac{s_Y^2}{n_Y}}$, but you reduce df using the Welch-Satterthwaite correction, $df = \frac{\left(\frac{s_X^2}{n_X} + \frac{s_Y^2}{n_Y}\right)^2}{\frac{s_X^4}{n_X^2\left(N_X-1\right)} + \frac{s_Y^4}{n_Y^2\left(N_Y-1\right)}}$ (the **separate variance t-test**, or **Welch's t-test**).
 
-### Wilcoxon Rank Sum Test {-}
+## Wilcoxon Rank Sum Test {#wilcoxonranksum}
 
-The **Mann-Whitney U test**^[This test is sometimes called the Mann-Whitney test, Mann-Whitney U test, Wilcoxon-Mann-Whitney test, and the two-sample Wilcoxon test], is a nonparametric alternative to the independent-samples *t*-test. Use the the test when the samples are not normally distributed or when the response variables are ordinal rather continuous. In the first case where the normality assumption fails, the test evaluates H0 that the two samples are from the same population distribution. In the second case where the response variables are ordinal, the test evaluates the difference in medians. 
+The **Wilcoxon rank sum test**^[The Mann-Whitney U test is also called the Mann-Whitney U test, Wilcoxon-Mann-Whitney test, and the two-sample Wilcoxon test] is a nonparametric alternative to the independent-samples *t*-test. Use the the test when the samples are not normally distributed or when the response variables are ordinal rather continuous. In the first case where the normality assumption fails, the test evaluates H0 that the two samples are from the same population distribution. In the second case where the response variables are ordinal, the test evaluates the difference in medians. 
 
 The Wilcoxon Rank Sum test ranks the response values, then sums the ranks for the reference group, $W = \sum R_1$. The test statistic is $U = W - \frac{n_2(n_2 + 1)}{2}$ where $n_2$ is the number of observations in the test group. $U$ will equal 0 if there is complete separation between the groups, and $n_1 n_2$ if there is complete overlap. Reject H0 if $U$ is sufficiently small.
 
-### Case Study {-}
+## Case Study 1 {-}
 
 ```{r include=FALSE}
 ind_num <- list()
@@ -366,17 +366,15 @@ Had the distributions differed, you would report the Mann-Whitney like this:
 
 > A Mann-Whitney U test was run to determine if there were differences in engagement score between males and females. Distributions of the engagement scores for males and females were not similar, as assessed by visual inspection. Engagement scores for males (mean rank = `r ind_num$mw_test_manual %>% pull(meanR_Male)`) and females (mean rank = `r ind_num$mw_test_manual %>% pull(meanR_Female)`) were not statistically significantly different, *U* = `r ind_num$mw_test$statistic`, *p* = `r ind_num$mw_test$p.value %>% scales::number(accuracy = .001)`, using an exact sampling distribution for *U*.
 
-## Paired Samples (Continuous)
+## Paired Samples t-Test {#pairedttest}
 
 There are two common study designs that employ a paired samples t-test to compare two related groups. One relates the groups as two time points for the same subjects. The second relates the groups as two tests of the same subjects, e.g. comparing reaction time under two lighting conditions.
-
-### Paired Samples t-Test {-}
 
 The *paired samples t-test* uses the mean of sampled paired differences $\bar{d}$ as an estimate of the mean of the population paired differences $\delta$ to evaluate an hypothesized mean $\delta_0$.  Test $H_0: \delta = \delta_0$ with test statistic $T = \frac{\bar{d} - \delta_0}{se}$, or define a $(1 - \alpha)\%$ confidence interval as $\delta = \bar{d} \pm t_{1 - \alpha / 2, n - 1} se$.  *The paired t-test is really just a one-sample mean t-test operating on variable that is defined as the difference between two variables*.
 
 The paired samples *t* test applies when the sampling distribution of the mean of the population paired differences is normally distributed and there are no significant outliers.
 
-### Wilcoxon Signed-Rank Test {-}
+## Wilcoxon Signed-Rank Test {#wilcoxonsignedrank}
 
 The *Wilcoxon signed-rank test* is a nonparametric alternative to the paired-samples t-test for cases in which the paired differences fails the normality condition, but is at least symmetrically distributed.
 
@@ -388,8 +386,7 @@ The *sign test* is an alternative to the Wilcoxon signed-rank test for cases in 
 
 The test statistic is the count of pairs whose difference is positive, $W = cnt(d_i > 0)$. $W \sim b(n, 0.5)$, so the sign test is really just an exact binomial test (*exact sign test*), or for large *n*-size, the normal approximation to the binomial (*sign test*).
 
-### Case Study {-}
-
+## Case Study 2 {-}
 
 ```{r include=FALSE}
 drink <- list()
@@ -454,7 +451,7 @@ Once you learn you need Wilcoxon or the sign-test, show the median and IQR summa
 
 #### Conditions {-}
 
-The paired samples *t* test applies when the variable is continuous and partitioned into dependent pairs, Additionally, there are two conditions related to the data distribution. If either condition fails, consider the suggested work-around or move to the non-parametric alternatives.
+The paired samples *t* test applies when the variable is continuous and partitioned into dependent pairs, Additionally, there are two conditions related to the data distribution. If either condition fails, consider the suggested work-around or move to the nonparametric alternatives.
 
 1. **Outliers**. There should be no outliers in the differences because they exert a large influence on the mean and standard deviation. Test with a box plot. If there are outliers, you might be able to drop them if they do not affect the conclusion, or you can transform the data.
 2. **Normality**. Differences should be *nearly* normally distributed ("nearly" because the *t*-test is robust to the normality assumption). This condition is especially important with small sample sizes. Test with Q-Q plots or the Shapiro-Wilk test for normality. If the data is very non-normal, you might be able to transform the data.
@@ -650,11 +647,645 @@ Report the results.
 >
 > An exact sign test was used to determine whether there was a statistically significant median difference between the distance ran when participants drank a carbohydrate-protein drink compared to a carbohydrate-only drink. Data are medians unless otherwise stated. Of the `r drink$sign_n` participants recruited to the study, the carbohydrate-protein drink elicited an increase in the distance run in `r sum(drink$sign_dat$diff > 0)` participants compared to the carbohydrate-only drink, whereas `r sum(drink$sign_dat$diff < 0)` participants did not run as far and `r sum(drink$sign_dat$diff == 0)` participant saw no improvement with the carbohydrate-protein drink. There was a statistically significant median increase in distance run (`r median(drink$sign_dat$diff) %>% scales::number(accuracy = .0001)` km) when subjects imbibed the carbohydrate-protein drink (`r median(drink$sign_dat$carb_protein) %>% scales::number(accuracy = .001)` km) compared to the carbohydrate-only drink (`r median(drink$sign_dat$carb) %>% scales::number(accuracy = .001)` km), *p* = `r drink$sign_test$p.value %>% scales::number(accuracy = .0001)`.
 
-## Independent Samples (Discrete)
+## ANOVA {#anova}
 
-There are three common tests: the z-test of two proportions; chi-square test of homogeneity; and Fisher's exact test. The z-test and chi-square test produce the same statistical significance result because they are algebraically identical, however the chi-square test is more commonly used. Both tests require large *n*>30 sample sizes. When this assumption is violated, use Fisher's exact.
+Most of these notes are gleaned from [PSU STAT-502](https://online.stat.psu.edu/stat502) "Analysis of Variance and Design of Experiments" covers ANOVA. [Laerd Statistics](https://statistics.laerd.com/premium/spss/owa/one-way-anova-in-spss.php) is useful for writing up your results for reports.
 
-### z-Test of Two Proportions {-}
+Classic analysis of variance (ANOVA) compares the mean responses from *experimental* studies. However, ANOVA also compares the mean responses from *observational* studies, but conclusions are just less rigorous. 
+
+### One-Way ANOVA
+
+Use the one-way ANOVA test to compare the mean response of a continuous dependent variable among the (typically >=3) levels of a factor variable.
+
+Here is a case study. Researchers compare the plant growth among three fertilizers and a control group. Data set `greenhouse` contains 6 observations per each of the *k* = 4 treatment levels (*N* = 24) - a balanced design.
+
+```{r include=FALSE}
+greenhouse <- tribble(
+  ~group, ~growth,
+"Control",      21,
+"Control",      19.5,
+"Control",      22.5,
+"Control",      21.5,
+"Control",      20.5,
+"Control",      21,
+"F1",      32,
+"F1",      30.5,
+"F1",      25,
+"F1",      27.5,
+"F1",      28,
+"F1",      28.6,
+"F2",      22.5,
+"F2",      26,
+"F2",      28,
+"F2",      27,
+"F2",      26.5,
+'F2',      25.2,
+"F3",      28,
+"F3",      27.5,
+"F3",      31,
+"F3",      29.5,
+"F3",      30,
+"F3",      29.2
+) %>%
+  mutate(group = factor(group), id = row_number())
+
+skimr::skim(greenhouse)
+```
+
+All three fertilizers produced more growth than the control group. Fertilizers *F1* and *F3* appear to be about tied for most growth, but it is unclear if the fertilizers are significantly different from each other.  
+
+```{r echo=FALSE, fig.height=2.5}
+greenhouse %>%
+  group_by(group) %>%
+  summarize(.groups = "drop",
+            mean_growth = mean(growth),
+            cl_025 = mean_growth + qnorm(.025) * sd(growth) / sqrt(n()),
+            cl_975 = mean_growth + qnorm(.975) * sd(growth) / sqrt(n())) %>%
+  ggplot(aes(x = group, y = mean_growth)) +
+  geom_col(fill = "snow3", color = "snow3", alpha = 0.6, width = 0.5) +
+  geom_errorbar(aes(ymin = cl_025, ymax = cl_975, width = 0.3)) +
+  theme_minimal() +
+  labs(title = "Mean Growth by Group",
+       x = NULL, y = "Growth (cm)",
+       caption = "Error Bars: 95% CI")
+```
+
+```{r echo=FALSE}
+library(table1)
+# table1 requires this metadata
+label(greenhouse$growth) <- "Growth"
+units(greenhouse$growth) <- "cm"
+
+# Quick and good:
+# table1(~ growth | group, data = greenhouse)
+
+# Better: prints "Treated" at the top.
+strata <- c(split(greenhouse, greenhouse$group),
+            list("All treated" = subset(greenhouse, group %in% c("F1", "F2", "F3"))),
+            list(Overall = greenhouse))
+labels <- list(
+  variables = list(growth = render.varlabel(greenhouse$growth)),
+  groups = list("", "Treated", "")
+)
+table1(strata, labels, groupspan = c(1, 4, 1))
+```
+
+```{r}
+greenhouse_desc <- greenhouse %>% 
+  group_by(group) %>% 
+  summarize(.groups = "drop", n = n(), mean = mean(growth), sd = sd(growth))
+```
+
+Data is presented as mean $\pm$ standard deviation. Plant growth (growth) increased from the control (*n* = `r pull(greenhouse_desc[1, "n"])`, `r pull(greenhouse_desc[1, "mean"])` $\pm$ `r format(pull(greenhouse_desc[1,"sd"]), nsmall = 1)`), to fertilizer 1 (*n* = `r pull(greenhouse_desc[2, "n"])`, `r pull(greenhouse_desc[2, "mean"])` $\pm$ `r format(pull(greenhouse_desc[2,"sd"]), digits = 2, nsmall = 1)`), fertilizer 2 (*n* = `r pull(greenhouse_desc[3, "n"])`, `r pull(greenhouse_desc[3, "mean"])` $\pm$ `r format(pull(greenhouse_desc[3,"sd"]), digits = 2, nsmall = 1)`), and fertilizer 3 (*n* = `r pull(greenhouse_desc[4, "n"])`, `r pull(greenhouse_desc[4, "mean"])` $\pm$ `r format(pull(greenhouse_desc[4,"sd"]), digits = 2, nsmall = 1)`) fertilizer groups.
+
+ANOVA decomposes the deviation of observation $Y_{ij}$ around the overall mean $\bar{Y}_{..}$ into two parts: the deviation of the observations around their treatment means, $SSE$, and the deviation of the treatment means around the overall mean, $SSR$. Their ratio, $F = SSR/SSE$ follows an *F*-distribution with $k-1$ numerator dof and $N-k$ denominator dof. The more observation variance captured by the treatments, the large is $F$, and the less likely that the null hypothesis, $H_0 = \mu_1 = \mu_2 = \cdots = \mu_k$ is true.
+
+```{r echo=FALSE}
+tmp <- tribble(
+  ~Source, ~SS, ~df, ~MS, ~F,
+  "SSR", "$\\sum{n_i(\\bar{Y}_{i.} - \\bar{Y}_{..})^2}$", "$k - 1$", "${SSR}/{(k - 1)}$", "${MSR}/{MSE}$", 
+  "SSE", "$\\sum(Y_{ij} - \\bar{Y}_{i.})^2$", "$N - k$", "${SSE}/{(N - k)}$", "",
+  "SST", "$\\sum(Y_{ij} - \\bar{Y}_{..})^2$", "$N - 1$", "", ""
+)
+
+tmp %>% 
+  knitr::kable(format = "html", caption = "ANOVA Table") %>%
+  kableExtra::kable_styling(full_width = TRUE) %>%
+  kableExtra::row_spec(row = 0, align = "c") #%>%
+  # kableExtra::footnote(
+  #   general_title = "Note.",
+  #   general = "Compare the *F*-statistic to the *F*-distribution with $k-1$ numerator degrees of freedom and $N-k$ denominator degrees of freedom",
+  #  footnote_as_chunk = TRUE
+  #   )
+```
+
+Run an ANOVA test in R like this:
+
+```{r}
+greenhouse_aov <- aov(growth ~ group, data = greenhouse)
+greenhouse_anova <- anova(greenhouse_aov)
+
+greenhouse_anova %>% 
+  tidy() %>%
+  flextable() %>%
+  set_table_properties(width = 0.8, layout = "autofit") %>%
+  colformat_num(j = c(3, 4, 5), digits = 1) %>%
+  colformat_num(j = 6, digits = 4) %>%
+  set_caption("Results of ANOVA for Growth vs Fertilizer Group")
+```
+
+The one-way ANOVA indicates amount of growth was statistically significantly different for different levels of fertilizer group, *F*(3, 20) = 27.5, *p* < .0001.
+
+BTW, it is worth noting the relationship with linear regression. The regression model intercept is the overall mean and the coefficient estimators indirectly indicate the group means. The analysis of variance table in a regression model shows how much of the overall variance is explained by those coefficient estimators. It's the same thing.
+
+You may also want to report the $\omega^2$ effect size, 
+
+$$\omega^2 = \frac{SSR - df_R \cdot MSE}{MSE + SST}$$
+```{r}
+greenhouse_omega <- sjstats::anova_stats(greenhouse_anova) %>% 
+  filter(term == "group") %>%
+  pull(omegasq)
+```
+$\omega^2$ ranges from -1 to +1. In this example, $\omega^2$ is `r greenhouse_omega`.
+
+#### ANOVA Conditions
+
+The ANOVA test applies when the dependent variable is continuous, the independent variable is categorical, and the observations are independent *within* groups. Independence means the observations are from a random sample, or from an experiment using random assignment. Each group's size should be less than 10% of its population size. The groups must also be independent of each other (non-paired, and non-repeated measures). Additionally, there are three conditions related to the data distribution. If any condition does not hold, and the suggested work-arounds do not work, switch to the nonparametric Kruskal-Wallis Test (Chapter \@ref(kw)).
+
+1. **No outliers**. There should be no significant outliers in the groups. Outliers exert a large influence on the mean and standard deviation. Test with a box plot. If there are outliers, you might be able to drop them or transform the data.
+2. **Normality**.  Each group's values should be *nearly* normally distributed ("nearly" because ANOVA is considered robust to the normality assumption). This condition is especially important with small sample sizes. Test with the Q-Q plots or the Shapiro-Wilk test for normality. If the data is very non-normal, you might be able to transform your response variable.
+3. **Equal Variances**.  The group variances should be roughly equal. This condition is especially important when sample sizes differ. Test with a box plot, rule of thumb, or one of the formal [homogeneity of variance](http://www.cookbook-r.com/Statistical_analysis/Homogeneity_of_variance/) (external) tests such as Bartlett, and Levene. If the variances are very different, use a Games-Howell post hoc test instead of the Tukey post hoc test.
+
+##### Outliers {-}
+
+Assess outliers with a box plot. Box plot whiskers extend up to 1.5\*IQR from the upper and lower hinges and outliers (beyond the whiskers) are are plotted individually. Our example includes an outlier in fertilizer group *F2*.
+
+```{r echo=FALSE, fig.height=2.5}
+greenhouse %>%
+  ggplot(aes(x = group, y = growth)) +
+  geom_boxplot(fill = "snow3", color = "snow4", alpha = 0.6, width = 0.5, 
+               outlier.color = "goldenrod", outlier.size = 2) +
+  theme_minimal() +
+  labs(title = "Boxplot of Growth vs Fertilizer Group",
+       y = "Growth (cm)", x = "Fertilizer Group")
+```
+
+Outliers might occur from data entry errors or measurement errors, so investigate and fix or throw them out. However, if the outlier is a genuine extreme value, you still have a couple options before reverting to Kruskal-Wallis.
+
+* Transform the dependent variable. Don't do this unless the data is also non-normal. It also has the downside of making interpretation more difficult.
+* Leave it in if it doesn't affect the conclusion (compared to taking it out).
+
+Lets try removing the outlier (*id#* 13). 
+
+```{r}
+greenhouse_aov2 <- aov(growth ~ group, data = greenhouse %>% filter(!id == 13))
+greenhouse_anova2 <- anova(greenhouse_aov2)
+```
+
+```{r echo=FALSE}
+greenhouse_anova2 %>% 
+  tidy() %>%
+  flextable() %>%
+  set_table_properties(width = 0.8, layout = "autofit") %>%
+  colformat_num(j = c(3, 4, 5), digits = 1) %>%
+  colformat_num(j = 6, digits = 4) %>%
+  set_caption("Results of ANOVA for Growth vs Fertilizer Group") %>%
+  footnote(i = 1, j = 1,
+           value = as_paragraph("Note: One outlier in group F2 removed."),
+           ref_symbols = c(""),
+           part = "header", inline = TRUE)
+
+```
+
+The conclusion is the same, so leaving it in is fine!
+
+##### Normality {-}
+
+You can assume the populations are normally distributed if $n_j >= 30$. Otherwise, try the Q-Q plot, or skewness and kurtosis values, or histograms. If you still don't feel confident about normality, run a [Shapiro-Wilk Test] or Kolmogorov-Smirnov Test. If $n_j >= 50$, stick with graphical methods because at larger sample sizes Shapiro-Wilk flags even minor deviations from normality.
+
+The QQ plots below appear to be approximately normal.
+
+```{r}
+greenhouse %>%
+  ggplot(aes(sample = growth)) +
+  stat_qq() +
+  stat_qq_line(col = "goldenrod") +
+  facet_wrap(~group) +
+  theme_minimal() +
+  labs(title = "Normal Q-Q Plot")
+```
+
+The Shapiro-Wilk test corroborates this conclusion - it fails to reject the null hypothesis of normally distributed populations.
+
+```{r}
+x <- by(greenhouse, greenhouse$group, function(x) shapiro.test(x$growth) %>% tidy())
+
+x[1:4] %>%
+  bind_rows() %>%
+  mutate(group = names(x)) %>%
+  dplyr::select(group, everything(), - method) %>%
+  flextable() %>% 
+  set_table_properties(width = 0.6, layout = "autofit") %>%
+  set_caption("Shapiro-Wilk Normality Test")
+```
+
+If the data is not normally distributed, you still have a couple options before reverting to Kruskal-Wallis.
+
+* Transform the dependent variable. Transformations will generally only work when the distribution of scores in all groups are the same shape. They also have the drawback of making the data less interpretable.
+* carry on regardless. One-way ANOVA is fairly robust to deviations from normality, particularly if the sample sizes are nearly equal.
+
+##### Equal Variances {-}
+
+The equality of sample variances condition is less critical when sample sizes are similar among the groups. One rule of thumb is that no group's standard deviation should be more than double that of any other.  In this case `F1` is more than double `Control`.
+
+```{r echo=FALSE}
+greenhouse %>% 
+  group_by(group) %>% 
+  summarize(.groups = "drop", sd = sd(growth)) %>%
+  flextable() %>%
+  set_table_properties(width = 0.5, layout = "autofit")
+```
+
+There are two other common tests, Bartlett and Levene. NIST has a good write-up for [Levene](https://www.itl.nist.gov/div898/handbook/eda/section3/eda35a.htm) and for [Bartlett](https://www.itl.nist.gov/div898/handbook/eda/section3/eda357.htm). Levene is less sensitive than Bartlett to departures from normality, so if you know your data is normally distributed, then use Bartlett.
+
+Levene's test fails to reject the null hypothesis of equality of variance.
+
+```{r}
+greenhouse_levene <- car::leveneTest(growth ~ group, data = greenhouse) 
+greenhouse_levene %>% 
+  tidy() %>%
+  flextable() %>%
+  set_table_properties(width = 0.6, layout = "autofit") %>% 
+  set_caption("Levene's Test for Homogeneity of Variance")
+```
+
+So does Bartlett.  
+
+```{r}
+bartlett.test(growth ~ group, data = greenhouse) %>% 
+  tidy() %>%
+  dplyr::select(-method) %>%
+  flextable() %>%
+  set_table_properties(width = 0.6, layout = "autofit") %>% 
+  set_caption("Bartlett's Test for Homogeneity of Variance")
+```
+
+Heterogeneity is a common problem in ANOVA. Transforming the response variable can often remove the heterogeneity. The Box-Cox procedure can help find a good transformation. The MASS::boxcox() function calculates a profile of log-likelihoods for a power transformation of the response variable $Y^\lambda$.
+
+|$\lambda$ | $Y^\lambda$ | Transformation |
+|---|---|---|
+|2 | $Y^2$ | Square |
+|1 | $Y^1$ | (no transformation) |
+|.5 | $Y^{.5}$ | Square Root |
+|0 | $\ln(Y)$ | Log |
+|-.5 | $Y^{-.5}$ | Inverse Square Root |
+|-1 | $Y^{-1}$ | Inverse|
+
+The Box-Cox procedure does not recommend any particular transformation of the data in this case.
+
+```{r message=FALSE}
+MASS::boxcox(greenhouse_aov, plotit = TRUE)
+```
+
+#### Custom Contrasts
+
+Taking this route is appropriate if you have specific hypotheses about the differences between the groups of your independent variable. For example, we might want to test whether the mean of the treatments differ from the control group, $H_0: \sum_i^K{c_i u_i} = 0$ where $c_i = (1, -1/3, -1/3, -1/3)$. You can test a constrast using the **multcomp** package.
+
+```{r}
+greenhouse_glht <- multcomp::glht(greenhouse_aov, linfct = multcomp::mcp(group = c(-1, 1/3, 1/3, 1/3)))
+greenhouse_glht_smry <- summary(greenhouse_glht)
+greenhouse_confint <- confint(greenhouse_glht)
+greenhouse_glht_smry
+```
+
+Growth was statistically significantly higher in the fertilizer groups (mean of `r round(greenhouse_glht$coef[1] + mean(greenhouse_glht$coef[2:4]), 1)`) compared to the sedentary group (`r greenhouse_desc[1, ]$mean %>% round(1)` $\pm$ `r greenhouse_desc[1, ]$sd %>% round(1)`), a mean difference of `r greenhouse_confint$confint[1]` (95% CI, `r greenhouse_confint$confint[2]` to `r greenhouse_confint$confint[3]`), *p* = `r greenhouse_glht_smry$test$pvalues[1]`.
+
+#### Tukey Post Hoc Test
+
+The *F* test does not indicate which populations cause the rejection of $H_0$. For this, use one of the post-hoc tests: Tukey, Fisher's Least Significant Difference (LSD), Bonferroni, Scheffe, or Dunnett. Post hoc tests are appropriate if you are investigating all possible pairwise comparisons with no specific hypotheses about specific groups differing from others.
+
+Here is the Tukey test. As expected, all three fertilizer factor levels differ from the control.  `F3` differed from `F2`, but `F1` was not significantly different from either `F2` or `F3`.
+
+```{r}
+greenhouse_tukey <- TukeyHSD(greenhouse_aov)
+greenhouse_tukey %>% 
+  tidy() %>%
+  flextable() %>%
+  set_table_properties(width = 0.8, layout = "autofit") %>% 
+  colformat_num(j = c(4:6), digits = 1) %>%
+  colformat_num(j = 7, digits = 3) %>%
+  set_caption("Tukey multiple comparisons of means") %>%
+  footnote(i = 1, j = c(1),
+            value = as_paragraph(
+              paste0("95% family-wise confidence level\n",
+                "Fit: aov(formula = growth ~ group, data = greenhouse)")),
+            ref_symbols = c(""),
+            part = "header")
+```
+
+Data are mean $\pm$ standard deviation. There was an increase in growth from `r pull(greenhouse_desc[1, "mean"])` $\pm$ `r pull(greenhouse_desc[1, "sd"])` in the control group to `r pull(greenhouse_desc[2, "mean"])` $\pm$ `r format(pull(greenhouse_desc[2, "sd"]), digits = 2, nsmall = 1)` in the group with fertilizer F1, an increase of `r greenhouse_tukey$group[1, "diff"]` (95% CI, `r format(greenhouse_tukey$group[1, "lwr"], digits = 2, nsmall = 1)` to `r format(greenhouse_tukey$group[1, "upr"], digits = 2, nsmall = 1)`), which was statistically significant (*p* < .0001)... etc.
+
+#### Reporting a One-Way ANOVA
+
+Report like this.
+
+> A one-way ANOVA was conducted to determine if plant growth was different for groups with different fertilizer types. Plants were classified into four groups: control (*n* = 6), fertilizer 1 (*n* = 6), fertilizer 2 (*n* = 6), and fertilizer 3 (n = 6). There was a single outlier, as assessed by boxplot, and was retained because it did not change the conclusions; data was normally distributed for each group, as assessed by Shapiro-Wilk test (*p* > .05); and there was homogeneity of variances, as assessed by Levene's test of homogeneity of variances (*p* = `r round(greenhouse_levene[1, 3], 3)`). Data is presented as mean $\pm$ standard deviation. Plant growth was statistically significantly different between different fertilizer groups, *F*(`r greenhouse_anova$Df[1]`, `r greenhouse_anova$Df[2]`) = `r round(greenhouse_anova[1, 4], 3)`, p < .0005, $\omega^2$ = `r greenhouse_omega`. Plant growth increased from the control (`r pull(greenhouse_desc[1, "mean"])` $\pm$ `r format(pull(greenhouse_desc[1,"sd"]), nsmall = 1)`), to fertilizer F1 (`r pull(greenhouse_desc[2, "mean"])` $\pm$ `r format(pull(greenhouse_desc[2,"sd"]), digits = 2, nsmall = 1)`), fertilizer F2 (`r format(pull(greenhouse_desc[3, "mean"]), digits = 3, nsmall = 1)` $\pm$ `r format(pull(greenhouse_desc[3,"sd"]), digits = 2, nsmall = 1)`), and fertilizer F3 (`r pull(greenhouse_desc[4, "mean"])` $\pm$ `r format(pull(greenhouse_desc[4,"sd"]), digits = 2, nsmall = 1)`) fertilizer groups. Tukey post hoc analysis revealed statistically significant increases from control to F1 (`r format(greenhouse_tukey$group[1, 1], digits=2, nsmall = 1)`, 95% CI (`r format(greenhouse_tukey$group[1, 2], digits=2, nsmall = 1)` to `r format(greenhouse_tukey$group[1, 3], digits=2, nsmall = 1)`), *p* = `r format(greenhouse_tukey$group[1, 4], digits=2, nsmall = 3)`), control to F2 (`r format(greenhouse_tukey$group[2, 1], digits=2, nsmall = 1)`, 95% CI (`r format(greenhouse_tukey$group[2, 2], digits=2, nsmall = 1)` to `r format(greenhouse_tukey$group[2, 3], digits=2, nsmall = 1)`), *p* = `r format(greenhouse_tukey$group[2, 4], digits=2, nsmall = 3)`), and control to F3 (`r format(greenhouse_tukey$group[3, 1], digits=2, nsmall = 1)`, 95% CI (`r format(greenhouse_tukey$group[3, 2], digits=2, nsmall = 1)` to `r format(greenhouse_tukey$group[3, 3], digits=2, nsmall = 1)`), *p* = `r format(greenhouse_tukey$group[3, 4], digits=2, nsmall = 3)`), as well as the increase from F2 to F3 (`r format(greenhouse_tukey$group[6, 1], digits=2, nsmall = 1)`, 95% CI (`r format(greenhouse_tukey$group[6, 2], digits=2, nsmall = 1)` to `r format(greenhouse_tukey$group[6, 3], digits=2, nsmall = 1)`), *p* = `r format(greenhouse_tukey$group[6, 4], digits=2, nsmall = 3)`), but there were no statistically significant group differences between F1 and F2 or F1 and F3.
+
+
+### Welch's ANOVA w/Games-Howell
+
+Welch's ANOVA test is an alternative to the one-way ANOVA test in cases where the equality of variances assumption is violated.
+
+Here is a case study. Researchers compare the force (in newtons) generated in three steps. Data set `newton` contains 30 observations per each of the *k* = 3 step levels (*N* = 90) - a balanced design.
+
+```{r echo=FALSE, fig.height=2.5}
+newton <- data.frame(
+  newtons = c(400.95, 445.58, 499.7, 344.62, 397.19, 424.1, 692.2, 436.68, 541.27, 
+              518.01, 618.62, 493.19, 368.08, 405.96, 391.81, 305.59, 345.88, 458.15, 
+              320.92, 371.11, 373.94, 434.02, 484.49, 360.24, 495.93, 464.1, 455.07, 
+              343.19, 358.93, 325.86, 524.63, 584.21, 592.76, 567.12, 716.15, 481.64, 
+              518.3, 759, 419.33, 641.5, 713.04, 657.78, 469.29, 420.89, 440.02, 417.39, 
+              489.02, 586.63, 477.39, 461.69, 564.12, 565.96, 427.77, 503.48, 494.44, 
+              577.08, 425.99, 428.64, 461.9, 417.68, 820.65, 788.84, 644.03, 779.9, 
+              892.91, 571.47, 625.09, 751.91, 582.32, 870.45, 886.16, 938.5, 605.69, 
+              572.6, 643.57, 770.42, 660.53, 576.62, 437.25,593.72, 441.11, 591.43, 
+              749.08, 670.02, 475.11, 455.26, 526.59, 560.3, 474.65, 511.5),
+  step = factor(c(rep("A", 30), rep("B", 30), rep("C", 30)))
+)
+
+newton %>%
+  group_by(step) %>%
+  summarize(.groups = "drop",
+            mean = mean(newtons),
+            cl_025 = mean + qnorm(.025) * sd(newtons) / sqrt(n()),
+            cl_975 = mean + qnorm(.975) * sd(newtons) / sqrt(n())) %>%
+  ggplot(aes(x = step, y = mean)) +
+  geom_col(fill = "snow3", color = "snow3", alpha = 0.6, width = 0.5) +
+  geom_errorbar(aes(ymin = cl_025, ymax = cl_975, width = 0.3)) +
+  theme_minimal() +
+  labs(title = "Mean Newtons by Step",
+       x = "Step", y = "Newtons",
+       caption = "Error Bars: 95% CI")
+```
+
+```{r echo=FALSE}
+# table1 requires this metadata
+label(newton$newtons) <- "Force"
+units(newton$newtons) <- "newtons"
+
+table1(~ newtons | step, data = newton)
+```
+
+```{r}
+newton_desc <- newton %>% 
+  group_by(step) %>% 
+  summarize(.groups = "drop", n = n(), mean = mean(newtons), sd = sd(newtons))
+```
+
+Data is presented as mean $\pm$ standard deviation. Force (newtons) increased from step 1 (*n* = `r pull(newton_desc[1, "n"])`, `r pull(newton_desc[1, "mean"]) %>% format(digits = 3, nsmall = 0)` $\pm$ `r pull(newton_desc[1,"sd"]) %>% format(digits = 3, nsmall = 0)`), to step 2 (*n* = `r pull(newton_desc[2, "n"])`, `r pull(newton_desc[2, "mean"]) %>% format(digits = 3, nsmall = 0)` $\pm$ `r pull(newton_desc[2,"sd"]) %>% format(digits = 3, nsmall = 0)`), to step 3 (*n* = `r pull(newton_desc[3, "n"])`, `r pull(newton_desc[3, "mean"]) %>% format(digits = 3, nsmall = 0)` $\pm$ `r pull(newton_desc[3,"sd"]) %>% format(digits = 3, nsmall = 0)`).
+
+Start by running the standard ANOVA test:
+
+```{r}
+newton_aov <- aov(newtons ~ step, data = newton)
+newton_anova <- anova(newton_aov)
+
+newton_anova %>% 
+  tidy() %>%
+  flextable() %>%
+  set_table_properties(width = 0.8, layout = "autofit") %>%
+  colformat_num(j = c(3, 4, 5), digits = 1) %>%
+  colformat_num(j = 6, digits = 4) %>%
+  set_caption("Results of ANOVA for Force vs Step")
+```
+
+The one-way ANOVA indicates amount of force was statistically significantly different for different levels of step, *F*(2, 87) = 28.4, *p* < .0001.
+
+#### ANOVA Conditions
+
+Check the three ANOVA conditions: no outliers, normality, and equal variances.
+
+##### Outliers {-}
+
+Assess outliers with a box plot. Our example includes an outlier in step *A*.
+
+```{r echo=FALSE, fig.height=2.5}
+newton %>%
+  ggplot(aes(x = step, y = newtons)) +
+  geom_boxplot(fill = "snow3", color = "snow4", alpha = 0.6, width = 0.5, 
+               outlier.color = "goldenrod", outlier.size = 2) +
+  theme_minimal() +
+  labs(title = "Boxplot of Force vs Step",
+       y = "Force (newtons)", x = "Step")
+```
+
+You can either transform the dependent variable, see if taking it out changes your conclusion, or use a nonparametric test. Let's try removing the outlier (*id#* 13). 
+
+```{r}
+newton2 <- newton %>% mutate(id = row_number())
+newton_aov2 <- aov(newtons ~ step, data = newton2 %>% filter(!id == 7))
+newton_anova2 <- anova(newton_aov2)
+```
+
+```{r echo=FALSE}
+newton_anova2 %>% 
+  tidy() %>%
+  flextable() %>%
+  set_table_properties(width = 0.8, layout = "autofit") %>%
+  colformat_num(j = c(3, 4, 5), digits = 1) %>%
+  colformat_num(j = 6, digits = 4) %>%
+  set_caption("Results of ANOVA for Force vs Step") %>%
+  footnote(i = 1, j = 1,
+           value = as_paragraph("Note: One outlier in step A removed."),
+           ref_symbols = c(""),
+           part = "header", inline = TRUE)
+
+```
+
+The conclusion is the same, so leaving it in is fine!
+
+##### Normality {-}
+
+You can assume the populations are normally distributed if $n_j >= 30$, but I'll examine the Q-Q plot and run a [Shapiro-Wilk Test] anyway.
+
+The QQ plots below appear to be approximately normal...
+
+```{r}
+newton %>%
+  ggplot(aes(sample = newtons)) +
+  stat_qq() +
+  stat_qq_line(col = "goldenrod") +
+  facet_wrap(~step) +
+  theme_minimal() +
+  labs(title = "Normal Q-Q Plot")
+```
+
+...but the Shapiro-Wilk test fails for step *A* and *B* -- evidence of its sensitivity for large *n*. I will ignore this violation.
+
+```{r}
+x <- by(newton, newton$step, function(x) shapiro.test(x$newtons) %>% tidy())
+
+x[1:3] %>%
+  bind_rows() %>%
+  mutate(group = names(x)) %>%
+  dplyr::select(group, everything(), - method) %>%
+  flextable() %>% 
+  set_table_properties(width = 0.6, layout = "autofit") %>%
+  set_caption("Shapiro-Wilk Normality Test")
+```
+
+##### Equal Variances {-}
+
+The equality of sample variances condition is less critical when sample sizes are similar among the groups. Following the rule of thumb that no group's standard deviation be more than double that of any other, we look okay.
+
+```{r echo=FALSE}
+newton %>% 
+  group_by(step) %>% 
+  summarize(.groups = "drop", sd = sd(newtons)) %>%
+  flextable() %>%
+  set_table_properties(width = 0.5, layout = "autofit")
+```
+
+However, Levene's test rejects the null hypothesis of equality of variance.
+
+```{r}
+newton_levene <- car::leveneTest(newtons ~ step, data = newton) 
+newton_levene %>% 
+  tidy() %>%
+  flextable() %>%
+  set_table_properties(width = 0.6, layout = "autofit") %>% 
+  set_caption("Levene's Test for Homogeneity of Variance")
+```
+
+So does Bartlett.  
+
+```{r}
+bartlett.test(newtons ~ step, data = newton) %>% 
+  tidy() %>%
+  dplyr::select(-method) %>%
+  flextable() %>%
+  set_table_properties(width = 0.6, layout = "autofit") %>% 
+  set_caption("Bartlett's Test for Homogeneity of Variance")
+```
+
+We could transform the response variable to remove the heterogeneity. The Box-Cox procedure suggests an inverse square root transformation.
+
+|$\lambda$ | $Y^\lambda$ | Transformation |
+|---|---|---|
+|2 | $Y^2$ | Square |
+|1 | $Y^1$ | (no transformation) |
+|.5 | $Y^{.5}$ | Square Root |
+|0 | $\ln(Y)$ | Log |
+|-.5 | $Y^{-.5}$ | Inverse Square Root |
+|-1 | $Y^{-1}$ | Inverse|
+
+The Box-Cox procedure does not recommend any particular transformation of the data in this case.
+
+```{r message=FALSE}
+# MASS::boxcox(newton_aov, plotit = TRUE)
+```
+
+```{r}
+newton3 <- newton %>%
+  mutate(newtons_isr = newtons^(-0.5))
+newton_levene3 <- car::leveneTest(newtons_isr ~ step, data = newton3) 
+newton_levene3 %>% 
+  tidy() %>%
+  flextable() %>%
+  set_table_properties(width = 0.6, layout = "autofit") %>% 
+  set_caption("Levene's Test for Homogeneity of Variance")
+```
+
+Huzzah - it worked! Before we continue on, we should backtrack and re-test the outliers and normality conditions. However, because the point of this section is to try Welch's ANOVA, I'm going use it instead of transforming the response variable. Use `oneway.test(..., var.equal = FALSE)` to run a Welch's ANOVA.
+
+```{r}
+newton_anova <- oneway.test(newtons ~ step, data = newton, var.equal = FALSE)
+newton_anova
+```
+
+Welch's ANOVA indicates amount of force was statistically significantly different for different steps, *F*(2, 56.2) = 26.2, *p* < .0001.
+
+I don't think you can calculate $\omega^2$ for a Welch's ANOVA object.
+
+#### Games-Howell Post Hoc Test
+
+Use the `PMCMRplus::gamesHowellTest()` to run the Games-Howell post hoc test. As expected, the three steps differ from each other.
+
+```{r message=FALSE}
+newton_games_howell <- rstatix::games_howell_test(newton, newtons ~ step)
+newton_games_howell %>%
+  flextable() %>% autofit() %>% set_caption("Games-Howell Post Hoc Test")
+```
+
+#### Reporting a Welch's ANOVA
+
+> A Welch's ANOVA was conducted to determine if force was different for different steps. Measurements were classified into three groups: A (*n* = 30), B (*n* = 30), and C (n = 30). There was a single outlier, as assessed by boxplot, and was retained because it did not change the conclusions; data was normally distributed for each group, as assessed by Q-Q plot. ; Homogeneity of variances was violated, as assessed by Levene's Test of Homogeneity of Variance (*p* = `r round(newton_levene[1, 3], 3)`). Data is presented as mean $\pm$ standard deviation. Force was statistically significantly different between different steps, *F*(`r newton_anova$parameter[1]`, `r newton_anova$parameter[2]`) = `r round(newton_anova$statistic, 3)`, p < .0005. Force increased from A (`r pull(newton_desc[1, "mean"])` $\pm$ `r format(pull(newton_desc[1,"sd"]), nsmall = 1)`), to B (`r pull(newton_desc[2, "mean"])` $\pm$ `r format(pull(newton_desc[2,"sd"]), digits = 2, nsmall = 1)`), to C (`r pull(newton_desc[3, "mean"])` $\pm$ `r format(pull(newton_desc[3,"sd"]), digits = 2, nsmall = 1)`). Games-Howell post hoc analysis revealed statistically significant increases from A to B, (`r format(newton_games_howell[1, ]$estimate, digits=2, nsmall = 1)`, 95% CI (`r format(newton_games_howell[1, ]$conf.low, digits=2, nsmall = 1)` to `r format(newton_games_howell[1, ]$conf.low, digits=2, nsmall = 1)`), *p* = `r format(newton_games_howell[1, ]$p.adj, digits=1, nsmall = 3)`), A to C (`r format(newton_games_howell[2, ]$estimate, digits=2, nsmall = 1)`, 95% CI (`r format(newton_games_howell[2, ]$conf.low, digits=2, nsmall = 1)` to `r format(newton_games_howell[2, ]$conf.low, digits=2, nsmall = 1)`), *p* = `r format(newton_games_howell[2, ]$p.adj, digits=1, nsmall = 3)`), and B to C (`r format(newton_games_howell[3, ]$estimate, digits=2, nsmall = 1)`, 95% CI (`r format(newton_games_howell[3, ]$conf.low, digits=2, nsmall = 1)` to `r format(newton_games_howell[3, ]$conf.low, digits=2, nsmall = 1)`), *p* = `r format(newton_games_howell[3, ]$p.adj, digits=1, nsmall = 3)`).
+
+
+### MANOVA
+
+Multi-factor ANOVA (MANOVA) is a method to compare mean responses by treatment factor level of two or more treatments applied in combination. The null hypotheses are $H_0: \mu_{1.} = \mu_{2.} = \dots = \mu_{a.}$ for the $a$ levels of factor 1, $H_0: \mu_{.1} = \mu_{.2} = \dots = \mu_{.b}$ for the $b$ levels of factor 2, etc. for all the factors in the experiment, and $H_0: $ no interaction for all the factor interactions.
+
+There are two equivalent ways to state the MANOVA model:
+
+$$Y_{ijk} = \mu_{ij} + \epsilon_{ijk}$$
+
+In this notation $Y_{ijk}$ refers to the $k^{th}$ observation in the $j^{th}$ level of factor two and the $i^{th}$ level of factor 1.  Potentially there could be additional factors.  This model formulation decomposes the response into a cell mean and an error term.  The second makes the factor effect more explicit and is thus more common:
+
+$$Y_{ijk} = \mu + \alpha_i + \beta_j + (\alpha\beta)_{ij} +  \epsilon_{ijk}$$
+
+### Multiple Variance Comparison F Test
+
+
+### Example
+*A study investigates the relationship between oxygen update and two explanatory variables: smoking, and type of stress test.  A sample of* $n = 27$ *persons, 9 non-smoking, 9 moderately-smoking, and 9 heavy-smoking are divided into three stress tests, bicycle, treadmill, and steps and their oxygen uptake was measured.  Is oxygen uptake related to smoking status and type of stress test?  Is there an interaction effect between smoking status and type of stress test?*
+```{r message=FALSE, warning=FALSE}
+library(dplyr)
+library(ggplot2)
+library(nortest)  # for Anderson-Darling test
+library(stats)  # for anova
+
+smoker <- c(1, 1, 1, 1, 1, 1, 1, 1, 1, 
+            2, 2, 2, 2, 2, 2, 2, 2, 2, 
+            3, 3, 3, 3, 3, 3, 3, 3, 3)
+stress <- c(1, 1, 1, 2, 2, 2, 3, 3, 3,
+            1, 1, 1, 2, 2, 2, 3, 3, 3,
+            1, 1, 1, 2, 2, 2, 3, 3, 3)
+oxytime <- c(12.8, 13.5, 11.2, 16.2, 18.1, 17.8, 22.6, 19.3, 18.9,
+             10.9, 11.1, 9.8, 15.5, 13.8, 16.2, 20.1, 21.0, 15.9,
+             8.7, 9.2, 7.5, 14.7, 13.2, 8.1, 16.2, 16.1, 17.8)
+oxy <- data.frame(oxytime, smoker, stress)
+oxy$smoker <- ordered(oxy$smoker,
+                      levels = c(1, 2, 3),
+                      labels = c("non-smoker", "moderate", "heavy"))
+oxy$stress <- factor(oxy$stress,
+                     labels = c("bicycle", "treadmill", "steps"))
+
+lm_oxy <- lm(oxytime~smoker+stress+smoker*stress, data = oxy)
+anova(lm_oxy)
+```
+
+
+
+[SFU BIO710](http://online.sfsu.edu/efc/classes/biol710/manova/MANOVAnewest.pdf)
+
+## Kruskal–Wallis Test {#kw}
+
+The **Kruskal-Wallis H test**^[The Kruskal-Wallis H test is also called the one-way ANOVA on ranks] measures the difference of a continuous or ordinal dependent variable between two or more categorical, independent groups. It is a rank-based nonparametric alternative to the one-way ANOVA test. Use Kruskal-Wallis if the dependent variable fails the ANOVA normality condition, or if the dependent variable is ordinal.
+
+If the dependent variable distribution has a similar shape across the groups of the independent categorical variable, then Kruskal-Wallis is a test of differences in their medians. Otherwise, Kruskal-Wallis is a test of differences in their distributions.
+
+The Kruskal-Wallis H test ranks the dependent variable irrespective of its group. It averages the ranks by the independent categorical variable groups. The null hypothesis is that the rank means are equal. If you reject the null hypothesis, run a post hoc test to determine which groups differ.
+
+## Case Study 3 {-}
+
+```{r include=FALSE}
+kw <- list()
+
+ind_num$kw_dat <- read.spss("./input/kruskal-wallis-h-test.sav", to.data.frame = TRUE)
+ind_num$t_n <- with(ind_num$t_dat, by(engagement, gender, length))
+ind_num$t_mean <- with(ind_num$t_dat, by(engagement, gender, mean))
+ind_num$t_sd <- with(ind_num$t_dat, by(engagement, gender, sd))
+
+ind_num$mw_dat <- read.spss("./input/mann-whitney-test.sav", to.data.frame = TRUE)
+ind_num$mw_n <- with(ind_num$mw_dat, by(engagement, gender, length))
+ind_num$mw_median <- with(ind_num$mw_dat, by(engagement, gender, median))
+ind_num$mw_sd <- with(ind_num$mw_dat, by(engagement, gender, sd))
+```
+
+A company shows an advertisement to $n_M$ = `r ind_num$t_n["Male"]` males and $n_F$ = `r ind_num$t_n["Female"]` females, then measures their engagement with a survey. Do the groups' mean engagement scores differ?
+
+[Laerd](https://statistics.laerd.com/) has two data sets for this example. One meets the conditions for a *t*-test, and the other fails the normality test, forcing you to use the Mann-Whitney U test.
+
+## Chi-Square Test of Homogeneity {#chisqhomogeneity}
+
+The chi-square test of homogeneity tests whether frequency counts of the *R* levels of a categorical variable are distributed identically across the *C* populations. It tests whether observed joint frequency counts $O_{ij}$ differ from expected frequency counts $E_{ij}$ under the *independence model* (the model of independent explanatory variables, $\pi_{ij} = \pi_{i+} \pi_{+j}$. $H_0$ is $O_{ij} = E_{ij}$. The chi-square homogeneity test can be extended to cases where $I$ and/or $J$ is greater than 2.
+
+There are two possible test statistics for this test, Pearson $X^2 = \sum \frac{(O_{ij} - E_{ij})^2}{E_{ij}}$, and deviance $G^2 = 2 \sum_{ij} O_{ij} \log \left( \frac{O_{ij}}{E_{ij}} \right)$.
+
+**Side note: z-Test of Two Proportions**
+
+The z-test and chi-square test produce the same statistical significance result because they are algebraically identical.
 
 The *z*-test uses the difference in sample proportions $\hat{d} = p_1 - p_2$ as an estimate of the difference in population proportions $\delta = \pi_1 - \pi_2$ to evaluate an hypothesized difference in population proportions $d_0 = \pi_0 - \pi_1$ and/or construct a $(1−\alpha)\%$ confidence interval around $\hat{d}$ to estimate $\delta$ within a margin of error $\epsilon$.
 
@@ -667,13 +1298,8 @@ The *z*-test applies when the central limit theorem conditions hold so that the 
 
 If these conditions hold, the sampling distribution of $\delta$ is normally distributed around $\hat{d}$ with standard error $se_\hat{d} = \sqrt{\frac{p_1(1 - p_1)}{n_1} + \frac{p_2(1 − p_2)}{n_2}}$. The measured values $\hat{d}$ and $se_\hat{d}$ approximate the population values $\delta$ and $se_\delta$. Define a $(1 − \alpha)\%$ confidence interval as $\hat{d} \pm z_{\alpha / 2}se_\hat{d}$ or test the hypothesis of $d = d_0$ with test statistic $z = \frac{\hat{d} − d_0}{se_{d_0}}$ where $se_{d_0} = \sqrt{p^*(1 - p^*) \left(\frac{1}{n_1} + \frac{1}{n_2}\right)}$ and $p^*$ is the overall success probability.
 
-### Chi-Square Test of Homogeneity {-}
 
-The chi-square test of homogeneity tests whether frequency counts of the *R* levels of a categorical variable are distributed identically across the *C* populations. It tests whether observed joint frequency counts $O_{ij}$ differ from expected frequency counts $E_{ij}$ under the *independence model* (the model of independent explanatory variables, $\pi_{ij} = \pi_{i+} \pi_{+j}$. $H_0$ is $O_{ij} = E_{ij}$. The chi-square homogeneity test can be extended to cases where $I$ and/or $J$ is greater than 2.
-
-There are two possible test statistics for this test, Pearson $X^2 = \sum \frac{(O_{ij} - E_{ij})^2}{E_{ij}}$, and deviance $G^2 = 2 \sum_{ij} O_{ij} \log \left( \frac{O_{ij}}{E_{ij}} \right)$.
-
-### Fisher's Exact Test {-}
+## Fisher's Exact Test {#fisherexact}
 
 Fisher's exact test is an "exact test" in that the p-value is calculated exactly from the hypergeometric distribution rather than relying on the approximation that the test statistic distribution approaches $\chi^2$ as $n \rightarrow \infty$.
 
@@ -689,7 +1315,7 @@ $$f_X(k|N, K, n) = \frac{{{K}\choose{k}}{{N-K}\choose{n-k}}}{{N}\choose{n}}.$$
 
 The density is the exact hypergeometric probability of observing this particular arrangement of the data, assuming the given marginal totals, on the null hypothesis that the conditional probabilities are equal.
 
-### Case Study {-}
+## Case Study 4 {-}
 
 ```{r include=FALSE}
 ind_discrete <- list()
@@ -821,9 +1447,27 @@ The conditions hold for the chi-sq data set, but not for the Fisher data set.
 
 > `r nrow(ind_discrete$fisher_dat)` patients with a high cholesterol classification were randomly assigned to either a drug or lifestyle intervention, `r ind_discrete$fisher_dat %>% filter(intervention == "Drug") %>% nrow()` in each intervention. At the conclusion of the drug intervention, `r ind_discrete$fisher_dat %>% filter(intervention == "Drug" & risk_level == "Normal") %>% nrow()` patients (`r tabyl(ind_discrete$fisher_dat, intervention, risk_level) %>% adorn_percentages() %>% filter(intervention == "Drug") %>% pull(Normal) %>% scales::percent()`) had improved their cholesterol classification from high to normal compared to `r ind_discrete$fisher_dat %>% filter(intervention == "Lifestyle" & risk_level == "Normal") %>% nrow()` patients (`r tabyl(ind_discrete$fisher_dat, intervention, risk_level) %>% adorn_percentages() %>% filter(intervention == "Lifestyle") %>% pull(Normal) %>% scales::percent()`) in the lifestyle intervention. Due to small sample sizes, Fisher's exact test was run. There was a non-statistically significant difference in proportions of `r (tabyl(ind_discrete$fisher_dat, intervention, risk_level) %>% adorn_percentages() %>% filter(intervention == "Drug") %>% pull(Normal) - tabyl(ind_discrete$fisher_dat, intervention, risk_level) %>% adorn_percentages() %>% filter(intervention == "Lifestyle") %>% pull(Normal)) %>% scales::number(accuracy = .01)`, *p* = `r ind_discrete$fisher_test$p.value %>% scales::number(accuracy = .0001)`.
 
-## Paired Samples (Discrete)
-### McNemar's Test {-}
+## Pairwise Prop Test {#pairwiseproptest}
+```{r}
+library(tidyverse)
+M <- 3573
+F <- 4177
+dat <- tribble(
+  ~gender, ~src, ~Y, ~N,
+  "Male", "Indeed", 1699, M-1699,
+  "Male", "LinkedIn", 1755, M-1755,
+  "Male", "Google", 1578, M-1578,
+  "Female", "Indeed", 2554, F-2554,
+  "Female", "LinkedIn", 1914, F-1914,
+  "Female", "Google", 1694, F-1694
+)
+prop.test(x = dat$Y, n = dat$Y + dat$N)
+pairwise.prop.test(x = dat$Y, n = dat$Y + dat$N)
+```
+
+## McNemar's Test {#mcnemar}
 
 This test applies when you have paired samples.
 
 Wilcoxon Paired-Sample applies when the variable distributions are non-normally distributed and samples are paired.
+
