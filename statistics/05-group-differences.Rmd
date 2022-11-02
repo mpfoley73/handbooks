@@ -1259,23 +1259,52 @@ The Kruskal-Wallis H test ranks the dependent variable irrespective of its group
 
 ## Case Study 3 {-}
 
-```{r include=FALSE}
-kw <- list()
+Laerd Statistics's [ANOVA data set](https://statistics.laerd.com/premium/spss/owa/one-way-anova-in-spss-6.php) and [Kruskal-Wallis data set](https://statistics.laerd.com/premium/spss/kwht/kruskal-wallis-test-in-spss-6.php) are identical. 
 
-ind_num$kw_dat <- read.spss("./input/kruskal-wallis-h-test.sav", to.data.frame = TRUE)
-ind_num$t_n <- with(ind_num$t_dat, by(engagement, gender, length))
-ind_num$t_mean <- with(ind_num$t_dat, by(engagement, gender, mean))
-ind_num$t_sd <- with(ind_num$t_dat, by(engagement, gender, sd))
+```{r}
+cs3 <- list()
 
-ind_num$mw_dat <- read.spss("./input/mann-whitney-test.sav", to.data.frame = TRUE)
-ind_num$mw_n <- with(ind_num$mw_dat, by(engagement, gender, length))
-ind_num$mw_median <- with(ind_num$mw_dat, by(engagement, gender, median))
-ind_num$mw_sd <- with(ind_num$mw_dat, by(engagement, gender, sd))
+# cs3$kw_dat <- read.spss("./input/kruskal-wallis-h-test.sav", to.data.frame = TRUE)
+# cs3$anova_dat <- read.spss("./input/one-way-anova.sav", to.data.frame = TRUE)
+cs3$dat <- read.spss("./input/kruskal-wallis-h-test.sav", to.data.frame = TRUE)
 ```
 
-A company shows an advertisement to $n_M$ = `r ind_num$t_n["Male"]` males and $n_F$ = `r ind_num$t_n["Female"]` females, then measures their engagement with a survey. Do the groups' mean engagement scores differ?
+A study tests whether physically active individuals are more are better able to cope with workplace stress. The researcher categorizes $n$ = `r nrow(cs3$dat)` participants by physical activity level ("Sedentary", "Low", "Moderate", and "High") and measures their ability to cope with workplace-related stress (CWWS) as the average score of a series of Likert items on a questionnaire (higher scores indicating a greater CWWS ability). Is CWWS dependent on physical activity level?
 
-[Laerd](https://statistics.laerd.com/) has two data sets for this example. One meets the conditions for a *t*-test, and the other fails the normality test, forcing you to use the Mann-Whitney U test.
+```{r}
+cs3$dat %>% tbl_summary(by = group, label = list(coping_stress = "CWWR"))
+```
+
+**Assumptions**
+
+The one-way ANOVA test is valid under three assumptions. One, there are no significant outliers that influence the group mean. Two, the dependent variable is at least _approximately_ (ANOVA is robust to this assumption) normally distributed for each group if the sample size is small (for large sample sizes the Central Limit Theorem shows normality is unnecessary). Three, the dependent variable should have equal variances across groups. ANOVA is only sensitive to this condition if the group sample sizes are not similar.
+
+Kruskal-Wallis has no assumptions per se, but the interpretation of its results depend on the distribution of the dependent variable. If the distributions are similar, then the test results tell you whether the medians differ. Otherwise, the test results tell you whether the distributions differ.
+
+Use a boxplot to assess outliers and the data distribution. Values greater than 1.5 IQR from the box edges constitute an outlier. There are no outliers here. If there had been, and you cannot justify removing the data points on grounds of bad data, you can still use the ANOVA test if it leads to the same conclusion with and without the outlier(s). You can also try transforming the dependent variable. However, the best practice is to revert to the Kruskal-Wallis H test. There is no accepted practice for determining whether distributions are similar. The boxplot reveals a wider range of values for "Low" group, but this is close enough to conclude the distributions are similar. 
+
+```{r fig.height=3.5, fig.width=7.5}
+cs3$dat %>%
+  ggplot(aes(x = group, y = coping_stress)) +
+  geom_boxplot()
+```
+
+Use the Shapiro-Wilk test of normality if your sample size is small (<50) and the Normal Q-Q plot is ambiguous. The Normal Q-Q plot below looks good for all groups except perhaps the "Low" group. The Shapiro-Wilk test confirms this, with all *p*-values over .05.
+
+```{r}
+cs3$dat %>% 
+  ggplot(aes(sample = coping_stress)) +
+  stat_qq() +
+  stat_qq_line() +
+  facet_wrap(facets = vars(group)) +
+  labs(title = "Q-Q Plot", x = "Theoretical", y = "Sample")
+```
+
+```{r}
+with(cs3$dat, by(coping_stress, group, shapiro.test))
+```
+
+
 
 ## Chi-Square Test of Homogeneity {#chisqhomogeneity}
 
