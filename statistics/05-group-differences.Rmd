@@ -1249,15 +1249,21 @@ anova(lm_oxy)
 
 ## Kruskal–Wallis Test {#kw}
 
-The **Kruskal-Wallis H test**^[The Kruskal-Wallis H test is also called the one-way ANOVA on ranks] measures the difference of a continuous or ordinal dependent variable between two or more categorical, independent groups. It is a rank-based nonparametric alternative to the one-way ANOVA test. Use Kruskal-Wallis if the dependent variable fails the ANOVA normality condition, or if the dependent variable is ordinal.
+The **Kruskal-Wallis H test**^[The Kruskal-Wallis H test is also called the one-way ANOVA on ranks] measures the difference of a continuous or ordinal dependent variable between groups of a categorical independent variable. It is a rank-based nonparametric alternative to the one-way ANOVA test. Use Kruskal-Wallis if the dependent variable fails ANOVA's normality or homogeneity conditions, or if it is ordinal.
 
 **Assumptions**
 
-Kruskal-Wallis has no assumptions per se, but the interpretation of its results depend on the distribution of the dependent variable. If the dependent variable distribution has a similar shape across the groups of the independent categorical variable, then Kruskal-Wallis is a test of differences in their medians. Otherwise, Kruskal-Wallis is a test of differences in their distributions.
+Kruskal-Wallis has no assumptions per se, but the test interpretation depends on the distribution of the dependent variable. If its distribution has a similar shape across the groups of the categorical independent variable, then Kruskal-Wallis is a test of differences in their medians. Otherwise, Kruskal-Wallis is a test of differences in their distributions.
 
 **How it Works**
 
-The Kruskal-Wallis H test ranks the dependent variable irrespective of its group. It averages the ranks by the independent categorical variable groups. The test statistic approximately follows a $\chi^2$ distribution with _k_ – 1 degrees of freedom, where _k_ is the number of groups of the independent variable. The null hypothesis is that the rank means are equal. If you reject the null hypothesis, run a post hoc test to determine which groups differ.
+The Kruskal-Wallis H test ranks the dependent variable irrespective of its group. The test statistic is a function of the averaged square of the rank sum per group:
+
+$$
+H = \left[ \frac{12}{n(n+1)} \sum_{j} \frac{T_j^2}{n_j} \right] - 3(n + 1)
+$$
+
+where $T_j$ is the sum of the ranks of group _j_. The test statistic approximately follows a $\chi^2$ distribution with _k_ – 1 degrees of freedom, where _k_ is the number of groups of the independent variable. The null hypothesis is that the rank means are equal. If you reject the null hypothesis, run a post hoc test to determine which groups differ.
 
 ## Case Study 3 {-}
 
