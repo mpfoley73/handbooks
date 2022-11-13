@@ -713,7 +713,7 @@ where $T_j$ is the sum of the ranks of group _j_. The test statistic approximate
 
 Kruskal-Wallis has no assumptions per se, but the test interpretation depends on the distribution of the dependent variable. If its distribution has a similar shape across the groups of the categorical independent variable, then Kruskal-Wallis is a test of differences in their medians. Otherwise, Kruskal-Wallis is a test of differences in their distributions.
 
-## Case Study 3 {#groupdiffscs3}
+## Case Study 3 {.unnumbered #groupdiffscs3}
 
 This case study uses the [data set](https://statistics.laerd.com/premium/spss/owa/one-way-anova-in-spss-6.php) from Laerd Statistics for ANOVA.
 

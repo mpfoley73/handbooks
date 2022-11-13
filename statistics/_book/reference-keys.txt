@@ -36,7 +36,6 @@ pairedttest
 wilcoxonsignedrank
 onewayanova
 kw
-groupdiffscs3
 assumptions
 anova
 kruskal-wallis-test
