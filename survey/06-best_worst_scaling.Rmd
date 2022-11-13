@@ -1,0 +1,134 @@
+# Best-Worst Scaling
+
+```{r include=FALSE}
+library(tidyverse)
+library(crossdes)
+library(support.BWS)
+library(dfidx)
+library(mlogit)
+```
+
+
+Best–worst scaling (BWS) is a method for measuring preferences among pre-defined items.^[Notes are from http://lab.agr.hokudai.ac.jp/nmvr/03-bws1.html.] BWS presents subsets of the items for evaluation, asking the respondent to identify the best and worst (or most important and least important) from the subset. BWS studies usually use a balanced incomplete block design (BIBD) to construct choice sets.
+
+BIBD is a category of designs where `trt` treatments (items) are presented to the survey respondent in `b` blocks (survey questions) of `k` treatments (items). For example, seven items might be presented in seven survey questions with four of the items show in each question.
+
+```{r}
+items <- c("origin", "variety", "price", "taste", "safety", "washfree", "milling")
+
+set.seed(8041)
+des <- find.BIB(
+  trt = length(items),
+  b = length(items),
+  k = 4
+)
+```
+
+The documentation for `isGYD()` explains design balance. A balanced block design has three qualities: i) Each treatment appears equally often. ii) Each treatment appears in each block either *n* or *n+1* times (usually 0 or 1 times). iii) The concurrences of *i* and *j* are the same for all pairs of treatments (*i*, *j*). A design balanced with respect to both rows and columns is called a generalized Youden design (GYD). A design with less columns (rows) than treatments is *incomplete* with respect to rows (columns). That's what you will have in a BWS. A design in which each treatment occurs once per row and column is a *latin square*. If each treatment occurs the same number of times per row and column, it is a *generalized latin square*. 
+
+```{r}
+isGYD(des)
+```
+
+The example design is a BIBD. Other example configurations.
+
+```{r eval=FALSE}
+find.BIB(6, 10, 3) %>% isGYD()   # 6 items shown in 10 blocks of 3
+find.BIB(7, 7, 3) %>% isGYD()    # 7 items shown in 7 blocks of 3
+find.BIB(9, 12, 6) %>% isGYD()   # 9 items shown in 12 blocks of 6
+find.BIB(11, 11, 5) %>% isGYD()  # 11 items shown in 11 blocks of 5
+find.BIB(13, 13, 4) %>% isGYD()  # 13 items shown in 13 blocks of 4
+find.BIB(16, 16, 6) %>% isGYD()  # 16 items shown in 16 blocks of 6
+```
+
+The resulting questionaire might look like this.
+
+```{r}
+support.BWS::bws.questionnaire(des, design.type = 2, item.names = items)
+```
+
+Consider the following data set from a BIBD with 7 items shown in 7 blocks of 3. `b1` is the item selected as best in question 1, `w1` is the item selected as worst in question 1, etc. `age`, `hp`, and `chem` are respondent covariates.
+
+```{r}
+data("ricebws1", package = "support.BWS")
+glimpse(ricebws1)
+```
+
+To analyze the data, each response is converted into one row per possible pair. There are `k(k-1)` pairs, or in this case 4x3=12 pairs. The code chunk below lengthens the 90 respondents to 90 x 7 questions x 12 possible pairs per question = 7560 rows.
+
+```{r}
+ricebws1_bws <- bws.dataset(
+  data = ricebws1, # data frame containing response dataset
+  response.type = 1, # format of response variables: 1 = row number format
+  choice.sets = des, # choice sets
+  design.type = 2, # 2 if a BIBD is assigned to choice.sets
+  item.names = items, # the names of items
+  id = "id", # the name of respondent id variable
+  response = colnames(ricebws1)[2:15], # the names of response variables
+  model = "maxdiff") # the type of dataset created by the function is the maxdiff model
+
+# 90 respondents x 7 questions x 12 possible pairs per question
+dim(ricebws1_bws)
+```
+
+Question 1 presented items [`r paste(items[des[1, ]], collapse = ", ")`]. Respondent `id` = 1 selected choice 4 (`items[des[1, 4]]` = `r items[des[1, 4]]`) for the Best and choice 1 (`items[des[1, 1]]` = `r items[des[1, 1]]`) for Worst. 
+
+```{r}
+ricebws1[1, ]
+```
+
+The converted data set is more transparent. Column `RES = TRUE` in row 10 indicates the pair the respondent selected. Best was item 7 (`items[7]` = `r items[7]`) and the Worst was item 2 (`items[2]` = `r items[2]`). The +1 and -1 indicators for `milling` and `variety` are used for modeling.
+
+```{r}
+ricebws1_bws %>% filter(id == 1, Q == 1)
+```
+
+There are two approaches to analysis: counting or modeling. `bws.count()` calculates counts for (b)est, (w)orst, best-minus-worst (bw), and standardized bw (sbw = bw / number of levels) for each item.
+
+```{r}
+ricewbs1_count <- bws.count(ricebws1_bws, cl = 2)
+dim(ricewbs1_count)
+```
+
+You can see below that respondent 1 selected item 7 (`r items[7]`) Best once, item 1 (`r items[1]`) Best three times and item 5 (`r items[5]`) Best three times. Respondent 1 selected items 2 (`r items[2]`), 3 (`r items[3]`), 4 (`r items[4]`), and 5 (`r items[5]`) Worst once and item 6 (`r items[6]`) worst three times.
+
+```{r}
+ricebws1_bws %>% 
+  filter(id == 1, RES == TRUE) %>%
+  gtsummary::tbl_cross(BEST, WORST)
+```
+
+```{r}
+ricewbs1_count %>% filter(id == 1) %>% glimpse()
+```
+
+The `plot()` function highlights the relationship between the mean and standard deviations. For example, price, taste, and safety are similarly important, but price has a higher standard deviation, meaning its importance differs more.
+
+```{r}
+plot(ricewbs1_count, score = "bw")
+```
+
+```{r}
+ricewbs1_count %>%
+  select(id, starts_with("sbw")) %>%
+  pivot_longer(cols = -id) %>%
+  group_by(name) %>%
+  summarize(.groups = "drop", M = mean(value)) %>%
+  arrange(M) %>%
+  ggplot(aes(y = fct_inorder(name), x = M)) +
+  geom_col()
+```
+
+The modeling approach fits a conditional logit model. A simple model uses the dummy vars, excluding one (washfree) to avoid singularity. Note that the last term “- 1” means that the model has no alternative-specific constants.
+
+```{r}
+fmla <- RES ~ origin + variety + price + taste + safety + milling - 1
+ricewbs1_dfidx <- dfidx(data = ricebws1_bws, 
+                       idx = list(c("STR", "id"), "PAIR"), 
+                       choice = "RES")
+
+ricewbs1_fit <- mlogit(formula = fmla, data = ricewbs1_dfidx)
+summary(ricewbs1_fit)
+
+```
+
