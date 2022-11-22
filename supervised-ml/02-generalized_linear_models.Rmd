@@ -8,29 +8,37 @@ library(caret)  # for RMSE()
 library(foreign)
 library(readr)
 library(gtsummary)
+library(nnet)
 library(VGAM)
 library(ordinal)
+library(scales)
+library(glue)
+
+theme_set(
+  jtools::theme_apa() +
+    theme(
+      plot.caption = element_text(hjust = 0)
+    )
+)
 ```
 
-These notes are primarily from PSU's [Analysis of Discrete Data](https://online.stat.psu.edu/stat504) which uses Alan Agresti's **Categorical Data Analysis** [@Agresti2013]. I also reviewed PSU's [Regression Methods](https://newonlinecourses.science.psu.edu/stat501/lesson/15), DataCamp's [Generalized Linear Models in R](https://www.datacamp.com/courses/generalized-linear-models-in-r), DataCamp's [Multiple and Logistic Regression](https://www.datacamp.com/courses/multiple-and-logistic-regression), and **Interpretable machine learning** [@Molner2020].
+The linear regression model, $E(y|X) = X \beta$, structured as $y_i = X_i \beta + \epsilon_i$ where $X_i \beta = \mu_i$, assumes the response is a linear function of the predictors and the residuals are independent random variables normally distributed with zero mean and constant variance, $\epsilon \sim N \left(0, \sigma^2 \right)$. This implies that given a set of predictors, the response is normally distributed about its expected value, $y_i \sim N \left(\mu_i, \sigma^2 \right)$. However, there are many situations where this normality assumption does not hold. Generalized linear models (GLMs) are a generalization of the linear regression model that addresses non-normal response distributions.^[These notes are primarily from PSU's [Analysis of Discrete Data](https://online.stat.psu.edu/stat504) which uses Alan Agresti's **Categorical Data Analysis** [@Agresti2013]. I also reviewed PSU's [Regression Methods](https://newonlinecourses.science.psu.edu/stat501/lesson/15), DataCamp's [Generalized Linear Models in R](https://www.datacamp.com/courses/generalized-linear-models-in-r), DataCamp's [Multiple and Logistic Regression](https://www.datacamp.com/courses/multiple-and-logistic-regression), and **Interpretable machine learning** [@Molner2020].]
 
-The linear regression model, $E(y|X) = X \beta$, structured as $y_i = X_i \beta + \epsilon_i$ where $X_i \beta = \mu_i$, assumes the response is a linear function of the predictors and the residuals are independent random variables normally distributed with zero mean and constant variance, $\epsilon \sim N \left(0, \sigma^2 \right)$. This implies that given a set of predictors, the response is normally distributed about its expected value, $y_i \sim N \left(\mu_i, \sigma^2 \right)$. However, there are many situations where this normality assumption does not hold. Generalized linear models (GLMs) are a generalization of the linear regression model that addresses non-normal response distributions.
+The response will not have a normal distribution if the underlying data-generating process is binomial (Section \@ref(binomiallogistic)) or multinomial (Section \@ref(multinomiallogistic)), ordinal (Section \@ref(ordinallogistic)), Poisson (counts, Section \@ref(poissonregression)), or exponential (time-to-event). In these situations the linear regression model can predict probabilities and proportions outside [0, 1], or negative counts or times. GLMs solve this problem by modeling a *function* of the expected value of $y$, $f(E(y|X)) = X \beta$. There are three components to a GLM: a *random component* specified by the response variable's probability distribution (normal, binomial, etc.); a *systematic component* in the form $X\beta$; and a *link function*, $\eta$, that specifies the link between the random and systematic components and converts the response to a range of $[-\infty, +\infty]$.  
 
-The response will not have a normal distribution if the underlying data-generating process is binomial or multinomial (proportions), Poisson (counts), or exponential (time-to-event). In these situations the linear regression model can predict proportions outside [0, 1], or negative counts and times. GLMs solve this problem by modeling a *function* of the expected value of $y$, $f(E(y|X)) = X \beta$. There are three components to a GLM: the *random component* is the probability distribution of the response variable (normal, binomial, Poisson, [etc](https://en.wikipedia.org/wiki/Exponential_family#Table_of_distributions).); the *systematic component* is the explanatory variables $X\beta$; and the *link function* $\eta$ specifies the link between random and systematic components, converting the response range to $[-\infty, +\infty]$.  
+Linear regression is a special case of GLM where the link function is the identity function, $f(E(y|X)) = E(y|X)$. For binary logistic regression, the link function is the logit,
 
-Linear regression is a special case of GLM where link function is the identity function, $f(E(y|X)) = E(y|X)$. For logistic regression, where the data generating process is binomial, the link function is 
+$$f(E(y|X)) = \log \left( \frac{E(y|X)}{1 - E(y|X)} \right) = \log \left( \frac{\pi}{1 - \pi} \right) = \mathrm{logit}(\pi)$$
 
-$$f(E(y|X)) = \ln \left( \frac{E(y|X)}{1 - E(y|X)} \right) = \ln \left( \frac{\pi}{1 - \pi} \right) = \mathrm{logit}(\pi)$$
+where $\pi$ is the response probability.^[The related probit regression link function is $f(E(Y|X)) = \Phi^{-1}(E(Y|X)) = \Phi^{-1}(\pi)$. The difference between the logistic and probit link function is theoretical, and [the practical significance is slight](https://www.theanalysisfactor.com/the-difference-between-logistic-and-probit-regression/). You can safely ignore probit.] For multinomial logistic regression, the link function is the logit again, but with respect to the baseline level, and there is set of logits (one for each non-baseline level),
 
-where $\pi$ is the event probability.^[The related probit regression link function is $f(E(Y|X)) = \Phi^{-1}(E(Y|X)) = \Phi^{-1}(\pi)$. The difference between the logistic and probit link function is theoretical, and [the practical significance is slight](https://www.theanalysisfactor.com/the-difference-between-logistic-and-probit-regression/). You can safely ignore probit.]  
+$$f(E(y|X)) = \log \left( \frac{E(y_j|X)}{E(y_{j^*}|X)} \right) = \log \left( \frac{\pi_j}{\pi_{j^*}} \right) = \mathrm{logit}(\pi_j)$$
 
-For Poisson regression, the link function is
+Where $j$ is a level in the dependent variable and $j^*$ is the baseline level. For Poisson regression, the link function is
 
 $$f(E(y|X)) = \ln (E(y|X)) = \ln(\lambda)$$
 
-where $\lambda$ is the expected event rate.  
-
-For exponential regression, the link function is 
+where $\lambda$ is the expected event rate. For exponential regression, the link function is 
 
 $$f(E(y|X) = -E(y|X) = -\lambda$$
 
@@ -38,25 +46,21 @@ where $\lambda$ is the expected time to event.
 
 GLM uses maximum likelihood estimation (MLE) rather than ordinary least squares (OLS) to estimate the parameters, and thus relies on large-sample approximations. 
 
-In R, specify a GLM just like an linear model, but with the `glm()` function, specifying the distribution with the `family` parameter.
+Fit a GLM just like an linear model, but with the `glm()` function, specifying the distribution with the `family = c("gaussian", "binomial", "poisson")` parameter. Fit a mulinomial logistic regression model with `nnet::multinom()`.
 
-* `family = "gaussian"`: linear regression
-* `family = "binomial"`: logistic regression
-* `family = binomial(link = "probit")`: probit regression
-* `family = "poisson"`: Poisson regression
+## Binomial Logistic Regression {#binomiallogistic}
 
+Logistic regression estimates the probability that a categorical dependent variable is a particular level. The dependent variable levels can be binomial, multinomial, or ordinal. The *binary* logistic regression model is
 
-## Logistic Regression
+$$y_i = \mathrm{logit}(\pi_i) = \log \left( \frac{\pi_i}{1 - \pi_i} \right) = X_i \beta$$
 
-Logistic regression estimates the probability of a particular level of a categorical response variable given a set of predictors. The response levels can be binary, nominal, or ordinal.
+where $\pi_i$ is the response $i$'s binary level probability. The model predicts the *log odds* of the level. Why do this? The range of outcomes need to be between 0 and 1, and a sigmoid function, $f(y) = 1 / \left(1 + e^y \right)$, does that. If the _log odds_ of the level equals $X_i\beta$, then the _odds_ of the level equals $e^{X\beta}$. You can solve for $\pi_i$ to get $\pi = \mathrm{odds} / (\mathrm{odds} + 1)$. Substituting, 
 
-The *binary* logistic regression model is
+$$\pi_i = \frac{\exp(y_i)}{1 + \exp(y_i)} = \frac{e^{X_i\beta}}{1 + e^{X_i\beta}}$$
 
-$$y = \mathrm{logit}(\pi) = \ln \left( \frac{\pi}{1 - \pi} \right) = X \beta$$
+which you can simplify to $\pi_i = 1 / (1 + e^{-X_i\beta})$, a sigmoid function. The upshot is $X\beta$ is the functional relationship between the independent variables and _a function of the response_, not the response itself.
 
-where $\pi$ is the response level's probability. The model predicts the *log odds* of the response level. Why do this? The range of outcomes need to be between 0 and 1. A sigmoid function, $f(y) = 1 / \left(1 + e^y \right)$, does that. So if the _log odds_ of the response level equals $X\beta$, then the _odds_ of the response level equals $e^{X\beta}$. You can solve the odds formula for $\pi$ to get $\pi = \mathrm{odds} / (\mathrm{odds} + 1)$. Substituting, $\pi = e^{X\beta} / (e^{X\beta} + 1)$ which you can simplify to $\pi = 1 / (1 + e^{-X\beta})$, a sigmoid function. The upshot is $X\beta$ is the functional relationship between the independent variables and _a function of the response_, not the response itself.
-
-The model parameters are estimated either by _iteratively reweighted least squares optimization_ or by _maximum likelihood estimation_ (MLE). Here is how MLE works^[Notes from [Machine Learning Mastery](https://machinelearningmastery.com/logistic-regression-with-maximum-likelihood-estimation/)]. MLE maximizes the probability produced by a set of parameters $\beta$ given a data set and probability distribution. In logistic regression the probability distribution is the binomial and each observation is the outcome of a single Bernoulli trial. 
+The model parameters are estimated either by _iteratively reweighted least squares optimization_ or by _maximum likelihood estimation_ (MLE). MLE maximizes the probability produced by a set of parameters $\beta$ given a data set and probability distribution.^[Notes from [Machine Learning Mastery](https://machinelearningmastery.com/logistic-regression-with-maximum-likelihood-estimation/)]. In logistic regression the probability distribution is the binomial and each observation is the outcome of a single Bernoulli trial. 
 
 $$L(\beta; y, X) = \prod_{i=1}^n \pi_i^{y_i}(1 - \pi_i)^{(1-y_i)} = \prod_{i=1}^n\frac{\exp(y_i X_i \beta)}{1 + \exp(X_i \beta)}.$$
 
@@ -67,7 +71,123 @@ l(\beta; y, X) &= \sum_{i = 1}^n \left(y_i \log(\pi_i) + (1 - y_i) \log(1 - \pi_
                &= \sum_{i = 1}^n \left(y_i X_i \beta - \log(1 + e^{X_i\beta}) \right)
 \end{align}$$
 
-Sometimes you will see the _cost function_ optimized. This is the negative of of the log likelihood function.
+Sometimes you will see the _cost function_ optimized. The cost function is the negative of of the log likelihood function.
+
+**Assumptions**
+
+The binomial logistic regression model requires a dichotomous dependent variable and independent of observations. There should be at least 15 observations per independent variable (some sources recommend at least 50). There are also three conditions related to the data distribution: i) the logit transformation is linearly related to any continuous independent variables, ii) there is no multicollinearity, and iii) there are no significant outliers, leverage points, or influential points.
+
+### Case Study 1 {.unnumbered #cs1}
+
+This case study uses the [data set](https://statistics.laerd.com/premium/spss/spss-files/logistic-regression.sav) from Laerd Statistics for binomial logistic regression.
+
+```{r}
+cs1 <- list()
+
+cs1$dat <- read.spss("./input/logistic-regression.sav", to.data.frame = TRUE)
+```
+
+An analysis investigates the relationship between the incidence of heart disease (Y|N) and age, weight, gender, and maximal aerobic capacity (maxVO2) using data from $n$ = `r nrow(cs1$dat)` participants.
+
+```{r}
+cs1$dat %>%
+  tbl_summary(
+    by = heart_disease,
+    include = -caseno,
+    percent = "row",
+    statistic = list(all_continuous() ~ "{mean}, {sd}")
+  )
+```
+
+<br>
+
+#### Assumptions
+
+Four assumptions relate to the study design: (1) the dependent variable is dichotomous; (2) the observations are independent; (3) the categories of all nominal variables are mutually exclusive and exhaustive; and (4) there is at least 15 cases per independent variable. These assumptions are all valid. Three more assumptions related to the data distribution: 
+
+- linear relationship between the logit transformation and the continuous independent variables. Test with a plot and with Box-Tidwell.
+
+- No multicollinearity between or among independent varaibles. Test with correlation coefficients and tolerance/VIF values.
+
+- No significant outliers, leverage points, or influential points. 
+
+Test the linearity assumption first. There are two ways to do this (do both). First, fit your model, then plot the fitted values against the continuous predictors. This is like plotting the the dependent variable against the continuous variable in the OLS setting, but here the relationship in question is the _logit_ transformation of the response variable. That's what fitting the model gets you. This plot looks pretty good.
+
+```{r}
+cs1$fmla <- formula(heart_disease ~ age + weight + VO2max + gender)
+cs1$dat %>%
+  glm(cs1$fmla, data = ., family = "binomial") %>%
+  augment() %>%
+  pivot_longer(c(age, weight, VO2max)) %>%
+  ggplot(aes(x = value, y = .fitted)) +
+  geom_point() +
+  facet_wrap(facets = vars(name), scales = "free_x") +
+  geom_smooth(method = "lm", formula = "y~x") +
+  labs(
+    title = "Test of the linearity: predictive valus vs continuous predictors",
+    subtitle = glue("Model: {as.expression(cs1$fmla)}."),
+    x = NULL
+  )
+```
+
+The second way to test for linearity is the Box-Tidwell approach. Add transformations of the continuous independent variables to the model then test their significance level in the fit. The transformation is the product of the log of the variable and itself. E.g. `age_tx = log(age) * age`, etc.
+
+```{r}
+cs1$boxtidwell <- cs1$dat %>%
+  mutate(
+    age_tx = log(age) * age,
+    weight_tx = log(weight) * weight,
+    VO2max_tx = log(VO2max) * VO2max
+  ) %>%
+  glm(heart_disease ~ age + weight + VO2max + gender + age_tx + weight_tx + VO2max_tx, 
+      data = ., family = "binomial")
+
+summary(cs1$boxtidwell)
+```
+
+Focus on the three transformed variables. `age_tx` is the only one with a *p*-value <.05, but it is customary to apply a Bonferroni adjustment when testing for linearity. There are eight predictors in the model, so the adjusted *p*-value is the reported *p*-value multiplied by eight. The *p*-value for `age_tx` is `r comma(summary(cs1$boxtidwell)$coefficients["age_tx","Pr(>|z|)"] * 8, .001)`. So you can say that, the linearity of the continuous variables with respect to the logit of the dependent variable was assessed via the Box-Tidwell (1962) procedure. A Bonferroni correction was applied using all eight terms in the model resulting in statistical significance being accepted when p < .00625 (Tabachnick & Fidell, 2014). Based on this assessment, all continuous independent variables were found to be linearly related to the logit of the dependent variable.
+
+Had this assumption failed, you could try transforming the variable using the Box-Tidwell power transformation. Raise the variable to $\lambda = 1 + b / \gamma$ where $b$ is the estimated coefficient of the model without the interaction terms, and $\gamma$ is the estimated coefficient of the interaction term of the model with interactions. In the case of `age`, $\gamma$ is `r comma(coef(cs1$boxtidwell)["age_tx"], .001)`. $b$, estimated in the diagnostic plot exercise, is `r comma(coef(cs1$fit)["age"], .001)`. That means $\lambda$ = 1 + `r comma(coef(cs1$fit)["age"], .001)` / `r comma(coef(cs1$boxtidwell)["age_tx"], .001)` = `r comma(1 + coef(cs1$fit)["age"] / coef(cs1$boxtidwell)["age_tx"], .001)`. This is approximately 1, so no transformation. It seems customary to apply general transformations like .5 (square root), 1/3 (cube root), ln, and reciprocal.
+
+Now check for outliers using case diagnostics.
+
+```{r}
+augment(cs1$fit, type.predict = "response") %>%
+  filter(abs(.std.resid) >= 2)
+```
+
+These two fitted values missed the mark by fairly wide margin, but only one had a standardized residual substantially more than 2. You might examine the observation for validity. Otherwise, proceed and explain that There was one standardized residual with a value of `r augment(cs1$fit, type.predict = "response") %>% filter(abs(.std.resid) >= 2.1) %>% pull(.std.resid) %>% comma(.01)` standard deviations, which was kept in the analysis.
+
+https://towardsdatascience.com/assumptions-of-logistic-regression-clearly-explained-44d85a22b290
+
+#### Evaluation
+
+There are several ways to evaluate the model. One is the pseudo-R-squared measures. A second is accuracy and ROC.
+
+
+
+```{r}
+DescTools::PseudoR2(cs2$fit, which = c("CoxSnell", "Nagelkerke", "McFadden"))
+
+glance(cs1$fit)
+```
+
+
+#### Reporting
+
+A binomial logistic regression was performed to ascertain the effects of age, weight, gender and VO2max on the likelihood that participants have heart disease. Linearity of the continuous variables with respect to the logit of the dependent variable was assessed via the Box-Tidwell (1962) procedure. A Bonferroni correction was applied using all eight terms in the model resulting in statistical significance being accepted when *p* < `r comma(.05/8, .00001)` (Tabachnick & Fidell, 2014). Based on this assessment, all continuous independent variables were found to be linearly related to the logit of the dependent variable. There was one standardized residual with a value of `r augment(cs1$fit, type.predict = "response") %>% filter(abs(.std.resid) >= 2.1) %>% pull(.std.resid) %>% comma(.01)` standard deviations, which was kept in the analysis. The logistic regression model was statistically significant, χ2(4) = 27.40, p < .001. The model explained 33.0% (Nagelkerke R2) of the variance in heart disease and correctly classified 71.0% of cases. Sensitivity was 45.7%, specificity was 84.6%, positive predictive value was 61.5% and negative predictive value was 74.3%. Of the five predictor variables only three were statistically significant: age, gender and VO2max (as shown in Table 1). Males had 7.02 times higher odds to exhibit heart disease than females. Increasing age was associated with an increased likelihood of exhibiting heart disease, but increasing VO2max was associated with a reduction in the likelihood of exhibiting heart disease.
+
+```{r}
+gtsummary::tbl_regression(
+  cs1$fit,
+  exponentiate = TRUE
+)
+```
+
+
+<br>
+
+CWWS score increased from the sedentary (`r inline_text(cs3$gt, variable = coping_stress, level = "Mean, SD", column = "Sedentary", pattern = "*M* = {mean}, _SD_ = {sd}")`), to low (`r inline_text(cs3$gt, variable = coping_stress, level = "Mean, SD", column = "Low", pattern = "*M* = {mean}, _SD_ = {sd}")`), to moderate (`r inline_text(cs3$gt, variable = coping_stress, level = "Mean, SD", column = "Moderate", pattern = "*M* = {mean}, _SD_ = {sd}")`) to high (`r inline_text(cs3$gt, variable = coping_stress, level = "Mean, SD", column = "High", pattern = "*M* = {mean}, _SD_ = {sd}")`) physical activity groups, in that order. 
 
 ### Case Study
 
@@ -296,86 +416,184 @@ augment(m, type.predict = "response") %>%
 ```
 
 
-## Multinomial Logistic Regression
+## Multinomial Logistic Regression {#multinomiallogistic}
 
-The following notes rely on the [PSU STAT 504 course notes](https://online.stat.psu.edu/stat504/node/171/.
+The _multinomial_ logistic regression model is $J - 1$ baseline logits,
 
-Multinomial logistic regression models the odds the multinomial response variable $y \sim Mult(n, \pi)$ is in level $j$ relative to baseline category $j^*$ for all pairs of categories as a function of $k$ explanatory variables, $X = (X_1, X_2, ... X_k)$. 
+$$y_i = \log \left( \frac{\pi_{ij}}{\pi_{ij^*}} \right) = X_i \beta_j, \hspace{5mm} j \ne j^*$$
 
-$$\log \left( \frac{\pi_{ij}}{\pi_{ij^*}} \right) = x_i^T \beta_j, \hspace{5mm} j \ne j^2$$
+where $j$ is a level of the multinomial response variable. Whereas the binomial logistic regression equation models the *log odds* of the response level, the multinomial logistic regression models the *log relative risk*, the probability relative to the baseline $j^*$ level (as opposed to $\pi_{ij} / (1 - \pi_{ij}$).^[These notes rely on the course notes from [PSU STAT 504, Analysis of Discrete Data](https://online.stat.psu.edu/stat504/) and [UCLA](https://stats.oarc.ucla.edu/r/dae/multinomial-logistic-regression/).]
 
-Interpet the $k^{th}$ element of $\beta_j$ as the increase in log-odds of falling a response in category $j$ relative to category $j^*$ resulting from a one-unit increase in the $k^{th}$ predictor term, holding the other terms constant.
+As with binary logistic regression, interpret the $k^{th}$ element of $\beta_j$ as the increase in log odds (relative risk) of $Y_i = j$ relative to $Y_i = j^*$ given a one-unit increase in the $k^{th}$ element of $X$, holding the other terms constant.
 
-Multinomial model is a type of GLM.
+The individual probabilities, $\pi_{ij}$, are
 
-Here is an example using multinomial logistic regression.  A researcher classified the stomach contents of $n = 219$ alligators according to $r = 5$ categories (*fish, Inv., Rept, Bird, Other*) as a function of covariates *Lake*, *Sex*, and *Size*..
+$$\pi_{ij} = \frac{\exp(y_{ij})}{1 + \sum_{j \ne j^*} \exp(y_{ij})} = \frac{e^{X_i\beta_j}}{1 + \sum_{j \ne j^*} e^{X_i\beta_j}}$$
 
-```{r}
-gator_dat <- tribble(
-  ~profile, ~Gender, ~Size, ~Lake, ~Fish, ~Invertebrate, ~Reptile, ~Bird, ~Other,
-  "1", "f", "<2.3", "george",  3, 9, 1, 0, 1,
-  "2", "m", "<2.3", "george", 13, 10, 0, 2, 2,
-  "3", "f", ">2.3", "george", 8, 1, 0, 0, 1,
-  "4", "m", ">2.3", "george", 9, 0, 0, 1, 2,
-  "5", "f", "<2.3", "hancock", 16, 3, 2, 2, 3,
-  "6", "m", "<2.3", "hancock", 7, 1, 0, 0, 5,
-  "7", "f", ">2.3", "hancock", 3, 0, 1, 2, 3,
-  "8", "m", ">2.3", "hancock", 4, 0, 0, 1, 2,
-  "9", "f", "<2.3", "oklawaha", 3, 9, 1, 0, 2,
-  "10", "m", "<2.3", "oklawaha", 2, 2, 0, 0, 1,
-  "11", "f", ">2.3", "oklawaha", 0, 1, 0, 1, 0,
-  "12", "m", ">2.3", "oklawaha", 13, 7, 6, 0, 0,
-  "13", "f", "<2.3", "trafford", 2, 4, 1, 1, 4,
-  "14", "m", "<2.3", "trafford", 3, 7, 1, 0, 1,
-  "15", "f", ">2.3", "trafford", 0, 1, 0, 0, 0,
-  "16", "m", ">2.3", "trafford", 8, 6, 6, 3, 5
+and for the baseline category, 
+
+$$\pi_{ij^*} = \frac{1}{1 + \sum_{j \ne j^*} \exp(y_{ij})} = \frac{1}{1 + \sum_{j \ne j^*} e^{X_i\beta_j}}$$
+
+**Assumptions**
+
+Multinomial logistic regression applies when the dependent variable is categorical. It presumes a linear relationship between the log odds of the dependent variable and $X$ with residuals $\epsilon$ that are independent. It also assumes there is no severe multicollinearity in the predictors, and there is independence of irrelevant alternatives (IIA). IIA means the relative likelihood of being in one category compared to the base category would not change if you added other categories. 
+
+### Case Study
+
+This case study uses data from [this tutorial at UCLA](https://stats.oarc.ucla.edu/r/dae/multinomial-logistic-regression/).
+
+```{r eval=FALSE}
+download.file(
+  "https://stats.idre.ucla.edu/stat/data/hsbdemo.dta",
+  "./input/hsbdemo.dta",
+  mode = "wb"
 )
-gator_dat <- gator_dat %>%
-  mutate(
-    Gender = as_factor(Gender),
-    Lake = fct_relevel(Lake, "hancock"),
-    Size = as_factor(Size)
-  )
 ```
-
-There are 4 equations to estimate:
-
-$$\log \left( \frac{\pi_j} {\pi_{j^*}} \right) = \beta X$$
-
-where $\pi_{j^*}$ is the probability of fish, the baseline category.  
-
-
-Run a multivariate logistic regression model with `VGAM::vglm()`.
-
-```{r message=FALSE}
-library(VGAM)
-```
-
-`vglm()` fits 4 logit models.
 
 ```{r}
-gator_vglm <- vglm(
-  cbind(Bird,Invertebrate,Reptile,Other,Fish) ~ Lake + Size + Gender, 
-  data = gator_dat, 
-  family = multinomial
+cs2 <- list()
+cs2$dat <- foreign::read.dta("./input/hsbdemo.dta") %>%
+  mutate(prog = fct_relevel(prog, "academic"))
+```
+
+A study measures the association between a student's academic program (academic, general, and vocational) and their socioeconomic status (SES) (low, middle, high) and writing score.
+
+```{r}
+cs2$dat %>%
+  tbl_summary(
+    by = prog,
+    include = c(prog, ses, write),
+    statistic = list(all_continuous() ~ "{mean}, {sd}")
+  ) %>%
+  gtsummary::add_overall()
+```
+
+<br>
+
+```{r}
+cs2$dat %>%
+  mutate(write_bin = cut(write, breaks = 5, dig.lab = 1, right = FALSE)) %>%
+  count(prog, ses, write_bin) %>%
+  group_by(ses, write_bin) %>%
+  mutate(prob = n / sum(n)) %>%
+  ungroup() %>%
+  ggplot(aes(x = write_bin, y = prob, color = ses)) +
+  geom_point() +
+  geom_line(aes(group = ses)) +
+  facet_wrap(facets = vars(prog)) +
+  theme(legend.position = "top") +
+  labs(title = "Program Proportions by SES")
+```
+
+Fit the multinomial logistic regression with `nnet::multinom()`, `mlogit::mlogit()`,  or `VGAM::vglm()`. `nnet::multinom()` seems to be most popular.
+
+```{r results="hide"}
+# model = TRUE saves data frame in model. Used to fit null model for PseudoR2.
+cs2$fit <- multinom(prog ~ ses + write, model = TRUE, data = cs2$dat)
+# cs2$fit2 <- VGAM::vglm(prog ~ ses + write, data = cs2$dat, family = "multinomial")
+```
+
+```{r}
+summary(cs2$fit)
+```
+
+Interpret the model as a one unit increase in the writing score is associated with a `r comma(abs(coef(cs2$fit)["general", "write"]), .001)` decrease in the log odds of being in a general vs academic program. The log odds of being in a general vs academic program is `r comma(abs(coef(cs2$fit)["general", "seshigh"]), .001)` lower for high SES than low SES. The exponential of the coefficients is the relative risk (ratio of probabilities) relative to the baseline.
+
+```{r}
+exp(coef(cs2$fit))
+```
+
+A one unit increase in the writing score multiplies the odds of being in a general vs academic program by `r comma(exp(coef(cs2$fit)["general", "write"]), .001)` (i.e., reduces the odds by `r percent(1-exp(coef(cs2$fit)["general", "write"]), .1)`). The odds of being in a general vs academic program for high SES is `r comma(exp(coef(cs2$fit)["general", "seshigh"]), .001)` the odds for low SES.
+
+```{r}
+newdat <- expand.grid(
+  ses = cs2$dat$ses,
+  write = seq(from = round(min(cs2$dat$write)), to = round(max(cs2$dat$write)), by = 1)
 )
-summary(gator_vglm)
+
+bind_cols(
+  newdat,
+  predict(cs2$fit, newdata = newdat, type = "probs")
+) %>%
+  pivot_longer(cols = -c(ses, write), names_to = "prog", values_to = "probability") %>%
+  ggplot(aes(x = write, y = probability, color = ses)) +
+  geom_line() + 
+  facet_wrap(facets = vars(prog))
 ```
 
-The **residual deviance** is 50.2637 on 40 degrees of freedom.  Residual deviance tests the current model fit versus the saturated model. The saturated model, which fits a separate multinomial distribution to each of the 16 profiles (unique combinations of lake, sex and size), has 16 × 4 = 64 parameters. The current model has an intercept, three lake coefficients, one sex coefficient and one size coefficient for each of the four logit equations, for a total of 24 parameters. Therefore, the overall fit statistics have 64 − 24 = 40 degrees of freedom.
+Evaluate the model by running an ANOVA on the model and an intercept-only model.
 
 ```{r}
-# E <- data.frame(fitted(gator_vglm) * rowSums(gator_dat[, 5:9]))
-# O <- gator_dat %>% select(Bird, Invertebrate, Reptile, Other, Fish) + .000001
-# (g2 <- 2 * sum(O * log(O / E)))
+cs2$fit_io <- multinom(prog ~ 1, data = cs2$dat)
+
+(cs2$anova <- anova(cs2$fit_io, cs2$fit))
 ```
 
+The log-likelihood measures the unexplained variability in the model. The decrease in the log-likelihood from the intercept only model, `r comma(cs2$anova$"Resid. Dev"[1], .1)`, to the full model `r comma(cs2$anova$"Resid. Dev"[2], .1)` is `r comma(cs2$anova$"LR stat."[2], .1)`. This statistics is distributed $\chi^2_{6}$. The *p*-value is <.0001, meaning the explanatory values is signficantly different from zero. The residual deviance is $G^2 = 2 \sum_{ij}y_{ij} \log \frac{y_{ij}}{\hat{y}_{ij}}$ on $(N - p)(r - 1)$ degrees of freedom where $p \in [1, 4]$ are the number of estimated coefficients in the two models, including the intercept, and $r = 3$ is the number of levels in the dependent variable. I manually calculated $G^2$ below. $y_{ij}$ takes values of 0 or 1, and $\log 0 = +\infty$, so I filtered those values out. If the model perfectly predicted the dependent variable, the ratio $\frac{y_{ij}}{\hat{y}_{ij}}$ would always equal 1 and $G^2$ would equal 0.
 
-indicates the model fits okay, but not great. The Residual Deviance of 50.26 with 40 df from the table above output is reasonable, with p-value of 0.1282 and the statistics/df is close to 1 that is 1.256.
+```{r collapse=TRUE}
+tmp <- tibble(
+  y = as.vector(cs2$fit$residuals + cs2$fit$fitted.values),
+  y_hat = as.vector(cs2$fit$fitted.values)
+) %>%
+  filter(y != 0)
+(g2 <- 2 * sum(tmp$y * log(tmp$y / tmp$y_hat)))
+# But you can also get it directly from the model this way
+(g2 <- deviance(cs2$fit))
+# or this way.
+(g2 <- cs2$fit$deviance)
+```
 
+Test the goodness of fit with Pearson's Chi-square.
 
+```{r}
+(cs2$chisq_test <- chisq.test(cs2$dat$prog, predict(cs2$fit)))
+```
 
-## Ordinal Logistic Regression
+Logistic regression does not a direct R-squared statistic like OLS does (the proportion of variance explained by the model). However, there are some analogs, called pseudo R-squared. You'll encounter three pseudo R-squared measures: Cox and Snell, Nagelkerke, and McFadden.
+
+```{r}
+DescTools::PseudoR2(cs2$fit, which = c("CoxSnell", "Nagelkerke", "McFadden"))
+```
+
+The likelihood ratio test measures the significance of predictors.
+
+```{r}
+(cs2$lrtest <- lmtest::lrtest(cs2$fit, "ses"))
+```
+
+SES had significant main effects on program selection, $\chi^2(4)$ = `r comma(cs2$lrtest$Chisq[2], .1)`, *p* = `r comma(cs2$lrtest$"Pr(>Chisq)"[2], .001)`.
+
+To get the *p*-values associated with the individual coefficient estimates, just use `tidy()`.
+
+```{r}
+(cs2$tidy <- broom::tidy(cs2$fit))
+```
+
+```{r}
+cs2$dat %>%
+  bind_cols(.fitted = cs2$fit$fitted.values) %>%
+  yardstick::gain_curve(prog, .fitted) %>%
+  autoplot() +
+  labs(title = "Gain Curve")
+```
+
+```{r}
+cs2$dat %>%
+  bind_cols(.fitted = cs2$fit$fitted.values) %>%
+  yardstick::roc_curve(prog, .fitted) %>%
+  autoplot() +
+  labs(title = "ROC Curve")
+```
+
+```{r}
+caret::confusionMatrix(
+  predict(cs2$fit),
+  reference = cs2$dat$prog
+)
+```
+
+## Ordinal Logistic Regression {#ordinallogistic}
 
 Ordinal logistic regression, also call cumulative link model (CLM), is a generalized linear model (GZLM), an extension of the general linear model (GLM) to non-continuous outcome variables. There are many approaches to ordinal logistic regression, including cumulative, adjacent, and continuation categories, but the most popular is the **cumulative odds ordinal logistic regression with proportional odds**. These notes rely on [UVA](https://data.library.virginia.edu/fitting-and-interpreting-a-proportional-odds-model/), [PSU](https://online.stat.psu.edu/stat504/),  [Laerd](https://statistics.laerd.com/spss-tutorials/ordinal-regression-using-spss-statistics.php), and the CLM package [article vignette](https://cran.r-project.org/web/packages/ordinal/vignettes/clm_article.pdf).
 
@@ -406,12 +624,12 @@ There are variations on the ordinal model. Structured thresholds impose restrict
 
 There are two conditions to ordinal logistic regression: (a) no multicollinearity, and (b) proportional odds.
 
-### Case Study {-}
+## Case Study 3
 
 ```{r include=FALSE}
 tax <- list()
 
-tax$dat <- read.spss("./input/ordinal-logistic-regression.sav", to.data.frame = TRUE) %>%
+tax$dat <- foreign::read.spss("./input/ordinal-logistic-regression.sav", to.data.frame = TRUE) %>%
   mutate(tax_too_high = factor(tax_too_high, ordered = TRUE),
          biz_owner = fct_relevel(biz_owner, "No", "Yes"),
          politics = fct_relevel(politics, "Lab")) %>%
@@ -676,7 +894,7 @@ Package **gtsummary** shows a nice summary table.
 tbl_regression(tax$clm)
 ```
 
-## Poisson Regression
+## Poisson Regression {#poissonregression}
 
 Poisson models count data, like "traffic tickets per day", or "website hits per day".  The response is an expected *rate* or intensity.  For count data, specify the generalized model, this time with `family = poisson` or `family = quasipoisson`. 
 

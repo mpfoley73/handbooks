@@ -30,7 +30,7 @@ The documentation for `isGYD()` explains design balance. A balanced block design
 isGYD(bibd)
 ```
 
-The example design is a BIBD. Other example configurations.
+There are other design with a BIBD: 
 
 ```{r eval=FALSE}
 find.BIB(6, 10, 3) %>% isGYD()   # 6 items shown in 10 blocks of 3
@@ -44,7 +44,7 @@ find.BIB(16, 16, 6) %>% isGYD()  # 16 items shown in 16 blocks of 6
 The resulting questionaire might look like this.
 
 ```{r}
-support.BWS::bws.questionnaire(bibd, design.type = 2, item.names = items)
+bws.questionnaire(bibd, design.type = 2, item.names = items)
 ```
 
 Consider the following response data from a BIBD with 7 items shown in 7 blocks of 3. `b1` is the item selected as best in question 1, `w1` is the item selected as worst in question 1, etc. `age`, `hp`, and `chem` are respondent covariates.
@@ -59,14 +59,15 @@ Convert each response into one row per possible best-worse pair. There are `k(k-
 
 ```{r}
 bws <- bws.dataset(
-  data = ricebws1,
+  data = dat,
   response.type = 1, # format of response variables: 1 = row number format
-  choice.sets = bibd, # choice sets
-  design.type = 2, # 2 if a BIBD is assigned to choice.sets
-  item.names = items, # the names of items
-  id = "id", # the name of respondent id variable
-  response = colnames(ricebws1)[2:15], # the names of response variables
-  model = "maxdiff") # the type of dataset created by the function is the maxdiff model
+  choice.sets = bibd,
+  design.type = 2, # BIBD
+  item.names = items,
+  id = "id", # respondent id variable
+  response = colnames(dat)[2:15], # response variables
+  model = "maxdiff" #  type of dataset to create
+) 
 
 # 90 respondents x 7 questions x 12 possible pairs per question
 dim(bws)
@@ -86,7 +87,7 @@ bws %>% filter(id == 1, Q == 1)
 
 ## Count Analysis
 
-You can see below that respondent 1 selected item 7 (`r items[7]`) Best once, item 1 (`r items[1]`) Best three times and item 5 (`r items[5]`) Best three times. Respondent 1 selected items 2 (`r items[2]`), 3 (`r items[3]`), 4 (`r items[4]`), and 5 (`r items[5]`) Worst once and item 6 (`r items[6]`) worst three times.
+You can see below that respondent 1 selected item 1 (`r items[1]`) Best three times, item 5 (`r items[5]`) Best three times, and item 7 (`r items[7]`) Best once. Respondent 1 selected items 2 (`r items[2]`), 3 (`r items[3]`), 4 (`r items[4]`), and 5 (`r items[5]`) Worst once and item 6 (`r items[6]`) worst three times.
 
 ```{r}
 bws %>% 
@@ -107,7 +108,7 @@ dim(bws_count)
 bws_count %>% filter(id == 1) %>% glimpse()
 ```
 
-The `plot()` function show the relationship between the means and standard deviations. Price, taste, and safety are similarly important, but price has a higher standard deviation, meaning its importance varies.
+`plot()` shows the relationship between the level means and standard deviations. Price, taste, and safety are similarly important, but price has a higher standard deviation, meaning its importance varies.
 
 ```{r}
 plot(bws_count, score = "bw")
@@ -128,7 +129,7 @@ bws_count %>%
 
 ## Model
 
-Fit a conditional logit model. A simple model uses the dummy vars, excluding one (washfree) to avoid singularity. The last term “- 1” means that the model has no alternative-specific constants.
+Fit a conditional logit model. A simple model uses the dummy vars, excluding one (washfree) to avoid singularity. The last term “- 1” means that the model has no alternative-specific constants. Use `dfidx()` to convert the data into a format appropriate for the model.
 
 ```{r}
 fmla <- RES ~ origin + variety + price + taste + safety + milling - 1
@@ -140,3 +141,52 @@ mlogit_fit <- mlogit(formula = fmla, data = bws_dfidx)
 summary(mlogit_fit)
 ```
 
+`bws.sp()` shows the shares of preference.
+
+```{r}
+# Specify the name of the base since it isn't in model.
+(bws_sp <- bws.sp(mlogit_fit, base = "washfree"))
+```
+
+Safety was most important and was `0.252 / 0.238` = `r bws_sp["safety"] / bws_sp["price"]` times as important as the second place price.
+
+This model isn't a great fit, unfortunately. You cannot pull the McFadden's R-squared easily, but the calculation is straight-forward.
+
+```{r collapse=TRUE}
+ll0 <- -90 * 7 * log(12) # log-likelihood at zero
+llb <- as.numeric(mlogit_fit$logLik)
+1 - (llb/ll0) # McFadden's R-squared
+1 - ((llb-6)/ll0) # Adjusted McFadden's R-squared
+```
+
+A possible improvement is the random parameters logit model. 
+
+```{r}
+fmla_rp <- RES ~ origin + variety + price + taste + safety + milling - 1 | 0
+
+mlogit_rp_fit <- mlogit(
+  fmla_rp,
+  bws_dfidx,
+  rpar = c(origin = "n", variety = "n", price = "n", taste = "n", safety = "n", milling = "n"),
+  R = 100,
+  halton = NA,
+  panel = TRUE
+)
+
+summary(mlogit_rp_fit)
+```
+
+McFadden's R-squared increased substantially.
+
+```{r collapse=TRUE}
+llb_rp <- as.numeric(mlogit_rp_fit$logLik)
+1 - (llb_rp/ll0) # McFadden's R-squared
+1 - ((llb_rp-6)/ll0) # Adjusted McFadden's R-squared
+```
+
+```{r}
+# Specify the name of the base since it isn't in model.
+(bws_rp_sp <- bws.sp(mlogit_rp_fit, base = "washfree", coef = items[-6]))
+```
+
+Now (surprisingly?), price is most important and was `0.411 / 0.286` = `r bws_rp_sp["price"] / bws_rp_sp["safety"]` times as important as the second place safety.
