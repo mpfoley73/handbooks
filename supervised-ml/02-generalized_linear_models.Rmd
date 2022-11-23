@@ -115,8 +115,10 @@ Test the linearity assumption first. There are two ways to do this (do both). Fi
 
 ```{r}
 cs1$fmla <- formula(heart_disease ~ age + weight + VO2max + gender)
-cs1$dat %>%
-  glm(cs1$fmla, data = ., family = "binomial") %>%
+
+cs1$fit <- glm(cs1$fmla, data = cs1$dat, family = "binomial")
+
+cs1$fit %>%
   augment() %>%
   pivot_longer(c(age, weight, VO2max)) %>%
   ggplot(aes(x = value, y = .fitted)) +
@@ -145,166 +147,56 @@ cs1$boxtidwell <- cs1$dat %>%
 summary(cs1$boxtidwell)
 ```
 
-Focus on the three transformed variables. `age_tx` is the only one with a *p*-value <.05, but it is customary to apply a Bonferroni adjustment when testing for linearity. There are eight predictors in the model, so the adjusted *p*-value is the reported *p*-value multiplied by eight. The *p*-value for `age_tx` is `r comma(summary(cs1$boxtidwell)$coefficients["age_tx","Pr(>|z|)"] * 8, .001)`. So you can say that, the linearity of the continuous variables with respect to the logit of the dependent variable was assessed via the Box-Tidwell (1962) procedure. A Bonferroni correction was applied using all eight terms in the model resulting in statistical significance being accepted when p < .00625 (Tabachnick & Fidell, 2014). Based on this assessment, all continuous independent variables were found to be linearly related to the logit of the dependent variable.
+Focus on the three transformed variables. `age_tx` is the only one with a *p*-value <.05, but it is customary to apply a Bonferroni adjustment when testing for linearity. There are eight predictors in the model, so the adjusted *p*-value is the reported *p*-value multiplied by eight. The *p*-value for `age_tx` is `r comma(summary(cs1$boxtidwell)$coefficients["age_tx","Pr(>|z|)"] * 8, .001)`, so all continuous independent variables are linearly related to the logit of the dependent variable.
 
-Had this assumption failed, you could try transforming the variable using the Box-Tidwell power transformation. Raise the variable to $\lambda = 1 + b / \gamma$ where $b$ is the estimated coefficient of the model without the interaction terms, and $\gamma$ is the estimated coefficient of the interaction term of the model with interactions. In the case of `age`, $\gamma$ is `r comma(coef(cs1$boxtidwell)["age_tx"], .001)`. $b$, estimated in the diagnostic plot exercise, is `r comma(coef(cs1$fit)["age"], .001)`. That means $\lambda$ = 1 + `r comma(coef(cs1$fit)["age"], .001)` / `r comma(coef(cs1$boxtidwell)["age_tx"], .001)` = `r comma(1 + coef(cs1$fit)["age"] / coef(cs1$boxtidwell)["age_tx"], .001)`. This is approximately 1, so no transformation. It seems customary to apply general transformations like .5 (square root), 1/3 (cube root), ln, and reciprocal.
+Had the linearity assumption failed, you could try transforming the variable using the Box-Tidwell power transformation. Raise the variable to $\lambda = 1 + b / \gamma$ where $b$ is the estimated coefficient of the model without the interaction terms, and $\gamma$ is the estimated coefficient of the interaction term of the model with interactions. In the case of `age`, $\gamma$ is `r comma(coef(cs1$boxtidwell)["age_tx"], .001)`. $b$, estimated in the diagnostic plot exercise, is `r comma(coef(cs1$fit)["age"], .001)`. That means $\lambda$ = 1 + `r comma(coef(cs1$fit)["age"], .001)` / `r comma(coef(cs1$boxtidwell)["age_tx"], .001)` = `r comma(1 + coef(cs1$fit)["age"] / coef(cs1$boxtidwell)["age_tx"], .001)`. This is approximately 1, so no transformation would be required. It seems customary to apply general transformations like .5 (square root), 1/3 (cube root), ln, and reciprocal.
 
-Now check for outliers using case diagnostics.
+Check for influential outliers by predicting the response probabilities and filtering for the predictions more than two standard deviations from the actual value and a Cook's Distance greater than 4/N = `r 4 / nrow(cs1$dat)`.^[[This article](https://towardsdatascience.com/assumptions-of-logistic-regression-clearly-explained-44d85a22b290) suggests using three standard deviations for an outliers threshold.]
 
 ```{r}
 augment(cs1$fit, type.predict = "response") %>%
-  filter(abs(.std.resid) >= 2)
+  mutate(id = row_number()) %>%
+  select(id, everything()) %>%
+  filter(abs(.std.resid) >= 2 | .cooksd > 4 / nrow(cs1$dat))
 ```
 
-These two fitted values missed the mark by fairly wide margin, but only one had a standardized residual substantially more than 2. You might examine the observation for validity. Otherwise, proceed and explain that There was one standardized residual with a value of `r augment(cs1$fit, type.predict = "response") %>% filter(abs(.std.resid) >= 2.1) %>% pull(.std.resid) %>% comma(.01)` standard deviations, which was kept in the analysis.
+Only two fitted values were both an outlier and influential, row ids 59 and 70. An index plot of Cook's Distance shows the two points at the far left. You might examine the observation for validity. Otherwise, proceed and explain that there was one standardized residual with a value of `r augment(cs1$fit, type.predict = "response") %>% filter(abs(.std.resid) >= 2.1) %>% pull(.std.resid) %>% comma(.01)` standard deviations which was kept in the analysis. 
 
-https://towardsdatascience.com/assumptions-of-logistic-regression-clearly-explained-44d85a22b290
+```{r warning=FALSE}
+augment(cs1$fit, type.predict = "response") %>%
+  mutate(
+    id = row_number(),
+    influential = if_else(.cooksd > 4 / nrow(cs1$dat), "Influential", "Other")
+  ) %>%
+  ggplot(aes(x = .fitted, y = .cooksd)) +
+  geom_point(aes(color = influential), show.legend = FALSE) +
+  geom_text(aes(label = if_else(influential == "Influential", id, NA_integer_)), 
+            check_overlap = TRUE, size = 3, nudge_x = .025) +
+  geom_hline(yintercept = 4 / nrow(cs1$dat), linetype = 2, color = "firebrick") + 
+  scale_color_manual(values = c("firebrick", "black")) +
+  labs(title = "Index Plot of Cook's Distance.",
+       subtitle = "Row id labeled for values > 4 / N.")
+```
+
+Variance inflation factors (VIF) measure the degree of multicollinearity in a set of independent variables. VIF is the ratio of the overall model variance to the variance of a model with just the predictor in question. VIFs can range from $[1, \infty]$. A VIF over 5 is problematic. These are excellent.
+
+```{r}
+car::vif(cs1$fit)
+```
 
 #### Evaluation
 
-There are several ways to evaluate the model. One is the pseudo-R-squared measures. A second is accuracy and ROC.
-
-
+You have already fit the model by this point. Take a look at the model summary.
 
 ```{r}
-DescTools::PseudoR2(cs2$fit, which = c("CoxSnell", "Nagelkerke", "McFadden"))
-
-glance(cs1$fit)
+summary(cs1$fit)
 ```
 
-
-#### Reporting
-
-A binomial logistic regression was performed to ascertain the effects of age, weight, gender and VO2max on the likelihood that participants have heart disease. Linearity of the continuous variables with respect to the logit of the dependent variable was assessed via the Box-Tidwell (1962) procedure. A Bonferroni correction was applied using all eight terms in the model resulting in statistical significance being accepted when *p* < `r comma(.05/8, .00001)` (Tabachnick & Fidell, 2014). Based on this assessment, all continuous independent variables were found to be linearly related to the logit of the dependent variable. There was one standardized residual with a value of `r augment(cs1$fit, type.predict = "response") %>% filter(abs(.std.resid) >= 2.1) %>% pull(.std.resid) %>% comma(.01)` standard deviations, which was kept in the analysis. The logistic regression model was statistically significant, χ2(4) = 27.40, p < .001. The model explained 33.0% (Nagelkerke R2) of the variance in heart disease and correctly classified 71.0% of cases. Sensitivity was 45.7%, specificity was 84.6%, positive predictive value was 61.5% and negative predictive value was 74.3%. Of the five predictor variables only three were statistically significant: age, gender and VO2max (as shown in Table 1). Males had 7.02 times higher odds to exhibit heart disease than females. Increasing age was associated with an increased likelihood of exhibiting heart disease, but increasing VO2max was associated with a reduction in the likelihood of exhibiting heart disease.
-
-```{r}
-gtsummary::tbl_regression(
-  cs1$fit,
-  exponentiate = TRUE
-)
-```
-
-
-<br>
-
-CWWS score increased from the sedentary (`r inline_text(cs3$gt, variable = coping_stress, level = "Mean, SD", column = "Sedentary", pattern = "*M* = {mean}, _SD_ = {sd}")`), to low (`r inline_text(cs3$gt, variable = coping_stress, level = "Mean, SD", column = "Low", pattern = "*M* = {mean}, _SD_ = {sd}")`), to moderate (`r inline_text(cs3$gt, variable = coping_stress, level = "Mean, SD", column = "Moderate", pattern = "*M* = {mean}, _SD_ = {sd}")`) to high (`r inline_text(cs3$gt, variable = coping_stress, level = "Mean, SD", column = "High", pattern = "*M* = {mean}, _SD_ = {sd}")`) physical activity groups, in that order. 
-
-### Case Study
-
-Dataset `donner` contains _n_ = 45 observations of the survival status (`surv`) of the members of the Donner party with explanatory variables `age` and `sex`.
-
-```{r include=FALSE}
-donner <- tribble(
-  ~age, ~sex, ~surv,
-  23, 1, 0,
-  40, 0, 1,
-  40, 1, 1,
-  30, 1, 0,
-  28, 1, 0,
-  40, 1, 0,
-  45, 0, 0,
-  62, 1, 0,
-  65, 1, 0,
-  45, 0, 0,
-  25, 0, 0,
-  28, 1, 1,
-  28, 1, 0,
-  23, 1, 0,
-  22, 0, 1,
-  23, 0, 1,
-  28, 1, 1,
-  15, 0, 1,
-  47, 0, 0,
-  57, 1, 0,
-  20, 0, 1,
-  18, 1, 1,
-  25, 1, 0,
-  60, 1, 0,
-  25, 1, 1,
-  20, 1, 1,
-  32, 1, 1,
-  32, 0, 1,
-  24, 0, 1,
-  30, 1, 1,
-  15, 1, 0,
-  50, 0, 0,
-  21, 0, 1,
-  25, 1, 0,
-  46, 1, 1,
-  32, 0, 1,
-  30, 1, 0,
-  25, 1, 0,
-  25, 1, 0,
-  25, 1, 0,
-  30, 1, 0,
-  35, 1, 0,
-  23, 1, 1,
-  24, 1, 0,
-  25, 0, 1,
-) %>%
-  mutate(
-    surv = factor(surv, levels = c(0:1), labels = c("Died", "Lived")),
-    sex = factor(sex, levels = c(0:1), labels = c("F", "M"))
-  )
-```
+Plug in values to get a more intuitive understanding. The log odds of a 50 year-old man weighing 165 pounds and average VO2max having heart disease is $\hat{y}$ = `r predict(cs1$fit, newdata = list(age = 50, weight = 165, VO2max = mean(cs1$dat$VO2max), gender = "Male")) %>% scales::number(accuracy = .01)`. If he was 60 years old, they would be $\hat{y}$ = `r predict(cs1$fit, newdata = list(age = 60, weight = 165, VO2max = mean(cs1$dat$VO2max), gender = "Male")) %>% scales::number(accuracy = .01)`.
 
 ```{r collapse=TRUE}
-glimpse(donner)
-```
-
-```{r, fig.height=3.5, echo=FALSE}
-donner %>%  
-  ggplot(aes(x = age, y = as.integer(surv)-1, color = sex)) +
-  geom_jitter(height = 0, alpha = 0.6) +
-  geom_smooth(aes(y = as.integer(surv) - 1),
-              method = "glm", method.args = list(family = "binomial"), formula = "y ~ x") +
-  scale_y_continuous(breaks = c(0,1), labels = c("Died", "Lived")) +
-  labs(title = "Survival odds varied by age and gender.", 
-       subtitle = glue::glue("{nrow(donner)} outcomes from Donner party."),
-       color = NULL, y = NULL) +
-  theme_light() +
-  theme(legend.position = "right")
-```
-
-### Fit the Model
-
-Fit a logistic regression $\mathrm{surv} = \mathrm{sex} + \mathrm{age} + \mathrm{sex:age}$. The reference case based on the factor definition is `sex` = "F", and `age` = `r median(donner$age)` (the median age).
-
-```{r}
-donner_centered <- donner %>%
-  mutate(age = age - median(donner$age))
-m <- glm(surv ~ sex*age, data = donner_centered, family = "binomial")
-summary(m)
-```
-
-The "z value" is the Wald $z$ statistic, $z = \hat{\beta} / SE(\hat{\beta})$. Its square, $z^2$, is the Wald chi-squared statistic. The _p_-value is the area to the right of $z^2$ in the $\chi_1^2$ density curve:
-
-```{r}
-m %>% tidy() %>% 
-  mutate(
-    z = estimate / std.error, 
-    p_z2 = pchisq(z^2, df = 1, lower.tail = FALSE)
-  ) %>%
-  select(term, z, p_z2)
-```
-
-Below the Coefficients table, the "dispersion parameter" refers to overdispersion, a common issue with GLM. For a logistic regression, the response variable should be distributed $y_i \sim \mathrm{Bin}(n_i, \pi_i)$ with $\mu_i = n_i \pi_i$ and $\sigma^2 = \pi (1 - \pi)$.  Overdispersion means the data shows evidence of variance greater than $\sigma^2$.
-
-"Fisher scoring" is a method for ML estimation. Logistic regression uses interatively reweighted least squares to fit the model, so this section indicates whether the algorithm converged.
-
-The null deviance is the likelihood ratio $G^2$ = `r scales::number(summary(m)$null.deviance, accuracy = .001)` of the intercept-only model. The residual deviance is the likelihood ratio $G^2$ = `r scales::number(summary(m)$deviance, accuracy = .001)` after including the model covariates. $G^2$ is large, so reject the null hypothesis of no age or sex effects. An ANOVA table shows the change in deviance from successively adding each variable to the model.
-
-```{r}
-anova(m)
-```
-
-### Interpret Results
-
-Plug in values to interpret the model. The log odds of a 24 year-old female surviving is $\hat{y}$ = `r predict(m, newdata = data.frame(sex = "F", age = 24 - median(donner$age))) %>% scales::number(accuracy = .01)`.  The log odds of a 24 year-old male surviving is $\hat{y}$ = `r predict(m, newdata = data.frame(sex = "M", age = 24 - median(donner$age))) %>% scales::number(accuracy = .01)`.
-
-```{r collapse=TRUE}
-new_dat <- expand.grid(sex = factor(c("F", "M")), age = 24 - median(donner$age))
-(preds <- predict(m, newdata = new_dat))
+new_dat <- expand.grid(gender = "Male", age = c(2:8)*10, VO2max = mean(cs1$dat$VO2max), weight = 165)
+predict(cs1$fit, newdata = new_dat)
 ```
 
 Exponentiate to get the **odds**.
@@ -312,7 +204,7 @@ Exponentiate to get the **odds**.
 $$\mathrm{odds}(\hat{y}) = \exp (\hat{y}) = \frac{\pi}{1 - \pi}.$$
 
 ```{r collapse=TRUE}
-exp(preds)
+predict(cs1$fit, newdata = new_dat) %>% exp()
 ```
 
 Solve for $\pi$ to get the **probability**.  
@@ -322,10 +214,10 @@ $$\pi = \frac{\exp (\hat{y})}{1 + \exp (\hat{y})}$$
 You can do the math, or use `predict(type = "response")`.
 
 ```{r collapse=TRUE}
-(preds <- predict(m, newdata = new_dat, type = "response"))
+predict(cs1$fit, newdata = new_dat, type = "response")
 ```
 
-Interpret the coefficient estimates as the change in the log odds of $y$ due to a $\delta = x_1 - x_0$ unit change in $x$.
+I may already be dead. Interpret the coefficient estimates as the change in the log odds of $y$ due to a $\delta = x_1 - x_0$ unit change in $x$.
 
 $$\log \left(\pi / (1 - \pi) |_{X = X_1} \right) - \log \left(\pi / (1 - \pi) |_{X = X_0} \right) = \log \left( \frac{\pi / (1 - \pi) |_{X = X_1}}{\pi / (1 - \pi) |_{X = X_0}} \right) = \delta \hat{\beta}$$
 
@@ -333,9 +225,11 @@ Better yet, interpret the exponential of the coefficient estimates as the change
 
 $$\mathrm{odds}(y) = e^{\delta \hat{\beta}}$$
 
-The reference case is `sex` = "F" and `age` = 0 (centered on median age, `r median(donner$age)`). 
+For example, an age increase of one year increases the log-odds of heart disease by a factor of `r coef(cs1$fit)["age"] %>% comma(.001)`. Exponentiate this to get the increase in the odds of heart disease, `r coef(cs1$fit)["age"] %>% exp() %>% comma(.001)`. It might be more useful to calculate the effect of a *decade* increase in age. Multiply the coefficient by 10 before exponentiating, or raise the exponentiated coeficient by 10. The effect of a 10-year increase in age is to increase the odds of heart disease by `exp(coef(cs1$fit)["age"] * 10)` = `r exp(coef(cs1$fit)["age"] * 10) %>% comma(.001)`. The odds more than double every ten years.
 
-```{r include=FALSE}
+The reference case is `sex` = "F" and `age` = 0. 
+
+```{r eval=FALSE}
 odds_f_28 <- exp(coef(m)["(Intercept)"])
 odds_f_24 <- exp(coef(m)["(Intercept)"] + coef(m)["age"] * (-4))
 odds_m_28 <- exp(coef(m)["(Intercept)"] + coef(m)["sexM"])
@@ -350,7 +244,6 @@ odds_f_28_fmt <- scales::number(odds_f_28, accuracy = .1)
 odds_f_24_fmt <- scales::number(odds_f_24, accuracy = .1)
 odds_m_28_fmt <- scales::number(odds_m_28, accuracy = .1)
 odds_m_24_fmt <- scales::number(odds_m_24, accuracy = .1)
-```
 
 * The survival odds of a `r median(donner$age)` year old female are $\hat{y} = e^{(Intercept)}$ = `r odds_f_28_fmt` to 1. The expected probability of surviving is `r glue::glue("{odds_f_28_fmt} / (1 + {odds_f_28_fmt}) = {scales::number(prob_f_28 * 100, accuracy = 1)}")`%.
 * The survival odds of a `r median(donner$age) - 4` year old female are $\hat{y} = e^{(Intercept) -4 \cdot \mathrm{age}}$ = `r odds_f_24_fmt` to 1. The expected probability of surviving is `r glue::glue("{odds_f_24_fmt} / (1 + {odds_f_24_fmt}) = {scales::number(prob_f_24 * 100, accuracy = 1)}")`%.
@@ -359,62 +252,129 @@ odds_m_24_fmt <- scales::number(odds_m_24, accuracy = .1)
 * A female's survival odds are multiplied by a factor of $e^{(1 \cdot \mathrm{age})}$ = `r scales::number(exp(coef(m)["age"]), accuracy = .001)` per additional year of age (i.e. the odds _fall_ by `r scales::number((1 - exp(coef(m)["age"]))*100, accuracy = .1)`%).
 * A male's survival odds are multiplied by a factor of $e^{1 \cdot \mathrm{age}} e^{1 \cdot \mathrm{sexM:age}}$ = `r scales::number(exp(coef(m)["age"]) * exp(coef(m)["sexM:age"]), accuracy = .001)` per additional year of age (i.e. the odds _fall_ by `r scales::number((1 - exp(coef(m)["age"]) * exp(coef(m)["sexM:age"]))*100, accuracy = .1)`%).
 * A `r median(donner$age)` year old female's survival odds are multiplied by a factor of $e^{1 \cdot \mathrm{sex}}$ = `r scales::number(exp(coef(m)["sexM"]), accuracy = .001)` if she were instead a male. (i.e. the odds _fall_ by `r scales::number((1 - exp(coef(m)["sexM"]))*100, accuracy = .1)`%)
+```
 
 `oddsratio::or_glm()` calculates the odds ratio from an increment in the predictor values.
 
 ```{r}
-oddsratio::or_glm(donner_centered, m, incr = list(age = 1))
+oddsratio::or_glm(cs1$dat, cs1$fit, incr = list(age = 10, weight = 10, VO2max = 5))
 ```
 
 Expressing the predicted values as probabilities produces the familiar signmoidal shape of the binary relationship.
 
-```{r fig.height=3.5}
-augment(m, type.predict = "response") %>%
-  ggplot(aes(x = age, color = sex)) +
-  geom_point(aes(y = as.integer(surv))) +
-  geom_line(aes(y = .fitted+1)) +
-  labs(x = "Age (relative to median)",
+```{r}
+augment(cs1$fit, type.predict = "response") %>%
+  ggplot(aes(x = age, color = gender)) +
+  geom_point(aes(y = as.numeric(heart_disease == "Yes"))) +
+  geom_line(aes(y = .fitted)) +
+  labs(x = "Age",
        y = NULL,
        title = "Binary Fitted Line Plot") +
-  scale_y_continuous(breaks = c(1,2), labels = c("Died", "Lived")) +
+  scale_y_continuous(breaks = c(0,1), labels = c("Heart Disease", "Healthy")) +
   theme_light() +
   theme(legend.position = "right")
 ```
 
-### Assess Model Fit
+The "z value" is the Wald $z$ statistic, $z = \hat{\beta} / SE(\hat{\beta})$. Its square, $z^2$, is the Wald chi-squared statistic. The _p_-value is the area to the right of $z^2$ in the $\chi_1^2$ density curve:
 
-Evaluate a logistic regression using a [Gain curve or ROC curve](https://community.tibco.com/wiki/gains-vs-roc-curves-do-you-understand-difference). 
+```{r}
+cs1$fit %>% 
+  tidy() %>% 
+  mutate(
+    z = estimate / std.error, 
+    p_z2 = pchisq(z^2, df = 1, lower.tail = FALSE)
+  ) %>%
+  select(term, z, p_z2)
+```
 
-#### Gain Curve {-}
+Below the Coefficients table, the "dispersion parameter" refers to overdispersion, a common issue with GLM. For a logistic regression, the response variable should be distributed $y_i \sim \mathrm{Bin}(n_i, \pi_i)$ with $\mu_i = n_i \pi_i$ and $\sigma^2 = \pi (1 - \pi)$.  Overdispersion means the data shows evidence of variance greater than $\sigma^2$.
+
+"Fisher scoring" is a method for ML estimation. Logistic regression uses interatively reweighted least squares to fit the model, so this section indicates whether the algorithm converged.
+
+The null deviance is the likelihood ratio of the intercept-only model, $G^2$ = `r scales::number(summary(cs1$fit)$null.deviance, accuracy = .01)`. The residual deviance is the likelihood ratio $G^2$ = `r scales::number(summary(cs1$fit)$deviance, accuracy = .01)` after including the model covariates. $G^2$ is large, so reject the null hypothesis of no age or sex effects. An ANOVA table shows the change in deviance from successively adding each variable to the model.
+
+```{r}
+anova(cs1$fit)
+```
+
+There are several ways to evaluate the model. 
+
+- The likelihood ratio test
+- Pseudo R-squared
+- Accuracy measures
+- Gain and ROC curves
+
+The **likelihood ratio test** compares the log likelihood of the fitted model to an intercept-only model.
+
+```{r}
+(cs1$lrtest <- lmtest::lrtest(cs1$fit))
+```
+
+The fitted model is significant, $\chi^2$(`r abs(cs1$lrtest$Df[2])`) = `r comma(cs1$lrtest$Chisq[2], .1)`, *p* < .001.
+
+One is the pseudo-R-squared measures^[Nice write-up [here](https://stats.oarc.ucla.edu/other/mult-pkg/faq/general/faq-what-are-pseudo-r-squareds/). Sounds like you should use pseudo R2 for model comparison, not for reporting goodness of fit]. A second is accuracy and ROC.
+
+```{r}
+(cs1$pseudo_r2 <- DescTools::PseudoR2(cs1$fit, which = c("CoxSnell", "Nagelkerke", "McFadden")))
+```
+
+Laerd interprets this as the model explained `r percent(cs1$pseudo_r2["Nagelkerke"], .1)` (Nagelkerke R2) of the variance in heart disease. This is how your would interpret R2 in an OLS model. [UCLA](https://stats.oarc.ucla.edu/other/mult-pkg/faq/general/faq-what-are-pseudo-r-squareds/) points out that the various pseudo R-squareds measure other aspects of the model and are unique to the measured quantity. A pseudo R-squared is not very informative on its own; its value is in comparison of models predicting the same outcome. The cross-tabulation of observed and predicted classes is the better way to go.
+
+```{r}
+(cs1$confusion_matrix <- table(
+  pred = factor(if_else(predict(cs1$fit, type = "response") > .5, "Yes", "No"), levels = c("Yes", "No")),
+  truth = factor(cs1$dat$heart_disease, levels = c("Yes", "No"))
+) %>%
+caret::confusionMatrix())
+```
+
+The model accuracy, `r percent(cs1$confusion_matrix$overall["Accuracy"], .1)`, is the percent of observations correctly classified. The sensitivity, `r percent(cs1$confusion_matrix$byClass["Sensitivity"], .1)`, is the accuracy with regard to predicting positive cases. The specificity, `r percent(cs1$confusion_matrix$byClass["Specificity"], .1)`, is the accuracy with regard to predicting negative cases. The prevalence, `r percent(cs1$confusion_matrix$byClass["Prevalence"], .1)` is the proportion of cases that were positive.
+
+```{r}
+cs1$confusion_matrix$byClass
+```
+
+Finally, plot the [gain curve or ROC curve](https://community.tibco.com/wiki/gains-vs-roc-curves-do-you-understand-difference). 
 
 In the **gain curve**, the x-axis is the fraction of items seen when sorted by the predicted value, and the y-axis is the cumulatively summed true outcome. The "wizard" curve is the gain curve when the data is sorted by the true outcome.  If the model's gain curve is close to the wizard curve, then the model predicts the response well. The gray area is the "gain" over a random prediction.
 
-`r sum(donner$surv == "Lived")` of the `r nrow(donner)` members of the Donner party survived. 
+`r sum(cs1$dat$heart_disease == "Yes")` of the `r nrow(cs1$dat)` participants had heart disease. 
 
-* The gain curve encountered 10 survivors (50%) within the first 12 observations (27%).  It encountered all 20 survivors on the 37th observation.
-* The bottom of the grey area is the outcome of a random model.  Only half the survivors would be observed within 50% of the observations.  
-* The top of the grey area is the outcome of the perfect model, the "wizard curve".  Half the survivors would be observed in 10/45=22% of the observations.
+- The gain curve encountered 18 heart disease cases (51%) within the first 28 observations (28%). It encountered all 35 heart disease cases on the 89th observation.
+- The bottom of the grey area is the outcome of a random model. Only half the heart disease cases would be observed within 50% of the observations.  
+- The top of the grey area is the outcome of the perfect model, the "wizard curve". Half the heart disease cases would be observed in 18/100=18% of the observations.
 
 ```{r, fig.height=3.5}
-augment(m, type.predict = "response") %>%
+augment(cs1$fit, type.predict = "response") %>%
   # event_level = "second" sets the second level as success
-  yardstick::gain_curve(surv, .fitted, event_level = "second") %>%
+  yardstick::gain_curve(heart_disease, .fitted, event_level = "second") %>%
   autoplot() +
   labs(title = "Gain Curve")
 ```
 
-#### ROC Curve {-}
-
-The ROC (Receiver Operating Characteristics) curve plots sensitivity vs specificity at different cut-off values for the probability, ranging cut-off from 0 to 1.
+The **ROC** (Receiver Operating Characteristics) curve plots sensitivity vs specificity at varying cut-off values for the probability ranging from 0 to 1. Ideally, you want very little trade-off between sensitivity and specificity, with a curve hugging the left and top axes.
 
 ```{r, fig.height=3.5}
-augment(m, type.predict = "response") %>%
+augment(cs1$fit, type.predict = "response") %>%
   # event_level = "second" sets the second level as success
-  yardstick::roc_curve(surv, .fitted, event_level = "second") %>%
+  yardstick::roc_curve(heart_disease, .fitted, event_level = "second") %>%
   autoplot() +
   labs(title = "ROC Curve")
 ```
 
+
+#### Reporting
+
+> A binomial logistic regression was performed to ascertain the effects of age, weight, gender and VO2max on the likelihood that participants have heart disease. Linearity of the continuous variables with respect to the logit of the dependent variable was assessed via the Box-Tidwell (1962) procedure. A Bonferroni correction was applied using all eight terms in the model resulting in statistical significance being accepted when *p* < `r comma(.05/8, .00001)` (Tabachnick & Fidell, 2014). Based on this assessment, all continuous independent variables were found to be linearly related to the logit of the dependent variable. There was one standardized residual with a value of `r augment(cs1$fit, type.predict = "response") %>% filter(abs(.std.resid) >= 2.1) %>% pull(.std.resid) %>% comma(.01)` standard deviations, which was kept in the analysis. The logistic regression model was statistically significant, χ2(4) = 27.40, p < .001. The model explained `r percent(cs1$pseudo_r2["Nagelkerke"], .1)` (Nagelkerke R2) of the variance in heart disease and correctly classified `r percent(cs1$confusion_matrix$overall["Accuracy"], .1)` of cases. Sensitivity was `r percent(cs1$confusion_matrix$byClass["Sensitivity"], .1)`, specificity was `r percent(cs1$confusion_matrix$byClass["Specificity"], .1)`, positive predictive value was `r percent(cs1$confusion_matrix$byClass["Pos Pred Value"], .1)` and negative predictive value was `r percent(cs1$confusion_matrix$byClass["Neg Pred Value"], .1)`. Of the five predictor variables only three were statistically significant: age, gender and VO2max (as shown in Table 1). Males had 7.02 times higher odds to exhibit heart disease than females. Increasing age was associated with an increased likelihood of exhibiting heart disease, but increasing VO2max was associated with a reduction in the likelihood of exhibiting heart disease.
+
+```{r}
+gtsummary::tbl_regression(
+  cs1$fit,
+  exponentiate = TRUE
+)
+```
+
+<br>
 
 ## Multinomial Logistic Regression {#multinomiallogistic}
 
