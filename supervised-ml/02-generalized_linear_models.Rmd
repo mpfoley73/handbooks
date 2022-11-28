@@ -15,14 +15,16 @@ library(scales)
 library(glue)
 
 theme_set(
-  jtools::theme_apa() +
+  theme_light() +
     theme(
-      plot.caption = element_text(hjust = 0)
+      plot.caption = element_text(hjust = 0),
+      strip.background = element_rect(fill="gray90", color="gray60"),
+      strip.text = element_text(color = "gray20")
     )
 )
 ```
 
-The linear regression model, $E(y|X) = X \beta$, structured as $y_i = X_i \beta + \epsilon_i$ where $X_i \beta = \mu_i$, assumes the response is a linear function of the predictors and the residuals are independent random variables normally distributed with zero mean and constant variance, $\epsilon \sim N \left(0, \sigma^2 \right)$. This implies that given a set of predictors, the response is normally distributed about its expected value, $y_i \sim N \left(\mu_i, \sigma^2 \right)$. However, there are many situations where this normality assumption does not hold. Generalized linear models (GLMs) are a generalization of the linear regression model that addresses non-normal response distributions.^[These notes are primarily from PSU's [Analysis of Discrete Data](https://online.stat.psu.edu/stat504) which uses Alan Agresti's **Categorical Data Analysis** [@Agresti2013]. I also reviewed PSU's [Regression Methods](https://newonlinecourses.science.psu.edu/stat501/lesson/15), DataCamp's [Generalized Linear Models in R](https://www.datacamp.com/courses/generalized-linear-models-in-r), DataCamp's [Multiple and Logistic Regression](https://www.datacamp.com/courses/multiple-and-logistic-regression), and **Interpretable machine learning** [@Molner2020].]
+The linear regression model, $E(y|X) = X \beta$, structured as $y_i = X_i \beta + \epsilon_i$ where $X_i \beta = \mu_i$, assumes the response is a linear function of the predictors and the residuals are independent random variables normally distributed with zero mean and constant variance, $\epsilon \sim N \left(0, \sigma^2 \right)$. This implies that given a set of predictors, the response is normally distributed about its expected value, $y_i \sim N \left(\mu_i, \sigma^2 \right)$. However, there are many situations where this normality assumption does not hold. Generalized linear models (GLMs) are a generalization of the linear regression model that work with non-normal response distributions.^[These notes are primarily from PSU's [Analysis of Discrete Data](https://online.stat.psu.edu/stat504) which uses Alan Agresti's **Categorical Data Analysis** [@Agresti2013]. I also reviewed PSU's [Regression Methods](https://newonlinecourses.science.psu.edu/stat501/lesson/15), DataCamp's [Generalized Linear Models in R](https://www.datacamp.com/courses/generalized-linear-models-in-r), DataCamp's [Multiple and Logistic Regression](https://www.datacamp.com/courses/multiple-and-logistic-regression), and **Interpretable machine learning** [@Molner2020].]
 
 The response will not have a normal distribution if the underlying data-generating process is binomial (Section \@ref(binomiallogistic)) or multinomial (Section \@ref(multinomiallogistic)), ordinal (Section \@ref(ordinallogistic)), Poisson (counts, Section \@ref(poissonregression)), or exponential (time-to-event). In these situations the linear regression model can predict probabilities and proportions outside [0, 1], or negative counts or times. GLMs solve this problem by modeling a *function* of the expected value of $y$, $f(E(y|X)) = X \beta$. There are three components to a GLM: a *random component* specified by the response variable's probability distribution (normal, binomial, etc.); a *systematic component* in the form $X\beta$; and a *link function*, $\eta$, that specifies the link between the random and systematic components and converts the response to a range of $[-\infty, +\infty]$.  
 
@@ -60,7 +62,7 @@ $$\pi_i = \frac{\exp(y_i)}{1 + \exp(y_i)} = \frac{e^{X_i\beta}}{1 + e^{X_i\beta}
 
 which you can simplify to $\pi_i = 1 / (1 + e^{-X_i\beta})$, a sigmoid function. The upshot is $X\beta$ is the functional relationship between the independent variables and _a function of the response_, not the response itself.
 
-The model parameters are estimated either by _iteratively reweighted least squares optimization_ or by _maximum likelihood estimation_ (MLE). MLE maximizes the probability produced by a set of parameters $\beta$ given a data set and probability distribution.^[Notes from [Machine Learning Mastery](https://machinelearningmastery.com/logistic-regression-with-maximum-likelihood-estimation/)]. In logistic regression the probability distribution is the binomial and each observation is the outcome of a single Bernoulli trial. 
+The model parameters are estimated either by _iteratively reweighted least squares optimization_ or by _maximum likelihood estimation_ (MLE). MLE maximizes the probability produced by a set of parameters $\beta$ given a data set and probability distribution.^[Notes from [Machine Learning Mastery](https://machinelearningmastery.com/logistic-regression-with-maximum-likelihood-estimation/).] In logistic regression the probability distribution is the binomial and each observation is the outcome of a single Bernoulli trial. 
 
 $$L(\beta; y, X) = \prod_{i=1}^n \pi_i^{y_i}(1 - \pi_i)^{(1-y_i)} = \prod_{i=1}^n\frac{\exp(y_i X_i \beta)}{1 + \exp(X_i \beta)}.$$
 
@@ -75,11 +77,11 @@ Sometimes you will see the _cost function_ optimized. The cost function is the n
 
 **Assumptions**
 
-The binomial logistic regression model requires a dichotomous dependent variable and independent of observations. There should be at least 15 observations per independent variable (some sources recommend at least 50). There are also three conditions related to the data distribution: i) the logit transformation is linearly related to any continuous independent variables, ii) there is no multicollinearity, and iii) there are no significant outliers, leverage points, or influential points.
+The binomial logistic regression model requires a dichotomous dependent variable and independent observations. The sample size should be large, at least 10 observations per dependent variable level and independent variable. There are three conditions related to the data distribution: i) the logit transformation must be linearly related to any continuous independent variables, ii) there must be no multicollinearity, and iii) there must be no influential outliers.
 
 ### Case Study 1 {.unnumbered #cs1}
 
-This case study uses the [data set](https://statistics.laerd.com/premium/spss/spss-files/logistic-regression.sav) from Laerd Statistics for binomial logistic regression.
+This case study uses the [Laerd Statistics](https://statistics.laerd.com/) article on binomial logistic regression [data set](https://statistics.laerd.com/premium/spss/spss-files/logistic-regression.sav).
 
 ```{r}
 cs1 <- list()
@@ -87,7 +89,7 @@ cs1 <- list()
 cs1$dat <- read.spss("./input/logistic-regression.sav", to.data.frame = TRUE)
 ```
 
-An analysis investigates the relationship between the incidence of heart disease (Y|N) and age, weight, gender, and maximal aerobic capacity (maxVO2) using data from $n$ = `r nrow(cs1$dat)` participants.
+An analysis investigates the relationship between the incidence of heart disease (Yes|No) and age, weight, gender, and maximal aerobic capacity (maxVO2) using data from $n$ = `r nrow(cs1$dat)` participants.
 
 ```{r}
 cs1$dat %>%
@@ -101,170 +103,185 @@ cs1$dat %>%
 
 <br>
 
-#### Assumptions
-
-Four assumptions relate to the study design: (1) the dependent variable is dichotomous; (2) the observations are independent; (3) the categories of all nominal variables are mutually exclusive and exhaustive; and (4) there is at least 15 cases per independent variable. These assumptions are all valid. Three more assumptions related to the data distribution: 
-
-- linear relationship between the logit transformation and the continuous independent variables. Test with a plot and with Box-Tidwell.
-
-- No multicollinearity between or among independent varaibles. Test with correlation coefficients and tolerance/VIF values.
-
-- No significant outliers, leverage points, or influential points. 
-
-Test the linearity assumption first. There are two ways to do this (do both). First, fit your model, then plot the fitted values against the continuous predictors. This is like plotting the the dependent variable against the continuous variable in the OLS setting, but here the relationship in question is the _logit_ transformation of the response variable. That's what fitting the model gets you. This plot looks pretty good.
+A brief exploratory analysis helps set your expectations. Men are twice as likely to have heart disease. The odds ratio is (.43/.57) / (.22/.78) = `r comma((.43/.57) / (.22/.78), .1)`.
 
 ```{r}
-cs1$fmla <- formula(heart_disease ~ age + weight + VO2max + gender)
+cs1$dat %>% 
+  tbl_cross(row = heart_disease, col = gender, percent = "col") 
+```
+
+Age, weight, and poor max aerobic capacity are positively associated with hear disease.
+
+```{r}
+cs1$dat %>%
+  pivot_longer(cols = c(age, weight, VO2max)) %>%
+  ggplot(aes(x = heart_disease, y = value)) + 
+  geom_boxplot(outlier.shape = NA) +
+  geom_jitter(aes(color = name)) +
+  facet_wrap(facets = vars(name), scales = "free_y")
+```
+
+To facilitate model interpretation, I'll center the continuous variables around their means. Then the intercept term in the fitted model will represent a reasonable condition, not a zero-aged, zero-weighted person with no aerobic capacity. If you want to present your findings in the framework of a baseline probability (or odds) and the incremental effects of the independent variable, this is the way to go. You might even standardize the continuous vars to get a more meaningful increment. On the other hand, if you want to use your model for predicting outcomes, you'll have to back out of the centering when you predict values.
+
+```{r}
+cs1$dat <- cs1$dat %>%
+  mutate(
+    age_c = as.numeric(scale(age, scale = FALSE)),
+    weight_c = as.numeric(scale(weight, scale = FALSE)),
+    VO2max_c = as.numeric(scale(VO2max, scale = FALSE))
+  )
+cs1$centers <- list(age = mean(cs1$dat$age),
+                    weight = mean(cs1$dat$weight),
+                    VO2max = mean(cs1$dat$VO2max))
+```
+
+#### The Model {-}
+
+Jump right in and fit the model.
+
+```{r}
+cs1$fmla <- formula(heart_disease ~ age_c + weight_c + VO2max_c + gender)
 
 cs1$fit <- glm(cs1$fmla, data = cs1$dat, family = "binomial")
 
-cs1$fit %>%
-  augment() %>%
-  pivot_longer(c(age, weight, VO2max)) %>%
-  ggplot(aes(x = value, y = .fitted)) +
-  geom_point() +
-  facet_wrap(facets = vars(name), scales = "free_x") +
-  geom_smooth(method = "lm", formula = "y~x") +
-  labs(
-    title = "Test of the linearity: predictive valus vs continuous predictors",
-    subtitle = glue("Model: {as.expression(cs1$fmla)}."),
-    x = NULL
-  )
-```
-
-The second way to test for linearity is the Box-Tidwell approach. Add transformations of the continuous independent variables to the model then test their significance level in the fit. The transformation is the product of the log of the variable and itself. E.g. `age_tx = log(age) * age`, etc.
-
-```{r}
-cs1$boxtidwell <- cs1$dat %>%
-  mutate(
-    age_tx = log(age) * age,
-    weight_tx = log(weight) * weight,
-    VO2max_tx = log(VO2max) * VO2max
-  ) %>%
-  glm(heart_disease ~ age + weight + VO2max + gender + age_tx + weight_tx + VO2max_tx, 
-      data = ., family = "binomial")
-
-summary(cs1$boxtidwell)
-```
-
-Focus on the three transformed variables. `age_tx` is the only one with a *p*-value <.05, but it is customary to apply a Bonferroni adjustment when testing for linearity. There are eight predictors in the model, so the adjusted *p*-value is the reported *p*-value multiplied by eight. The *p*-value for `age_tx` is `r comma(summary(cs1$boxtidwell)$coefficients["age_tx","Pr(>|z|)"] * 8, .001)`, so all continuous independent variables are linearly related to the logit of the dependent variable.
-
-Had the linearity assumption failed, you could try transforming the variable using the Box-Tidwell power transformation. Raise the variable to $\lambda = 1 + b / \gamma$ where $b$ is the estimated coefficient of the model without the interaction terms, and $\gamma$ is the estimated coefficient of the interaction term of the model with interactions. In the case of `age`, $\gamma$ is `r comma(coef(cs1$boxtidwell)["age_tx"], .001)`. $b$, estimated in the diagnostic plot exercise, is `r comma(coef(cs1$fit)["age"], .001)`. That means $\lambda$ = 1 + `r comma(coef(cs1$fit)["age"], .001)` / `r comma(coef(cs1$boxtidwell)["age_tx"], .001)` = `r comma(1 + coef(cs1$fit)["age"] / coef(cs1$boxtidwell)["age_tx"], .001)`. This is approximately 1, so no transformation would be required. It seems customary to apply general transformations like .5 (square root), 1/3 (cube root), ln, and reciprocal.
-
-Check for influential outliers by predicting the response probabilities and filtering for the predictions more than two standard deviations from the actual value and a Cook's Distance greater than 4/N = `r 4 / nrow(cs1$dat)`.^[[This article](https://towardsdatascience.com/assumptions-of-logistic-regression-clearly-explained-44d85a22b290) suggests using three standard deviations for an outliers threshold.]
-
-```{r}
-augment(cs1$fit, type.predict = "response") %>%
-  mutate(id = row_number()) %>%
-  select(id, everything()) %>%
-  filter(abs(.std.resid) >= 2 | .cooksd > 4 / nrow(cs1$dat))
-```
-
-Only two fitted values were both an outlier and influential, row ids 59 and 70. An index plot of Cook's Distance shows the two points at the far left. You might examine the observation for validity. Otherwise, proceed and explain that there was one standardized residual with a value of `r augment(cs1$fit, type.predict = "response") %>% filter(abs(.std.resid) >= 2.1) %>% pull(.std.resid) %>% comma(.01)` standard deviations which was kept in the analysis. 
-
-```{r warning=FALSE}
-augment(cs1$fit, type.predict = "response") %>%
-  mutate(
-    id = row_number(),
-    influential = if_else(.cooksd > 4 / nrow(cs1$dat), "Influential", "Other")
-  ) %>%
-  ggplot(aes(x = .fitted, y = .cooksd)) +
-  geom_point(aes(color = influential), show.legend = FALSE) +
-  geom_text(aes(label = if_else(influential == "Influential", id, NA_integer_)), 
-            check_overlap = TRUE, size = 3, nudge_x = .025) +
-  geom_hline(yintercept = 4 / nrow(cs1$dat), linetype = 2, color = "firebrick") + 
-  scale_color_manual(values = c("firebrick", "black")) +
-  labs(title = "Index Plot of Cook's Distance.",
-       subtitle = "Row id labeled for values > 4 / N.")
-```
-
-Variance inflation factors (VIF) measure the degree of multicollinearity in a set of independent variables. VIF is the ratio of the overall model variance to the variance of a model with just the predictor in question. VIFs can range from $[1, \infty]$. A VIF over 5 is problematic. These are excellent.
-
-```{r}
-car::vif(cs1$fit)
-```
-
-#### Evaluation
-
-You have already fit the model by this point. Take a look at the model summary.
-
-```{r}
 summary(cs1$fit)
 ```
 
-Plug in values to get a more intuitive understanding. The log odds of a 50 year-old man weighing 165 pounds and average VO2max having heart disease is $\hat{y}$ = `r predict(cs1$fit, newdata = list(age = 50, weight = 165, VO2max = mean(cs1$dat$VO2max), gender = "Male")) %>% scales::number(accuracy = .01)`. If he was 60 years old, they would be $\hat{y}$ = `r predict(cs1$fit, newdata = list(age = 60, weight = 165, VO2max = mean(cs1$dat$VO2max), gender = "Male")) %>% scales::number(accuracy = .01)`.
+Let's take a tour of the summary object. The top section presents the deviance residuals.^[ [UVA](https://data.library.virginia.edu/understanding-deviance-residuals/) discusses the three types of residuals you can calculate from a binary logistic regression.]  Deviance residuals are one of several residuals you can calculate from a binary logistic regression. One is the *raw residual*, $\epsilon_i = y_i - \hat{p}_i$, where $\hat{p}_i$ is the predicted probability. Another is the *Pearson residual*, $r_i = \frac{\epsilon_i}{\sqrt{\hat{p}_i(1 - \hat{p}_i)}}$, the raw residual rescaled by dividing by the estimated standard deviation of a binomial distribution with 1 trial^[See probability notes on the binomial distribution [here](https://bookdown.org/mpfoley1973/probability/binomial.html)]. A third is the *standardized Pearson residual*, $rs_i = r_i / \sqrt{1 - \hat{h}_i}$, the Pearson residual adjusted for the leverage of the predictors using the hat-values. Hat-values measure the predictor distances from the mean. This residual is especially useful to evaluate model fit because if the model fits well, these residuals have a standard normal distribution. Finally, there are the *deviance residuals*, $d_i = \mathrm{sign}(\epsilon_i) \left[ -2(y_i \log \hat{p}_i + (1 - y_i) \log (1 - \hat{p}_i)) \right]^{.5}$. Deviance Residuals measure how much the estimated probabilities differ from the observed proportions of success. You want deviance residuals to be evenly distributed (in absolute values, 1Q $\approx$ 3Q, min $\approx$ max). You also want the min and max to be <3 because deviance residuals are roughly approximated by a standard normal distribution. These are the residuals from the summary object.
 
 ```{r collapse=TRUE}
-new_dat <- expand.grid(gender = "Male", age = c(2:8)*10, VO2max = mean(cs1$dat$VO2max), weight = 165)
-predict(cs1$fit, newdata = new_dat)
+# Raw
+residuals(cs1$fit, type = "response") %>% summary()
+
+# Pearson
+residuals(cs1$fit, type = "pearson") %>% summary()
+
+# Standardized Pearson
+rstandard(cs1$fit, type = "pearson") %>% summary()
+
+# Deviance
+residuals(cs1$fit, type = "deviance") %>% summary()
 ```
 
-Exponentiate to get the **odds**.
+The next section is the coefficients table.
 
-$$\mathrm{odds}(\hat{y}) = \exp (\hat{y}) = \frac{\pi}{1 - \pi}.$$
+```{r}
+summary(cs1$fit)$coefficients
+```
+
+The "z value" is the Wald $z$ statistic, $z = \hat{\beta} / SE(\hat{\beta})$. Its square is the Wald chi-squared statistic. The _p_-value is the area to the right of $z^2$ in the $\chi_1^2$ density curve:
+
+```{r}
+pchisq(summary(cs1$fit)$coefficients[, "z value"]^2, df = 1, lower.tail = FALSE)
+```
+
+Below the coefficients table, the "dispersion parameter" line refers to over-dispersion, a common issue with GLM. For a logistic regression, the response variable should be distributed $y_i \sim \mathrm{Bin}(n_i, \pi_i)$ with $\mu_i = n_i \pi_i$ and $\sigma^2 = \pi (1 - \pi)$.  Over-dispersion means the data shows evidence of variance greater than $\sigma^2$.
+
+Skipping to the last line, Fisher scoring is a method for ML estimation. Logistic regression uses interatively reweighted least squares to fit the model, so this line indicates whether the algorithm converged.
+
+Above Fisher, the null deviance is the likelihood ratio of the intercept-only model, $G^2$ = `r scales::number(summary(cs1$fit)$null.deviance, accuracy = .01)`. The residual deviance, is the likelihood ratio $G^2$ = `r scales::number(summary(cs1$fit)$deviance, accuracy = .01)` after including the model covariates. It is the sum of the squared deviance residuals discussed above. The residual deviance is distributed chi-squared and can be used to test whether the model differs from the saturated model (model with as many coefficients as observations, $G^2$ = 0, *df* = 0) where $H_0$ = no difference. The deviance test for lack of fit fails to reject the null hypothesis.
 
 ```{r collapse=TRUE}
-predict(cs1$fit, newdata = new_dat) %>% exp()
+# G^2 calculations
+residuals(cs1$fit, type = "deviance") %>% .^2 %>% sum()
+deviance(cs1$fit)
+
+# df
+df.residual(cs1$fit)
+
+# G^2 is distributed chi-squared with df degrees of freedom
+pchisq(deviance(cs1$fit), df = df.residual(cs1$fit), lower.tail = FALSE)
+vcdExtra::LRstats(cs1$fit)
 ```
 
-Solve for $\pi$ to get the **probability**.  
+These two deviances (null, residual) are shown in the ANOVA summary. An ANOVA table shows the change in deviance from successively adding each variable to the model.
 
-$$\pi = \frac{\exp (\hat{y})}{1 + \exp (\hat{y})}$$
+```{r}
+anova(cs1$fit)
+```
 
-You can do the math, or use `predict(type = "response")`.
+#### Interpretation {-}
+
+Start your interpretation with the dependent variable. Plug in values for the predictor variables to get predictions. $\hat{y}$ is the log odds of a man of average age, height, and aerobic capacity having heart disease.
+
+```{r}
+newdata <- list(age_c = 0, weight_c = 0, VO2max_c = 0, gender = "Male")
+(my_log_odds <- predict(cs1$fit, newdata = newdata) )
+```
+
+Exponentiate to get the **odds**, $\mathrm{odds}(\hat{y}) = \exp (\hat{y}) = \frac{\pi}{1 - \pi}$.
+
+```{r}
+(my_odds <- exp(my_log_odds))
+```
+
+Solve for $\pi = \frac{\exp (\hat{y})}{1 + \exp (\hat{y})}$ to get the **probability**. You can do the math, or use `predict(type = "response")`.
 
 ```{r collapse=TRUE}
-predict(cs1$fit, newdata = new_dat, type = "response")
+(my_prob <- my_odds / (1 + my_odds))
+predict(cs1$fit, newdata = newdata, type = "response")
 ```
 
-I may already be dead. Interpret the coefficient estimates as the change in the log odds of $y$ due to a $\delta = x_1 - x_0$ unit change in $x$.
+I may already be dead. Move on to the coefficients. Interpret the coefficient estimates as the change in the log odds of $y$ due to a $\delta = x_a - x_b$ change in $x$. You might say $\beta$ is the log odds ratio of a one unit change in $x$.
 
-$$\log \left(\pi / (1 - \pi) |_{X = X_1} \right) - \log \left(\pi / (1 - \pi) |_{X = X_0} \right) = \log \left( \frac{\pi / (1 - \pi) |_{X = X_1}}{\pi / (1 - \pi) |_{X = X_0}} \right) = \delta \hat{\beta}$$
+$$\log \left(\pi / (1 - \pi) |_{x = x_1} \right) - \log \left(\pi / (1 - \pi) |_{x = x_0} \right) = \log \left( \frac{\pi / (1 - \pi) |_{x = x_1}}{\pi / (1 - \pi) |_{x = x_0}} \right) = \delta \hat{\beta}$$
 
-Better yet, interpret the exponential of the coefficient estimates as the change in the _odds_ of $y$ due to a $\delta$ unit change in $x$.
+Better yet, interpret the *exponential* of the coefficient estimates as the change in the _odds_ of $y$ due to a $\delta$ unit change in $x$.
 
 $$\mathrm{odds}(y) = e^{\delta \hat{\beta}}$$
 
-For example, an age increase of one year increases the log-odds of heart disease by a factor of `r coef(cs1$fit)["age"] %>% comma(.001)`. Exponentiate this to get the increase in the odds of heart disease, `r coef(cs1$fit)["age"] %>% exp() %>% comma(.001)`. It might be more useful to calculate the effect of a *decade* increase in age. Multiply the coefficient by 10 before exponentiating, or raise the exponentiated coeficient by 10. The effect of a 10-year increase in age is to increase the odds of heart disease by `exp(coef(cs1$fit)["age"] * 10)` = `r exp(coef(cs1$fit)["age"] * 10) %>% comma(.001)`. The odds more than double every ten years.
-
-The reference case is `sex` = "F" and `age` = 0. 
-
-```{r eval=FALSE}
-odds_f_28 <- exp(coef(m)["(Intercept)"])
-odds_f_24 <- exp(coef(m)["(Intercept)"] + coef(m)["age"] * (-4))
-odds_m_28 <- exp(coef(m)["(Intercept)"] + coef(m)["sexM"])
-odds_m_24 <- exp(coef(m)["(Intercept)"] + coef(m)["sexM"] + coef(m)["age"] * (-4) + coef(m)["sexM:age"]*(-4))
-
-prob_f_28 <- odds_f_28 / (1 + odds_f_28)
-prob_f_24 <- odds_f_24 / (1 + odds_f_24)
-prob_m_28 <- odds_m_28 / (1 + odds_m_28)
-prob_m_24 <- odds_m_24 / (1 + odds_m_24)
-
-odds_f_28_fmt <- scales::number(odds_f_28, accuracy = .1)
-odds_f_24_fmt <- scales::number(odds_f_24, accuracy = .1)
-odds_m_28_fmt <- scales::number(odds_m_28, accuracy = .1)
-odds_m_24_fmt <- scales::number(odds_m_24, accuracy = .1)
-
-* The survival odds of a `r median(donner$age)` year old female are $\hat{y} = e^{(Intercept)}$ = `r odds_f_28_fmt` to 1. The expected probability of surviving is `r glue::glue("{odds_f_28_fmt} / (1 + {odds_f_28_fmt}) = {scales::number(prob_f_28 * 100, accuracy = 1)}")`%.
-* The survival odds of a `r median(donner$age) - 4` year old female are $\hat{y} = e^{(Intercept) -4 \cdot \mathrm{age}}$ = `r odds_f_24_fmt` to 1. The expected probability of surviving is `r glue::glue("{odds_f_24_fmt} / (1 + {odds_f_24_fmt}) = {scales::number(prob_f_24 * 100, accuracy = 1)}")`%.
-* The survival odds of a `r median(donner$age)` year old male are $\hat{y} = e^{(Intercept) + sexM}$ = `r odds_m_24_fmt`. The expected probability of surviving is `r glue::glue("{odds_m_24_fmt} / (1 + {odds_m_24_fmt}) = {scales::number(prob_m_28 * 100, accuracy = 1)}")`%.
-* The survival odds of a `r median(donner$age) - 4` year old male are $\hat{y} = e^{(Intercept) -4 \cdot \mathrm{age} -4 \cdot \mathrm{sexM} \cdot \mathrm{sexM:age}}$ = `r odds_m_24_fmt`. The expected probability of surviving is `r glue::glue("{odds_m_24_fmt} / (1 + {odds_m_24_fmt}) = {scales::number(prob_m_24 * 100, accuracy = 1)}")`%.
-* A female's survival odds are multiplied by a factor of $e^{(1 \cdot \mathrm{age})}$ = `r scales::number(exp(coef(m)["age"]), accuracy = .001)` per additional year of age (i.e. the odds _fall_ by `r scales::number((1 - exp(coef(m)["age"]))*100, accuracy = .1)`%).
-* A male's survival odds are multiplied by a factor of $e^{1 \cdot \mathrm{age}} e^{1 \cdot \mathrm{sexM:age}}$ = `r scales::number(exp(coef(m)["age"]) * exp(coef(m)["sexM:age"]), accuracy = .001)` per additional year of age (i.e. the odds _fall_ by `r scales::number((1 - exp(coef(m)["age"]) * exp(coef(m)["sexM:age"]))*100, accuracy = .1)`%).
-* A `r median(donner$age)` year old female's survival odds are multiplied by a factor of $e^{1 \cdot \mathrm{sex}}$ = `r scales::number(exp(coef(m)["sexM"]), accuracy = .001)` if she were instead a male. (i.e. the odds _fall_ by `r scales::number((1 - exp(coef(m)["sexM"]))*100, accuracy = .1)`%)
+```{r collapse=TRUE}
+coef(cs1$fit)
+exp(coef(cs1$fit))
 ```
 
-`oddsratio::or_glm()` calculates the odds ratio from an increment in the predictor values.
+For example, an age increase of one year increases the log-odds of heart disease by a factor of `r coef(cs1$fit)["age_c"] %>% comma(.001)`. Exponentiate this to get the increase in the odds of heart disease, `r coef(cs1$fit)["age_c"] %>% exp() %>% comma(.001)`. It might be more useful to calculate the effect of a *decade* increase in age. Multiply the coefficient by 10 before exponentiating, or raise the exponentiated coeficient by 10. The effect of a 10-year increase in age is to increase the odds of heart disease by `exp(coef(cs1$fit)["age_c"] * 10)` = `r exp(coef(cs1$fit)["age_c"] * 10) %>% comma(.001)`. The odds more than double every ten years.
+
+The reference case in the model is `gender` = "Female", `age` centered at `r comma(cs1$centers$age, .1)` (`age_c` = 0), `weight` centered at `r comma(cs1$centers$weight, .1)` (`weight_c` = 0), and `VO2max` centered at `r comma(cs1$centers$VO2max, .1)` (`VO2max_c` = 0).
 
 ```{r}
-oddsratio::or_glm(cs1$dat, cs1$fit, incr = list(age = 10, weight = 10, VO2max = 5))
+# Set newdata to the reference case
+newdata <- list(age_c = 0, weight_c = 0, VO2max_c = 0, gender = "Female")
+```
+
+The intercept term is the log-odds of heart disease at the reference case. Because the data is centered, the reference case is actually meaningful (i.e., not age 0, weight 0, and VO2max 0).
+
+```{r collapse=TRUE}
+# Predicted value is the log-odds of heart disease
+(log_odds <- coef(cs1$fit)["(Intercept)"])
+(pred <- predict(cs1$fit, newdata = newdata, type = "link"))
+
+# From log-odds to odds.
+(odds <- exp(log_odds))
+
+# Probability.
+(prob <- odds / (1 + odds))
+(pred <- predict(cs1$fit, newdata = newdata, type = "response"))
+```
+
+The log odds of heart disease for a `r comma(cs1$centers$age, .1)` year old female weighing `r comma(cs1$centers$weight, .1)` kg and with `r comma(cs1$centers$VO2max, .1)` VO2max are $\hat{y} = \mathrm{Intercept}$ = `r comma(log_odds, .01)`. The odds are $\exp(\hat{y})$ = `r comma(odds, .01)`. The expected probability is $\frac{\exp(\hat{y})}{1 + \exp(\hat{y})}$ = `r percent(prob, .1)`. What if they are male instead of female? 
+
+```{r include=FALSE}
+(log_odds_m <- coef(cs1$fit)["(Intercept)"] + coef(cs1$fit)["genderMale"])
+(odds_m <- exp(log_odds_m))
+(prob_m <- odds_m / (1 + odds_m))
+```
+
+The coefficient for gender is the log odds-ratio, `coef(cs1$fit)["genderMale"]` = `r comma(coef(cs1$fit)["genderMale"], .01)`. Its exponential is the odds ratio, `exp(coef(cs1$fit)["genderMale"])` = `r comma(exp(coef(cs1$fit)["genderMale"]), .01)`. That is, a male's odds of heart disease are `r comma(exp(coef(cs1$fit)["genderMale"]), .01)` times that of a female's, ceteris paribus. The reference level male's odds of heart disease are $\exp(\hat{y})$ = `r comma(odds_m, .01)` (probability = `r percent(prob_m, .1)`). Indeed, the ratio of the male's odds to the female's odds is `r comma(odds_m, .01)` / `r comma(odds, .01)` = `r comma(odds_m / odds, .01)`.
+
+A one-unit increase in any of the continuous independent variables is interpreted similarly. The reference level is zero, or just the value before the increase. The coefficient for age is the log odds-ratio, `coef(cs1$fit)["age_c"]` = `r comma(coef(cs1$fit)["age_c"], .01)`. Its exponential is the odds ratio, `exp(coef(cs1$fit)["age_c"])` = `r comma(exp(coef(cs1$fit)["age_c"]), .01)`. That is, a person's odds of heart disease increase by a factor of `r comma(exp(coef(cs1$fit)["age_c"]), .01)` per year of life. The impact of 10 years of life would be to multiply the odds by `exp(coef(cs1$fit)["age_c"]*10)` = `r comma(exp(coef(cs1$fit)["age_c"]*10), .01)` (notice that the 10 multiplies the coefficient, then their _product_ is exponentiated).
+
+`oddsratio::or_glm()` calculates the odds ratio from a specified increment in the predictor values.
+
+```{r}
+oddsratio::or_glm(cs1$dat, cs1$fit, incr = list(age_c = 10, weight_c = 10, VO2max_c = 5))
 ```
 
 Expressing the predicted values as probabilities produces the familiar signmoidal shape of the binary relationship.
 
 ```{r}
 augment(cs1$fit, type.predict = "response") %>%
-  ggplot(aes(x = age, color = gender)) +
+  ggplot(aes(x = age_c, color = gender)) +
   geom_point(aes(y = as.numeric(heart_disease == "Yes"))) +
   geom_line(aes(y = .fitted)) +
   labs(x = "Age",
@@ -275,27 +292,108 @@ augment(cs1$fit, type.predict = "response") %>%
   theme(legend.position = "right")
 ```
 
-The "z value" is the Wald $z$ statistic, $z = \hat{\beta} / SE(\hat{\beta})$. Its square, $z^2$, is the Wald chi-squared statistic. The _p_-value is the area to the right of $z^2$ in the $\chi_1^2$ density curve:
+
+#### Assumptions {-}
+
+Four assumptions relate to the study design: (1) the dependent variable is dichotomous; (2) the observations are independent; (3) the categories of all nominal variables are mutually exclusive and exhaustive; and (4) there are at least 10 observations per dependent variable level and independent variable. These assumptions are all valid. Three more assumptions related to the data distribution: 
+
+- There is a linear relationship between the logit transformation and the continuous independent variables. Test with a plot and with Box-Tidwell.
+
+- There is no independent variable multicollinearity. Test with correlation coefficients and variance inflation factors (VIF).
+
+- There are no influential outliers. Test with Cook's distance. 
+
+Test the linearity assumption first. There are two ways to do this (do both). First, fit your model, then plot the _fitted values_ against the continuous predictors. This is the GLM analog to OLS bivariate analysis, except now the dependent variable is the _logit_ transformation. These plotted relationships look pretty linear.
 
 ```{r}
-cs1$fit %>% 
-  tidy() %>% 
+cs1$dat %>%
+  glm(heart_disease ~ age + weight + VO2max, data = ., family = "binomial") %>%
+  augment() %>%
+  pivot_longer(c(age, weight, VO2max)) %>%
+  ggplot(aes(x = value, y = .fitted)) +
+  geom_point() +
+  facet_wrap(facets = vars(name), scales = "free_x") +
+  geom_smooth(method = "lm", formula = "y~x") +
+  labs(title = "Linearity Test: predicted vs continuous predictors", x = NULL)
+```
+
+The second test for linearity is the Box-Tidwell approach. Add transformations of the continuous independent variables to the model, $x_{Tx} = x \log x$, then test their significance level in the fit.
+
+```{r}
+# Using non-centered vars to avoid log(0) errors.
+cs1$boxtidwell <- cs1$dat %>%
   mutate(
-    z = estimate / std.error, 
-    p_z2 = pchisq(z^2, df = 1, lower.tail = FALSE)
+    age_tx = log(age) * age,
+    weight_tx = log(weight) * weight,
+    VO2max_tx = log(VO2max) * VO2max
   ) %>%
-  select(term, z, p_z2)
+  glm(heart_disease ~ age + weight + VO2max + gender + age_tx + weight_tx + VO2max_tx, 
+      data = ., family = "binomial")
+
+tidy(cs1$boxtidwell)
 ```
 
-Below the Coefficients table, the "dispersion parameter" refers to overdispersion, a common issue with GLM. For a logistic regression, the response variable should be distributed $y_i \sim \mathrm{Bin}(n_i, \pi_i)$ with $\mu_i = n_i \pi_i$ and $\sigma^2 = \pi (1 - \pi)$.  Overdispersion means the data shows evidence of variance greater than $\sigma^2$.
+Focus on the three transformed variables. `age_tx` is the only one with a *p*-value <.05, but it is customary to apply a Bonferroni adjustment when testing for linearity. There are eight predictors in the model (including the intercept term), so the Bonferroni adjusted *p*-value for `age_tx` is `r comma(summary(cs1$boxtidwell)$coefficients["age_tx","Pr(>|z|)"], .0001)` x 8 = `r comma(summary(cs1$boxtidwell)$coefficients["age_tx","Pr(>|z|)"] * 8, .001)`. We fail to reject the null hypothesis of linearity.
 
-"Fisher scoring" is a method for ML estimation. Logistic regression uses interatively reweighted least squares to fit the model, so this section indicates whether the algorithm converged.
+If the relationship _was_ nonlinear, you could try transforming the variable by raising it to $\lambda = 1 + b / \gamma$ where $b$ is the estimated coefficient of the model without the interaction terms, and $\gamma$ is the estimated coefficient of the interaction term of the model with interactions. In the case of `age`, $\gamma$ is `r comma(coef(cs1$boxtidwell)["age_tx"], .001)`. $b$, estimated in the diagnostic plot exercise, is `r comma(coef(cs1$fit)["age_c"], .001)`. That means $\lambda$ = 1 + `r comma(coef(cs1$fit)["age_c"], .001)` / `r comma(coef(cs1$boxtidwell)["age_tx"], .001)` = `r comma(1 + coef(cs1$fit)["age_c"] / coef(cs1$boxtidwell)["age_tx"], .001)`. This is approximately 1 (no transformation). It seems customary to apply general transformations like .5 (square root), 1/3 (cube root), ln, and the reciprocal.
 
-The null deviance is the likelihood ratio of the intercept-only model, $G^2$ = `r scales::number(summary(cs1$fit)$null.deviance, accuracy = .01)`. The residual deviance is the likelihood ratio $G^2$ = `r scales::number(summary(cs1$fit)$deviance, accuracy = .01)` after including the model covariates. $G^2$ is large, so reject the null hypothesis of no age or sex effects. An ANOVA table shows the change in deviance from successively adding each variable to the model.
+Variance inflation factors (VIF) estimate how much the variance of a regression coefficient is inflated due to multicollinearity. When independent variables are correlated, the underlying effect that they measure is being accounted for multiple times across the predictors and it is difficult to say which variable really influences the pendent variable. The VIF for variable $X_i$ is
+
+$$
+\mathrm{VIF}_i = \frac{1}{1 - R_i^2}
+$$
+
+where $R_i^2$ is the coefficient of determination (i.e., the proportion of dependent variance explained by the model) of a regression of $X_i = X_{j \ne i} \beta + \epsilon$. If $X_i$ is totally unrelated to its covariates, then $R_i^2$ will be zero and $\mathrm{VIF}_i$ will be 1. If $R_i^2$ is .8, $\mathrm{VIF}_i$ will be 5. The rule of thumb is that $R_i^2 \le 5$ is tolerable, and $R_i^2 > 5$ is "highly correlated" and you have to do something about it. These are excellent.
 
 ```{r}
-anova(cs1$fit)
+car::vif(cs1$fit)
 ```
+
+Just to check the math, try calculating the $\mathrm{VIF}$ for `age_c`.
+
+```{r collapse=TRUE}
+r2 <- lm(age_c ~ weight_c + VO2max_c + gender, data = cs1$dat) %>%
+  summary() %>% pluck("r.squared")
+(vif <- 1 / (1 - r2))
+(gvif <- vif^{1/(2 * 1)})
+```
+
+(I don't know why this doesn't work. It _would_ work if the underlying model is OLS instead of GLM. The answer seems to be related to GVIF vs VIF, but I didn't figure it out.)
+
+```{r include=FALSE}
+tmp <- augment(cs1$fit, type.predict = "response") %>% filter(abs(.std.resid) >= 2) %>% pull(.std.resid)
+```
+
+Check for influential outliers by predicting the response probabilities and filtering for the predictions more than two standard deviations from the actual value and a Cook's Distance greater than 4/N = `r 4 / nrow(cs1$dat)`.^[[This article](https://towardsdatascience.com/assumptions-of-logistic-regression-clearly-explained-44d85a22b290) suggests using three standard deviations for an outliers threshold.] Recall that Cook's distance measures how much predicted values change when observation *i* is removed from the data. Only two fitted values were both an outlier and influential, row ids 59 and 70. An index plot of Cook's Distance shows the two points at the far left. You might examine the observations for validity. Otherwise, proceed and explain that there were two standardized residuals with value of `r comma(tmp[1], .01)` and `r comma(tmp[2], .01)` standard deviations which were kept in the analysis. 
+
+```{r warning=FALSE}
+augment(cs1$fit, type.predict = "response") %>%
+  mutate(
+    id = row_number(),
+    outlier = if_else(abs(.std.resid) >= 2, "Outlier", "Other"),
+    influential = if_else(.cooksd > 4 / nrow(cs1$dat), "Influential", "Other"),
+    status = case_when(
+      outlier == "Outlier" & influential == "Influential" ~ "Influential Outlier",
+      outlier == "Outlier" ~ "Outlier",
+      influential == "Influential" ~ "Influential",
+      TRUE ~ "Other"
+    )
+  ) %>%
+  ggplot(aes(x = .fitted, y = .cooksd)) +
+  geom_point(aes(color = status)) +
+  geom_text(aes(label = if_else(influential == "Influential", id, NA_integer_)), 
+            check_overlap = TRUE, size = 3, nudge_x = .025) +
+  geom_hline(yintercept = 4 / nrow(cs1$dat), linetype = 2, color = "goldenrod") + 
+  scale_color_manual(values = c("Influential Outlier" = "firebrick", 
+                                "Influential" = "goldenrod",
+                                "Outlier" = "slategray",
+                                "Other" = "black")) +
+  theme(legend.position = "right") +
+  labs(title = "Index Plot of Cook's Distance.",
+       subtitle = "Row id labeled for values > 4 / N.")
+```
+
+#### Evaluation {-}
 
 There are several ways to evaluate the model. 
 
