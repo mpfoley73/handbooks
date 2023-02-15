@@ -1,0 +1,41 @@
+# Case Study
+
+The sample design report outline is from [@valliant2013].
+
+## Sample Design Report  
+
+### Executive summary
+
+- Provide a brief overview of the survey including information related  to general study goals and year when annual survey was first implemented.
+- Describe the purpose of this document.
+- Provide a table of the sample size to be selected per business unit (i.e.,  respondent sample size inflated for ineligibility and nonresponse). 
+- Discuss the contents of the remaining section of the report.  
+
+### Sample design
+
+- Describe the target population.
+- Describe the sampling frame including the date and source database.
+- Describe the type of sample and method of sample selection to be used.
+
+### Sample size and allocation
+
+- Optimization requirements
+  – Optimization details including constraints and budget.  
+  – Detail the minimum domain sizes and mechanics used to determine  the sizes. 
+- Optimization results  
+  – Results: minimum respondent sample size per stratum  
+  – Marginal sample sizes for key reporting domains  
+  – Estimated precision achieved by optimization results  
+- Inflation adjustments to allocation solution  
+  – Nonresponse adjustments  
+  – Adjustments for ineligible sample members  
+- Final sample allocation  
+  – Marginal sample sizes for key reporting domains  
+- Sensitivity analysis  
+  – Results from comparing deviations to allocation after introducing  changes to the optimization system  
+  
+### Appendix  
+
+- Sample size per strata (table), full sample and expected number of  respondents
+- Other relevant detailed tables including preliminary analysis 
+

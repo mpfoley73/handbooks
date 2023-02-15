@@ -1,0 +1,221 @@
+# Survey Design
+
+```{r include=FALSE}
+library(tidyverse)
+```
+
+The survey design (aka, sampling strategy), ultimately depends on how study objective(s) are translated into survey questions, the units of analysis of the target population, the main variables and covariates, and the available sampling frame(s) for data collection [@valliant2013]. Exploratory surveys often sample individuals with qualifying characteristics by convenience, snowball (referrals), quota, or purposeful sampling [@lau2017]. In contrast to these *non-probability sampling* strategies, descriptive and explanatory surveys use *probability sampling*, including simple random, systematic, stratified, and cluster sampling. Whichever survey design you use, you will employ one of three criteria to determine the sample size: i) set a target coefficient of variation, $CV_0(\theta) = SE / \theta$; ii) set a target $SE$; or iii) set a target margin of error (aka, *tolerance*), $MOE = \pm z_{1-\alpha} \cdot SE$.
+
+## Simple Random Sampling
+
+Suppose you have simple random sample (SRS) of size $n$ from a population of size $N$. The estimated population parameters is $\bar{y}_U$ with variance $S^2$. The sample mean, $\bar{y}_s$, is the expected value of $\bar{y}_U$. Under repeated sampling, the sample means would differ with variance
+
+$$
+\begin{equation}
+V(\bar{y}_s) = \left(1 - \frac{n}{N} \right) \frac{S^2}{n}.
+(\#eq:var-of-estimate)
+\end{equation}
+$$
+
+Equation \@ref(eq:var-of-estimate) is square of the familiar formula for the standard error of the estimate, $SE(\bar{y}_s) = S / \sqrt{n}$, multiplied by the *finite population correction* factor (FPC), $1 - n / N$. The FPC reduces the expected variance for finite (small) populations. The ratio of the corrected $SE$ and $\bar{y}_U$ is called the *coefficient of variation*, CV. You'll often see it expressed as its square, $CV^2(\bar{y}_s) = V(\bar{y}_s) / \bar{y}_U^2$,
+
+$$
+\begin{equation}
+CV^2(\bar{y}_s) = \left(1 - \frac{n}{N} \right) \cdot \frac{1}{n} \cdot \frac{S^2}{\bar{y}_U^2}.
+(\#eq:cv2)
+\end{equation}
+$$
+
+The final term, $\frac{S^2}{\bar{y}_U^2}$ is the square of the *unit CV* (aka *population CV*), 
+
+$$
+\begin{equation}
+CV(\bar{y}_U) = \frac{S}{\bar{y}_U}
+(\#eq:unit-cv)
+\end{equation}
+$$
+
+Solve Equation \@ref(eq:unit-cv) for $n = \frac{S^2 / \bar{y}^2_U}{CV_0^2 + S^2 / (N \cdot \bar{y}^2_U)}$ to establish the minimum sample size required to achieve a targeted CV, $CV_0(\bar{y}_s)$. Function `PracTools::nCont()` does the calculation for you, but you need to supply values for the targeted CV and unit CV. Setting the unit CV is somewhat of a chicken-and-egg problem since $S^2$ and $\bar{y}_U^2$ are the population parameters you are estimating in the first place. You'll have to rely either on prior research or your best guess. The [range rule of thumb](https://www.statology.org/range-rule-of-thumb/), $S = \mathrm{range} / 4$, is a useful tool for $S^2$. The targeted CV is usually set to match or beat prior research, or is set arbitrarily. Values of 5% and 10% are common.
+
+**Example**. Suppose from prior experience you think the unit CV is $CV(\bar{y}_U) = 2$. You desire a targeted CV of $CV_0(\bar{y}_s) = 0.10$.
+
+```{r collapse=TRUE, fig.height=3.5}
+CV0 <- .10
+CVpop <- 2
+PracTools::nCont(CV0 = CV0, CVpop = CVpop) %>% ceiling()
+
+# Notice N was not specified. You only need to worry about N if it is small. If 
+# you don't know CVpop or ybarU and S2, but at least have an expectation about 
+# ybarU and the range of values, try the range rule of thumb.
+my_ybarU <- 100
+my_S <- abs(0 - 800) / 4
+my_S^2
+(my_CVpop <- my_S^2 / my_ybarU)
+PracTools::nCont(CV0 = CV0, S2 = my_S^2, ybarU = my_ybarU) %>% ceiling()
+
+# When does N become important? It depends on CV0. N=20,000 seems to be upper limit.
+expand.grid(
+  CV0 = c(.05, .10),
+  N = c(5E4, 4E4, 3E4, 2E4, 1E4, 5E3, 4E3, 3E3, 2E3, 1E3, 500, 400, 300, 200, 100)
+) %>%
+  mutate(n = map2_dbl(CV0, N, ~PracTools::nCont(CV0 = .x, CVpop = CVpop, N = .y))) %>%
+  ggplot(aes(x = N, y = n, color = as.factor(CV0))) + 
+  geom_line() + 
+  # geom_vline(aes(xintercept = 5000), linetype = 3, color = "#00BFC4") +
+  geom_segment(aes(x = 5000, xend = 5000, y = 0, yend = 400), 
+               linetype = 3, color = "#00BFC4", linewidth = 1) +
+  geom_segment(aes(x = 0, xend = 5000, y = 400, yend = 400), 
+               linetype = 3, color = "#00BFC4", linewidth = 1) +
+  geom_segment(aes(x = 0, xend = 20000, y = 1500, yend = 1500), 
+               linetype = 3, color = "#F8766D", linewidth = 1) +
+  geom_segment(aes(x = 20000, xend = 20000, y = 0, yend = 1500), 
+               linetype = 3, color = "#F8766D", linewidth = 1) +
+  labs(color = "CV0")
+```
+
+If the population parameter is a proportion, $p_U$, the CV is
+
+$$
+\begin{equation}
+CV^2(p_s) = \left(1 - \frac{n}{N} \right) \cdot \frac{1}{n} \cdot \frac{N}{N-1} \cdot \frac{1 - p_U}{p_U}
+(\#eq:unit-cv-pop)
+\end{equation}
+$$
+
+where $\frac{N}{N-1} \cdot \frac{1 - p_U}{p_U}$ is the square of the unit CV. When $N$ is large, Equation \@ref(eq:unit-cv-pop) reduces to $CV^2(p_s) \approx \frac{1}{n} \cdot \frac{1 - p_U}{p_U}$. From here you can see that $n$ varies inversely with $p_U$. Function `PracTools::nProp()` calculates $n$ for proportions.
+
+**Example**. Suppose from prior experience you think $p_U = .01$ and the $N$ is large. You set a targeted CV of $CV_0^2(p_s) = 0.05$.
+
+```{r collapse=TRUE}
+CV0 <- .05
+pU <- .01
+N <- Inf
+PracTools::nProp(CV0 = CV0, pU = pU, N = N)
+```
+
+Whoa, $n$ was huge! You might choose to target a margin of error instead, $MOE = \pm z_{1-\alpha} \cdot SE$. Recall that $P(|p_s - p_U| < MOE) = 1 - \alpha$. `PracTools::nPropMoe()` and `PracTools::nContMoe()` calculate $n$ for MOEs.
+
+**Example**. Continuing from above, suppose you set a tolerance of a half percentage point, $MOE \pm 0.5\%$.
+
+```{r collapse=TRUE}
+MOE <- .005
+# moe.sw = 1 sets MOE based on SE; moe.sw = 2 sets MOE based on CV.
+PracTools::nPropMoe(moe.sw = 1, e = MOE, alpha = .05, pU = pU, N = N)
+
+# The long way using nProp: 
+(z_025 <- qnorm(p = .05/2, lower.tail = FALSE))
+(SE <- MOE / z_025)
+PracTools::nProp(V0 = SE^2, N = N, pU = pU)
+
+# When pU is extreme (~0 or ~1), the 95% CI can pass the [0,1] limits. The Wilson 
+# method accounts for that (not discussed here). Notice the 95% CI is not symmetric 
+# about pU. The 95% CI calculation is one of the reasons it is used.
+PracTools::nWilson(moe.sw = 1, e = MOE, alpha = .05, pU = pU)
+
+# The log odds is another approach that does about the same thing.
+PracTools::nLogOdds(moe.sw = 1, e = MOE, alpha = .05, pU = pU, N = N)
+```
+
+
+## Stratified SRS
+
+Stratified samples partition the population by dimensions of interest before sampling. This way, important domains are assured of adequate representation. Stratifying often reduce variances. Choose stratification if i) an SRS risks poor distribution across the population, ii) you have domains you will study separately, or iii) there are units with similar mean and variances that can be grouped to increase efficiency.
+
+The measured mean or proportion of the population is the simple weighted sum of the $h$ strata, $\bar{y}_{st} = \sum{W_h}\bar{y}_{s_h}$ and $p_{st} = \sum{W_h}p_{s_h}$. The population sampling variance is analogous,
+
+$$V(\bar{y}_{st}) = \sum W_h^2 \frac{1-f_h}{n_h} S_h^2$$
+
+where $f_h = n_h / N_h$. You can use the same SRS sampling methods described in the prior section to estimate each stratum.
+
+**Example**. Suppose you are measuring expenditure within a company and want to stratify by the $h = 6$ departments. There are $N = 875$ employees total. You target a $CV_0^2(\bar{y_s}) = .10.$ You'll have to survey 495 people. Without stratifying, you would only need 290.
+
+```{r collapse=TRUE}
+data(smho98, package = "PracTools")
+
+my_smho98 <- smho98 %>%
+  mutate(
+    STRATUM2 = case_when(STRATUM %in% c(1:2) ~ 1,
+                         STRATUM %in% c(3:4) ~ 2,
+                         STRATUM %in% c(5:8) ~ 3,
+                         STRATUM %in% c(9:10) ~ 4,
+                         STRATUM %in% c(11:13) ~ 5,
+                         STRATUM %in% c(14:16) ~ 6)
+  ) %>%
+  group_by(STRATUM2) %>%
+  summarize(Nh = n(), Mh = mean(EXPTOTAL), Sh = sd(EXPTOTAL))
+
+my_smho98 %>%
+  mutate(
+    CVpop = Sh / Mh,
+    nh = map2_dbl(CVpop, Nh, ~PracTools::nCont(CV0 = .10, CVpop = .x, N = .y) %>% ceiling())
+  ) %>%
+  janitor::adorn_totals("row", fill = NULL, na.rm = FALSE, name = "Total", Nh, nh)
+
+# What if we don't stratify?
+my_smho98_tot <- smho98 %>%
+  summarize(Nh = n(), Mh = mean(EXPTOTAL), Sh = sd(EXPTOTAL)) 
+
+my_smho98_tot %>%
+  mutate(
+    CVpop = Sh / Mh,
+    nh = map2_dbl(CVpop, Nh, ~PracTools::nCont(CV0 = .10, CVpop = .x, N = .y) %>% ceiling())
+  ) %>% janitor::as_tabyl()
+```
+
+If a fixed budget constrains you to $n$ participants choose one of three options: i) allocate $n$ by proportion, $n_h = nW_h$, if $S_h$ are approximately equal and you are okay with small stratum getting very few units; ii) allocate $n$ equally, $n_h = n / H$, if your strata are study domains; or iii) use Neyman allocation to minimize the population sampling variance, $n_h = n \frac{W_h S_h}{\sum W_h S_h}$. Use function `PracTools::strAlloc()`.
+
+The *Neyman* allocation allocates by stratum weight,
+
+$$n_h = n \cdot \frac{W_h S_h}{\sum W_h S_h}.$$
+
+The *cost-constrained allocation* starts with $C = c_0 + \sum n_h c_h.$ Minimizing the population sampling variance, 
+
+$$n_h = (C - c_0) \frac{W_hS_h / \sqrt{c_h}}{\sum W_h S_h \sqrt{c_h}}.$$
+
+This method allocates more population to larger strata and strata with larger variances. The *precision-constrained allocation* is
+
+$$n_h = (W_h S_h / \sqrt{c_h}) \frac{\sum W_h S_h \sqrt{c_h}}{V_0 + N^{-1} \sum W_h S_h^2}.$$
+
+**Example**. Suppose you have a fixed budget of \$100,000. If sampling costs do not vary by stratum and are \$1,000 person, survey $n = 100$ people and allocate $n$ to $n_h$ with Neyman or precision-constrained ($CV_0$-constrained). If costs vary by stratum, use the cost-constrained allocation. 
+
+```{r}
+ch <- c(1400, 200, 300, 600, 450, 1000)
+bind_cols(
+  my_smho98, 
+  n_neyman = PracTools::strAlloc(n.tot = 100, Nh = my_smho98$Nh, 
+                                 Sh = my_smho98$Sh, alloc = "neyman") %>% pluck("nh"),
+  n_var = PracTools::strAlloc(Nh = my_smho98$Nh, Sh = my_smho98$Sh, CV0 = .10, 
+                              ch = ch, ybarU = my_smho98_tot$Mh, 
+                              alloc = "totvar") %>% pluck("nh"),
+  ch = ch,
+  n_cost = PracTools::strAlloc(Nh = my_smho98$Nh, Sh = my_smho98$Sh, cost = 100000, 
+                               ch = ch, alloc = "totcost") %>% pluck("nh")
+) %>%
+  janitor::adorn_totals("row", fill = NULL, na.rm = FALSE, name = "Total", Nh, n_neyman, n_var, ch, n_cost)
+```
+
+## Power Analysis
+
+
+## Single-Stage Sample Surveys
+
+### Design and Size
+
+### Power Calculations
+
+https://sphweb.bumc.bu.edu/otlt/MPH-Modules/BS/BS704_Power/BS704_Power3.html
+
+### Case Study
+
+## Multi-Stage
+
+## Survey Weights
+
+## Appendix: Bias
+
+A consideration not explored here, but which should be on your mind is the risk of bias. Here are a few types of bias to beware of [@lau2017].
+
+- **Coverage bias**. The sampling frame is not representative of the population. E.g., school club members is a poor sampling frame if target population is high school students. 
+- **Sampling bias**. The sample itself is not representative of the population. This occurs when response rates differ, or sub-population sizes differ. Explicitly define the target population and sampling frame, and use systematic sampling methods such as stratified sampling. Adjust analysis and interpretation for response rate differences.
+- **Non-response bias**. Responded have different attributes than non-respondents. You can offer incentives to increase response rate, follow up with non-respondents to find out the reasons for their lack of response, or compare the characteristics of non-respondents with respondents or known external benchmarks for differences.
+- **Measurement bias**. Survey results differ from the population values. The major cause is deficient instrument design due to ambiguous items, unclear instructions, or poor usability. Reduce measurement bias with pretesting or pilot testing of the instrument, and formal tests for validity and reliability.

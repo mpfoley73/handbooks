@@ -1,0 +1,134 @@
+# Item Selection
+
+```{r warning=FALSE, message=FALSE, include=FALSE}
+library(tidyverse)
+library(scales)
+```
+
+The design and analysis of a survey depends on its purpose. **Exploratory** surveys investigate topics with no particular expectation. They are usually qualitative and often ask open-ended questions which are analyzed for content (word/phrase frequency counts) and themes. **Descriptive** surveys measure the association between the survey topic(s) and the respondent attributes. They typically ask Likert scale questions. **Explanatory** surveys explain and quantify hypothesized relationships with inferential statistics.
+
+## Reliability and Validity
+
+A high quality survey will be both reliable (consistent) and valid (accurate).^[This section is aided by Fiona Middleton's "Reliability vs. Validity in Research | Difference, Types and Examples" [@middleton2022].] A reliable survey is reproducible under similar conditions. It produces consistent results across time, samples, and sub-samples within the survey itself. Reliable surveys are not necessarily *accurate* though. A valid survey accurately measures its latent variable. Its results are compatible with established theory and with other measures of the concept. Valid surveys are usually reliable too.
+
+**Reliability** can entail one or more of the following:
+
+* **Inter-rater reliability (aka Equivalence)**. Each survey item is unambiguous, so subject matter experts should respond identically. This applies to opinion surveys of factual concepts, not personal preference surveys. E.g., two psychologists completing a survey assessing a patient's mental health should respond identically. Use the Cohen's Kappa test of inter-rater reliability to test equivalence (*see* Section \@ref(itemgeneration) on item generation). 
+* **Internal consistency**. Survey items measuring the same latent variable are highly correlated. Use the Cronbach alpha test and split-half test to assess internal consistency (*see* Section \@ref(itemreduction) on item reduction).
+* **Stability (aka Test-retest)**. Repeated measurements yield the same results. You use the test-retest construct to assess stability in the *Replication* phase.
+
+There are three assessments of **validity**:
+
+* **Content validity**. The survey items cover *all* aspects of the latent variable. Use Lawshe's CVR to assess content validity (*see* Section \@ref(itemgeneration) on item generation).
+* **Construct validity**. The survey items are properly grounded on a theory of the latent variable. Use convergent analysis and discriminant analysis to assess construct validity in the *Convergent/Discriminant Validity* phase.
+* **Criterion validity**. The survey item results correspond to other valid measures of the same latent variable. Use concurrent analysis and predictive analysis to assess criterion validity in the *Replication* phase.
+
+
+Survey considerations
+
+- Question order, selection order
+- respondent burden and fatigue
+
+Quality of Measurement: Reliability and Validity (internal and external)
+
+Pretest and pilot test
+
+Probability Sampling: 
+- simple random, systematic random, stratified random, cluster, and multistate cluster.
+- power analysis
+
+Reporting
+- Descriptive statistics
+- Write-up
+
+Continuous latent variables (e.g., level of satisfaction) can be measured with factor analysis (exploratory and confirmatory) or item response theory (IRT) models. Categorical or discrete variables (e.g., market segment) can be modeled with latent class analysis (LCA) or latent mixture modeling. You can even combine models, e.g., satisfaction within market segment.
+
+In practice, you specify the model, evaluate the fit, then revise the model or add/drop items from the survey.
+
+
+
+A full survey project usually consists of six phases.^[This section is primarily from George Mount's Data Camp course [@mount].] 
+
+1. **Item Generation** (Section \@ref(itemgeneration)). Start by generating a list of candidate survey items. With help from SMEs, you evaluate the equivalence (interrater reliability) and content validity of the candidate survey items and pare down the list into the final survey.
+
+2. **Survey Administration** (Section \@ref(surveyadministration)). Administer the survey to respondents and perform an exploratory data analysis. Summarize the Likert items with plots and look for correlations among the variables.
+
+3. **Item Reduction** (Section \@ref(itemreduction)). Explore the dimensions of the latent variable in the survey data with parallel analysis and exploratory factor analysis. Assess the internal consistency of the items with Cronbach's alpha and split-half tests, and remove items that do not add value and/or amend your theory of the number of dimensions.
+
+4. **Confirmatory Factor Analysis** (Section \@ref(confirmatoryfactoranalysis)). Perform a formal hypothesis test of the theory that emerged from the exploratory factor analysis.
+
+5. **Convergent/Discriminant Validity** (Section \@ref(convergentvalidity)). Test for convergent and discriminant construct validity.
+
+6. **Replication** (Section \@ref(replication)). Establish test-retest reliability and criterion validity.
+
+## Item Generation {#itemgeneration}
+
+Define your latent variable(s), that is, the unquantifiable variables you intend to infer from variables you _can_ quntify. E.g., "Importance of 401(k) matching"
+
+After you generate a list of candidate survey items, enlist SMEs to assess their inter-rater reliability with *Cohen's Kappa* and content validity with *Lawshe's CVR*. 
+
+### Cohen's Kappa
+
+An item has inter-rater reliability if it produces consistent results across raters. One way to test this is by having SMEs take the survey. Their answers should be close to each other. Conduct an inter-rater reliability test by measuring the statistical significance of SME response agreement using the Kohen's kappa test statistic. 
+
+Suppose your survey measures brand loyalty and two SMEs answer 13 survey items like this. The SMEs agreed on 6 of the 13 items (46%).
+
+```{r include=FALSE}
+sme <- data.frame(
+  RATER_A = c(1, 2, 3, 2, 1, 1, 1, 2, 3, 3, 2, 1, 1),
+  RATER_B = c(1, 2, 2, 3, 3, 1, 1, 1, 2, 3, 3, 3, 1)
+)
+sme2 <- sme %>% mutate(RATER_B = if_else(RATER_A == 1 & RATER_B == 3, 2, RATER_B))
+```
+
+```{r paged.print=TRUE}
+sme %>% mutate(agreement = RATER_A == RATER_B)
+```
+
+You could measure SME agreement with a simple correlation matrix (`cor(sme)`) or by measuring the percentage of items they rate identically (`irr::agree(sme)`), but these measures do not test for statistical validity.
+
+```{r collapse=TRUE}
+cor(sme)
+irr::agree(sme)
+```
+
+Instead, calculate the Kohen's kappa test statistic, $\kappa$, to assess statistical validity. Cohen's kappa compares the observed agreement (accuracy) to the probability of chance agreement. $\kappa$ >= 0.8 is very strong agreement, $\kappa$ >= 0.6 substantial, $\kappa$ >= 0.4 moderate, and $\kappa$ < 0.4 is poor agreement. In this example, $\kappa$ is only 0.32 (poor agreement). 
+
+```{r}
+psych::cohen.kappa(sme)
+psych::cohen.kappa(sme2)
+```
+
+Use the weighted kappa for ordinal measures like Likert items (*see* [Wikipedia](https://en.wikipedia.org/wiki/Cohen%27s_kappa)). 
+
+### Lawshe's CVR
+
+An item has content validity if SMEs agree on its relevance to the latent variable. Test content validity with Lawshe's content validity ratio (CVR),
+
+$$CVR = \frac{E - N/2}{N/2}$$
+where $N$ is the number of SMEs and $E$ is the number who rate the item as *essential*. CVR can range from -1 to 1. E.g., suppose three SMEs (A, B, and C) assess the relevance of 5 survey items as "Not Necessary", "Useful", or "Essential":
+
+```{r echo=FALSE}
+sme2 <- data.frame(
+  item = c(1:5),
+  A = c("Essential", "Useful", "Not necesary", "Essential", "Essential"),
+  B = c("Useful", "Not necesary", "Not necesary", "Useful", "Essential"),
+  C = c("Not necesary", "Useful", "Essential", "Essential", "Essential")
+)
+print(sme2)
+```
+
+Use the `psychometric::CVratio()` function to calculate CVR. The threshold *CVR* to keep or drop an item depends on the number of raters. CVR should be >= 0.99 for 5 experts; >= 0.49 for 15, and >= 0.29 for 40.
+
+```{r}
+sme2 %>% 
+  pivot_longer(-item, names_to = "expert", values_to = "rating") %>%
+  group_by(item) %>% 
+  summarize(.groups = "drop",
+            n_sme = length(unique(expert)),
+            n_ess = sum(rating == "Essential"),
+            CVR = psychometric::CVratio(NTOTAL = n_sme, NESSENTIAL = n_ess))
+```
+
+In this example, items vary widely in content validity from unanimous consensus for to unanimous consensus against. 
+
