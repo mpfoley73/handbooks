@@ -6,7 +6,7 @@ library(tidyverse)
 
 The survey design (aka, sampling strategy), ultimately depends on how study objective(s) are translated into survey questions, the units of analysis of the target population, the main variables and covariates, and the available sampling frame(s) for data collection [@valliant2013]. Exploratory surveys often sample individuals with qualifying characteristics by convenience, snowball (referrals), quota, or purposeful sampling [@lau2017]. In contrast to these *non-probability sampling* strategies, descriptive and explanatory surveys use *probability sampling*, including simple random, systematic, stratified, and cluster sampling. Whichever survey design you use, you will employ one of three criteria to determine the sample size: i) set a target coefficient of variation, $CV_0(\theta) = SE / \theta$; ii) set a target $SE$; or iii) set a target margin of error (aka, *tolerance*), $MOE = \pm z_{1-\alpha} \cdot SE$.
 
-## Simple Random Sampling
+## Simple Random Sampling {#srs}
 
 Suppose you have simple random sample (SRS) of size $n$ from a population of size $N$. The estimated population parameters is $\bar{y}_U$ with variance $S^2$. The sample mean, $\bar{y}_s$, is the expected value of $\bar{y}_U$. Under repeated sampling, the sample means would differ with variance
 
@@ -116,82 +116,99 @@ PracTools::nWilson(moe.sw = 1, e = MOE, alpha = .05, pU = pU)
 PracTools::nLogOdds(moe.sw = 1, e = MOE, alpha = .05, pU = pU, N = N)
 ```
 
-
 ## Stratified SRS
 
 Stratified samples partition the population by dimensions of interest before sampling. This way, important domains are assured of adequate representation. Stratifying often reduce variances. Choose stratification if i) an SRS risks poor distribution across the population, ii) you have domains you will study separately, or iii) there are units with similar mean and variances that can be grouped to increase efficiency.
 
-The measured mean or proportion of the population is the simple weighted sum of the $h$ strata, $\bar{y}_{st} = \sum{W_h}\bar{y}_{s_h}$ and $p_{st} = \sum{W_h}p_{s_h}$. The population sampling variance is analogous,
+In a stratified design, the measured mean or proportion of the population is the simple weighted sum of the $h$ strata, $\bar{y}_{st} = \sum{W_h}\bar{y}_{sh}$ and $p_{st} = \sum{W_h}p_{sh}$. The population sampling variance is analogous,
 
-$$V(\bar{y}_{st}) = \sum W_h^2 \frac{1-f_h}{n_h} S_h^2$$
+$$
+\begin{equation}
+V(\bar{y}_{st}) = \sum W_h^2 \cdot \left(1 - \frac{n_h}{N} \right) \cdot \frac{1}{n_h} \cdot S_h^2.
+(\#eq:var-stratified)
+\end{equation}
+$$
 
-where $f_h = n_h / N_h$. You can use the same SRS sampling methods described in the prior section to estimate each stratum.
+Use the SRS sampling methods described in Section \@ref(srs) to estimate each stratum.
 
-**Example**. Suppose you are measuring expenditure within a company and want to stratify by the $h = 6$ departments. There are $N = 875$ employees total. You target a $CV_0^2(\bar{y_s}) = .10.$ You'll have to survey 495 people. Without stratifying, you would only need 290.
+**Example**. Suppose you are measuring expenditure within a company of $N = 875$ employees and want to stratify by the $h = 6$ departments. You target a $CV_0(\bar{y_s}) = .10.$
 
 ```{r collapse=TRUE}
 data(smho98, package = "PracTools")
 
-my_smho98 <- smho98 %>%
-  mutate(
-    STRATUM2 = case_when(STRATUM %in% c(1:2) ~ 1,
-                         STRATUM %in% c(3:4) ~ 2,
-                         STRATUM %in% c(5:8) ~ 3,
-                         STRATUM %in% c(9:10) ~ 4,
-                         STRATUM %in% c(11:13) ~ 5,
-                         STRATUM %in% c(14:16) ~ 6)
-  ) %>%
-  group_by(STRATUM2) %>%
-  summarize(Nh = n(), Mh = mean(EXPTOTAL), Sh = sd(EXPTOTAL))
-
-my_smho98 %>%
+# You'll survey 560 people across the 16 strata.
+smho98 %>%
+  group_by(STRATUM) %>%
+  summarize(Nh = n(), Mh = mean(EXPTOTAL), Sh = sd(EXPTOTAL)) %>%
   mutate(
     CVpop = Sh / Mh,
     nh = map2_dbl(CVpop, Nh, ~PracTools::nCont(CV0 = .10, CVpop = .x, N = .y) %>% ceiling())
   ) %>%
   janitor::adorn_totals("row", fill = NULL, na.rm = FALSE, name = "Total", Nh, nh)
 
-# What if we don't stratify?
-my_smho98_tot <- smho98 %>%
-  summarize(Nh = n(), Mh = mean(EXPTOTAL), Sh = sd(EXPTOTAL)) 
-
-my_smho98_tot %>%
+# What if we don't stratify? Only 290!
+smho98 %>%
+  summarize(Nh = n(), Mh = mean(EXPTOTAL), Sh = sd(EXPTOTAL)) %>%
   mutate(
     CVpop = Sh / Mh,
     nh = map2_dbl(CVpop, Nh, ~PracTools::nCont(CV0 = .10, CVpop = .x, N = .y) %>% ceiling())
   ) %>% janitor::as_tabyl()
 ```
 
-If a fixed budget constrains you to $n$ participants choose one of three options: i) allocate $n$ by proportion, $n_h = nW_h$, if $S_h$ are approximately equal and you are okay with small stratum getting very few units; ii) allocate $n$ equally, $n_h = n / H$, if your strata are study domains; or iii) use Neyman allocation to minimize the population sampling variance, $n_h = n \frac{W_h S_h}{\sum W_h S_h}$. Use function `PracTools::strAlloc()`.
+If a fixed budget constrains you to $n$ participants you have five options: i) if $S_h$ are approximately equal and you are okay with small stratum getting very few units, allocate $n$ by proportion, $n_h = nW_h$; ii) if your strata are study domains, allocate $n$ equally, $n_h = n / H$; iii) use Neyman allocation to minimize the population sampling variance; iv) use cost-constrained allocation to minimize cost, or v) use precision-constrained allocation to minimize population sampling variance. Options iv and v take into account variable costs. Use function `PracTools::strAlloc()`.
 
 The *Neyman* allocation allocates by stratum weight,
 
-$$n_h = n \cdot \frac{W_h S_h}{\sum W_h S_h}.$$
+$$
+\begin{equation}
+n_h = n \cdot \frac{W_h S_h}{\sum W_h S_h}.
+(\#eq:neyman-allocation)
+\end{equation}
+$$
 
-The *cost-constrained allocation* starts with $C = c_0 + \sum n_h c_h.$ Minimizing the population sampling variance, 
+Suppose your costs vary by stratum, $c_h$. The *cost-constrained allocation* starts with $C = c_0 + \sum n_h c_h.$ Minimizing the population sampling variance, 
 
-$$n_h = (C - c_0) \frac{W_hS_h / \sqrt{c_h}}{\sum W_h S_h \sqrt{c_h}}.$$
+$$
+\begin{equation}
+n_h = (C - c_0) \frac{W_hS_h / \sqrt{c_h}}{\sum W_h S_h \sqrt{c_h}}.
+(\#eq:cost-allocation)
+\end{equation}
+$$
 
 This method allocates more population to larger strata and strata with larger variances. The *precision-constrained allocation* is
 
-$$n_h = (W_h S_h / \sqrt{c_h}) \frac{\sum W_h S_h \sqrt{c_h}}{V_0 + N^{-1} \sum W_h S_h^2}.$$
+$$
+\begin{equation}
+n_h = (W_h S_h / \sqrt{c_h}) \frac{\sum W_h S_h \sqrt{c_h}}{V_0 + N^{-1} \sum W_h S_h^2}.
+(\#eq:precision-allocation)
+\end{equation}
+$$
 
-**Example**. Suppose you have a fixed budget of \$100,000. If sampling costs do not vary by stratum and are \$1,000 person, survey $n = 100$ people and allocate $n$ to $n_h$ with Neyman or precision-constrained ($CV_0$-constrained). If costs vary by stratum, use the cost-constrained allocation. 
+**Example**. Suppose you have a fixed budget of \$100,000. If sampling costs are \$1,000 person, survey $n = 100$ people and allocate $n$ to $n_h$ with options i-iii). If sampling costs vary by stratum, use options iv-v). 
 
-```{r}
-ch <- c(1400, 200, 300, 600, 450, 1000)
-bind_cols(
-  my_smho98, 
-  n_neyman = PracTools::strAlloc(n.tot = 100, Nh = my_smho98$Nh, 
-                                 Sh = my_smho98$Sh, alloc = "neyman") %>% pluck("nh"),
-  n_var = PracTools::strAlloc(Nh = my_smho98$Nh, Sh = my_smho98$Sh, CV0 = .10, 
-                              ch = ch, ybarU = my_smho98_tot$Mh, 
-                              alloc = "totvar") %>% pluck("nh"),
-  ch = ch,
-  n_cost = PracTools::strAlloc(Nh = my_smho98$Nh, Sh = my_smho98$Sh, cost = 100000, 
-                               ch = ch, alloc = "totcost") %>% pluck("nh")
-) %>%
-  janitor::adorn_totals("row", fill = NULL, na.rm = FALSE, name = "Total", Nh, n_neyman, n_var, ch, n_cost)
+```{r collapse=TRUE}
+# Stratum per-capita survey costs
+ch <- c(1400, 400, 300, 600, 450, 1000, 950, 250, 350, 650, 450, 950, 80, 70, 900, 80)
+
+smho98 %>%
+  group_by(STRATUM) %>%
+  summarize(Nh = n(), Mh = mean(EXPTOTAL), Sh = sd(EXPTOTAL)) %>%
+  bind_cols(
+    `i) prop` = ceiling(.$Nh / sum(.$Nh) * 100),
+    `ii) equal` = ceiling(1 / nrow(.) * 100),
+    `iii) neyman` = PracTools::strAlloc(n.tot = 100, Nh = .$Nh, Sh = .$Sh, 
+                                        alloc = "neyman") %>% pluck("nh") %>% ceiling(),
+    ch = ch,
+    `iv) cost` = PracTools::strAlloc(Nh = .$Nh, Sh = .$Sh, cost = 100000, ch = ch, 
+                                     alloc = "totcost") %>% pluck("nh") %>% 
+      ceiling(),
+    `v) prec.` = PracTools::strAlloc(Nh = .$Nh, Sh = .$Sh, CV0 = .10, ch = ch, 
+                                         ybarU = .$Mh, alloc = "totvar") %>% 
+      pluck("nh") %>% ceiling()
+  ) %>%
+  select(-c(Mh, Sh)) %>%
+  janitor::adorn_totals("row", fill = NULL, na.rm = FALSE, name = "Total", Nh, 
+                        `i) prop`, `ii) equal`, `iii) neyman`, `iv) cost`, `v) prec.`)
 ```
 
 ## Power Analysis
