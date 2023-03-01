@@ -116,7 +116,7 @@ PracTools::nWilson(moe.sw = 1, e = MOE, alpha = .05, pU = pU)
 PracTools::nLogOdds(moe.sw = 1, e = MOE, alpha = .05, pU = pU, N = N)
 ```
 
-## Stratified SRS
+## Stratified SRS {#stratified-srs}
 
 Stratified samples partition the population by dimensions of interest before sampling. This way, important domains are assured of adequate representation. Stratifying often reduce variances. Choose stratification if i) an SRS risks poor distribution across the population, ii) you have domains you will study separately, or iii) there are units with similar mean and variances that can be grouped to increase efficiency.
 
@@ -211,14 +211,30 @@ smho98 %>%
                         `i) prop`, `ii) equal`, `iii) neyman`, `iv) cost`, `v) prec.`)
 ```
 
-## Power Analysis
+## Other Sampling
+
+There are other sampling methods to at least be aware of. They are mentioned here only as a placeholder for future study. I'm not ready for these yet.
+
+- Probability sampling
+- Systematic sampling
+- Poisson sampling
+
+## Power Analysis {#power-analysis}
+
+Sections \@ref(#srs) and \@ref(#stratified-srs) calculated sample sizes based on the desired precision of the population parameter using CV, MOE, and cost constraints. Another approach is to calculate the sample size required to detect the alternative value in a hypothesis test. Power is a measure of the likelihood of detecting some magnitude difference $\delta$ between $H_0$ and $H_a$.
+
+- Suppose $H_0$ is true, so you should not reject it. The probability of correctly not rejecting $H_0$ is $1 - \alpha$ and the probability of incorrectly rejecting $H_0$ is $\alpha.$
+- Suppose $H_0$ is false, so you _should_ reject it. The probability of correctly rejecting $H_0$ is $1 - \beta$ and the probability of incorrectly not rejecting $H_0$ is $\beta$.
+
+A measured $t = \frac{\hat{\bar{y}} - \mu_0}{\sqrt{v(\hat{\bar{y}})}}$ test statistic would vary with repeated measurements and be distributed with the $t$ distribution. 
+
+, $\alpha$ and $\beta$ are the probabilities of measuring $t$ when the
+
+$\alpha$ is the _level_ of the test and $1 - \beta$ is the _power_ of the test. $\alpha$ is often set at .05, meaning under repeated sampling, if the true value is zero, 5% of measured test statistics would be at least as large as the one associated with .05.
+
+confidence interval associated with the estimate will fail to include the true value in 5% of cases. $\beta$ is opten set at .20, meaning under repeated sampling, 
 
 
-## Single-Stage Sample Surveys
-
-### Design and Size
-
-### Power Calculations
 
 https://sphweb.bumc.bu.edu/otlt/MPH-Modules/BS/BS704_Power/BS704_Power3.html
 

@@ -1,12 +1,9 @@
-tab:unnamed-chunk-150
-tab:unnamed-chunk-174
+tab:unnamed-chunk-151
 tab:unnamed-chunk-175
+tab:unnamed-chunk-176
 fig:ccscatter
 fig:ooscatter
 frequentist-statistics
-type-i-and-ii-errors
-statistical-power
-what-p-values-would-you-expect
 further-reading
 likelihood-statistics
 maximum-likelihood-estimation

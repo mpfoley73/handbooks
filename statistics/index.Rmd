@@ -29,7 +29,13 @@ description: "Notes cobbled together from books, online classes, etc. to be used
 
 These are notes from books, classes, tutorials, vignettes, etc. They contain mistakes, are poorly organized, and are sloppy on fundamentals. They should improve over time, but that's all I can say for it. *Use at your own risk.*
 
-The focus of this handbook is statistical inference, including population estimates, group comparisons, and regression modeling. Not included here: probability, machine learning, text mining, survey analysis, or survival analysis. These subjects frequently arise at work, but are distinct enough and large enough to warrant separate handbooks.
+The focus of this handbook is statistical inference, including population estimates, group comparisons, and regression modeling. Not included here: [probability](https://bookdown.org/mpfoley1973/probability/), [supervised ML](https://bookdown.org/mpfoley1973/supervised-ml/), [unsupervised ML](https://bookdown.org/mpfoley1973/unsupervised-ml/), [text mining](https://bookdown.org/mpfoley1973/text-mining/), [time series](https://bookdown.org/mpfoley1973/time-series/), [survey analysis](https://bookdown.org/mpfoley1973/survey/), or [survival analysis](https://bookdown.org/mpfoley1973/survival/). These subjects frequently arise at work, but are distinct enough and large enough to warrant separate handbooks.
+
+Statistical inference is the use of a sample's distribution to describe the population distribution. Hypothesis tests, confidence intervals, and effect size estimates are all examples of statistical inference. 
+
+We wary of published study results. Identical studies might produce significant and non-significant results, yet only the significant result is likely to reach publication (publication bias). The researcher may have tortured the data until they found a statistically significant result. The study might suffer from low statistical power. Applying principles of inference can mitigate these problems.
+
+There are at least three approaches to establishing statistical inference: frequentist, likelihood, and Bayesian. Think of them philosophically. The frequentist approach is the path of *action*. It rejects a null hypothesis if the *p*-value is low because repeated sample analyses are likely to agree. The likelihood approach is the path of *knowledge*. It compares the observed summary measure to the likelihoods of the other possible realities. The Bayesian approach is the path of *belief*. It uses a summary measure to update the prior belief.
 
 ```{r include=FALSE}
 # automatically create a bib database for R packages

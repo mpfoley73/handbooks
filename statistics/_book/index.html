@@ -6,7 +6,7 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   <title>Statistical Inference</title>
   <meta name="description" content="Notes cobbled together from books, online classes, etc. to be used as quick reference for common work projects." />
-  <meta name="generator" content="bookdown 0.29 and GitBook 2.6.7" />
+  <meta name="generator" content="bookdown 0.31 and GitBook 2.6.7" />
 
   <meta property="og:title" content="Statistical Inference" />
   <meta property="og:type" content="book" />
@@ -23,7 +23,7 @@
 <meta name="author" content="Michael Foley" />
 
 
-<meta name="date" content="2022-11-13" />
+<meta name="date" content="2023-03-01" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -31,7 +31,7 @@
   
   
 
-<link rel="next" href="statistical-inference.html"/>
+<link rel="next" href="frequentist-statistics.html"/>
 <script src="assets/jquery-3.6.0/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.4.6/dist/fuse.min.js"></script>
 <link href="assets/gitbook-2.6.7/css/style.css" rel="stylesheet" />
@@ -54,8 +54,7 @@
 <script src="assets/anchor-sections-1.1.0/anchor-sections.js"></script>
 <script src="assets/kePrint-0.0.1/kePrint.js"></script>
 <link href="assets/lightable-0.0.1/lightable.css" rel="stylesheet" />
-<link href="assets/tabwid-1.1.0/tabwid.css" rel="stylesheet" />
-<link href="assets/tabwid-1.1.0/scrool.css" rel="stylesheet" />
+<link href="assets/tabwid-1.1.2/tabwid.css" rel="stylesheet" />
 
 
 <style type="text/css">
@@ -96,7 +95,7 @@ code span.al { color: #ff0000; font-weight: bold; } /* Alert */
 code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
 code span.at { color: #7d9029; } /* Attribute */
 code span.bn { color: #40a070; } /* BaseN */
-code span.bu { } /* BuiltIn */
+code span.bu { color: #008000; } /* BuiltIn */
 code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
 code span.ch { color: #4070a0; } /* Char */
 code span.cn { color: #880000; } /* Constant */
@@ -109,7 +108,7 @@ code span.er { color: #ff0000; font-weight: bold; } /* Error */
 code span.ex { } /* Extension */
 code span.fl { color: #40a070; } /* Float */
 code span.fu { color: #06287e; } /* Function */
-code span.im { } /* Import */
+code span.im { color: #008000; font-weight: bold; } /* Import */
 code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
 code span.kw { color: #007020; font-weight: bold; } /* Keyword */
 code span.op { color: #666666; } /* Operator */
@@ -138,14 +137,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 
 <ul class="summary">
 <li class="chapter" data-level="" data-path="index.html"><a href="index.html"><i class="fa fa-check"></i>Preface</a></li>
-<li class="chapter" data-level="" data-path="statistical-inference.html"><a href="statistical-inference.html"><i class="fa fa-check"></i>Statistical Inference</a></li>
-<li class="chapter" data-level="1" data-path="frequentist-statistics.html"><a href="frequentist-statistics.html"><i class="fa fa-check"></i><b>1</b> Frequentist Statistics</a>
-<ul>
-<li class="chapter" data-level="1.1" data-path="type-i-and-ii-errors.html"><a href="type-i-and-ii-errors.html"><i class="fa fa-check"></i><b>1.1</b> Type I and II Errors</a></li>
-<li class="chapter" data-level="1.2" data-path="statistical-power.html"><a href="statistical-power.html"><i class="fa fa-check"></i><b>1.2</b> Statistical Power</a></li>
-<li class="chapter" data-level="1.3" data-path="what-p-values-would-you-expect.html"><a href="what-p-values-would-you-expect.html"><i class="fa fa-check"></i><b>1.3</b> What p-values would you expect?</a></li>
-<li class="chapter" data-level="1.4" data-path="further-reading.html"><a href="further-reading.html"><i class="fa fa-check"></i><b>1.4</b> Further Reading</a></li>
-</ul></li>
+<li class="chapter" data-level="1" data-path="frequentist-statistics.html"><a href="frequentist-statistics.html"><i class="fa fa-check"></i><b>1</b> Frequentist Statistics</a></li>
 <li class="chapter" data-level="2" data-path="likelihood-statistics.html"><a href="likelihood-statistics.html"><i class="fa fa-check"></i><b>2</b> Likelihood Statistics</a>
 <ul>
 <li class="chapter" data-level="2.1" data-path="maximum-likelihood-estimation.html"><a href="maximum-likelihood-estimation.html"><i class="fa fa-check"></i><b>2.1</b> Maximum Likelihood Estimation</a></li>
@@ -225,12 +217,15 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <h1 class="title">Statistical Inference</h1>
 <h2 class="subtitle"><em>Data Analyst Handbook</em></h2>
 <p class="author"><em>Michael Foley</em></p>
-<p class="date"><em>2022-11-13</em></p>
+<p class="date"><em>2023-03-01</em></p>
 </div>
 <div id="preface" class="section level1 unnumbered hasAnchor">
 <h1>Preface<a href="index.html#preface" class="anchor-section" aria-label="Anchor link to header"></a></h1>
 <p>These are notes from books, classes, tutorials, vignettes, etc. They contain mistakes, are poorly organized, and are sloppy on fundamentals. They should improve over time, but that’s all I can say for it. <em>Use at your own risk.</em></p>
-<p>The focus of this handbook is statistical inference, including population estimates, group comparisons, and regression modeling. Not included here: probability, machine learning, text mining, survey analysis, or survival analysis. These subjects frequently arise at work, but are distinct enough and large enough to warrant separate handbooks.</p>
+<p>The focus of this handbook is statistical inference, including population estimates, group comparisons, and regression modeling. Not included here: <a href="https://bookdown.org/mpfoley1973/probability/">probability</a>, <a href="https://bookdown.org/mpfoley1973/supervised-ml/">supervised ML</a>, <a href="https://bookdown.org/mpfoley1973/unsupervised-ml/">unsupervised ML</a>, <a href="https://bookdown.org/mpfoley1973/text-mining/">text mining</a>, <a href="https://bookdown.org/mpfoley1973/time-series/">time series</a>, <a href="https://bookdown.org/mpfoley1973/survey/">survey analysis</a>, or <a href="https://bookdown.org/mpfoley1973/survival/">survival analysis</a>. These subjects frequently arise at work, but are distinct enough and large enough to warrant separate handbooks.</p>
+<p>Statistical inference is the use of a sample’s distribution to describe the population distribution. Hypothesis tests, confidence intervals, and effect size estimates are all examples of statistical inference.</p>
+<p>We wary of published study results. Identical studies might produce significant and non-significant results, yet only the significant result is likely to reach publication (publication bias). The researcher may have tortured the data until they found a statistically significant result. The study might suffer from low statistical power. Applying principles of inference can mitigate these problems.</p>
+<p>There are at least three approaches to establishing statistical inference: frequentist, likelihood, and Bayesian. Think of them philosophically. The frequentist approach is the path of <em>action</em>. It rejects a null hypothesis if the <em>p</em>-value is low because repeated sample analyses are likely to agree. The likelihood approach is the path of <em>knowledge</em>. It compares the observed summary measure to the likelihoods of the other possible realities. The Bayesian approach is the path of <em>belief</em>. It uses a summary measure to update the prior belief.</p>
 
 </div>
             </section>
@@ -239,7 +234,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
         </div>
       </div>
 
-<a href="statistical-inference.html" class="navigation navigation-next navigation-unique" aria-label="Next page"><i class="fa fa-angle-right"></i></a>
+<a href="frequentist-statistics.html" class="navigation navigation-next navigation-unique" aria-label="Next page"><i class="fa fa-angle-right"></i></a>
     </div>
   </div>
 <script src="assets/gitbook-2.6.7/js/app.min.js"></script>
