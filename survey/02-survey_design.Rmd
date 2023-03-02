@@ -217,7 +217,7 @@ Sections \@ref(#srs) and \@ref(#stratified-srs) calculated sample sizes based on
 
 A measured $t = \frac{\hat{\bar{y}} - \mu_0}{\sqrt{v(\hat{\bar{y}})}}$ test statistic would vary with repeated measurements and be distributed with the $t$ distribution. A complication about the degrees of freedom arises in survey analysis. It is usually defined using a rule of thumb: $df = n_{psu} - n_{strata}$. So if you have 10 strata and 100 PSUs per stratum, $df$ would equal 1,000 - 100 = 900.
 
-Power calculations are best suited for studies that estimate theoretical population values, not for studies that estimate group differences in a finite population @valliant2013.
+Power calculations are best suited for studies that estimate theoretical population values, not for studies that estimate group differences in a finite population [@valliant2013].
 
 , $\alpha$ and $\beta$ are the probabilities of measuring $t$ when the
 
