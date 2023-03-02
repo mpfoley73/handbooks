@@ -4,7 +4,7 @@
 library(tidyverse)
 ```
 
-The survey design (aka, sampling strategy), ultimately depends on how study objective(s) are translated into survey questions, the units of analysis of the target population, the main variables and covariates, and the available sampling frame(s) for data collection [@valliant2013]. Exploratory surveys often sample individuals with qualifying characteristics by convenience, snowball (referrals), quota, or purposeful sampling [@lau2017]. In contrast to these *non-probability sampling* strategies, descriptive and explanatory surveys use *probability sampling*, including simple random, systematic, stratified, and cluster sampling. Whichever survey design you use, you will employ one of three criteria to determine the sample size: i) set a target coefficient of variation, $CV_0(\theta) = SE / \theta$; ii) set a target $SE$; or iii) set a target margin of error (aka, *tolerance*), $MOE = \pm z_{1-\alpha} \cdot SE$.
+The survey design (aka, sampling strategy), ultimately depends on how study objective(s) are translated into survey questions, the units of analysis of the target population, the main variables and covariates, and the available sampling frame(s) for data collection [@valliant2013]. Exploratory surveys often sample individuals with qualifying characteristics by convenience, snowball (referrals), quota, or purposeful sampling [@lau2017]. In contrast to these *non-probability sampling* strategies, descriptive and explanatory surveys use *probability sampling*, including simple random sapling (SRS) and stratified sampling.^[Cluster sampling, systematic sampling and Poisson sampling are other sampling methods to at least be aware of. I'm not ready to deal with these yet.] Whichever survey design you use, you will employ one of three criteria to determine the sample size: i) set a target coefficient of variation, $CV_0(\theta) = SE / \theta$; ii) set a target $SE$; or iii) set a target margin of error (aka, *tolerance*), $MOE = \pm z_{1-\alpha} \cdot SE$.
 
 ## Simple Random Sampling {#srs}
 
@@ -187,7 +187,7 @@ $$
 **Example**. Suppose you have a fixed budget of \$100,000. If sampling costs are \$1,000 person, survey $n = 100$ people and allocate $n$ to $n_h$ with options i-iii). If sampling costs vary by stratum, use options iv-v). 
 
 ```{r collapse=TRUE}
-# Stratum per-capita survey costs
+# Stratum per capita survey costs
 ch <- c(1400, 400, 300, 600, 450, 1000, 950, 250, 350, 650, 450, 950, 80, 70, 900, 80)
 
 smho98 %>%
@@ -211,38 +211,19 @@ smho98 %>%
                         `i) prop`, `ii) equal`, `iii) neyman`, `iv) cost`, `v) prec.`)
 ```
 
-## Other Sampling
-
-There are other sampling methods to at least be aware of. They are mentioned here only as a placeholder for future study. I'm not ready for these yet.
-
-- Probability sampling
-- Systematic sampling
-- Poisson sampling
-
 ## Power Analysis {#power-analysis}
 
-Sections \@ref(#srs) and \@ref(#stratified-srs) calculated sample sizes based on the desired precision of the population parameter using CV, MOE, and cost constraints. Another approach is to calculate the sample size required to detect the alternative value in a hypothesis test. Power is a measure of the likelihood of detecting some magnitude difference $\delta$ between $H_0$ and $H_a$.
+Sections \@ref(#srs) and \@ref(#stratified-srs) calculated sample sizes based on the desired precision of the population parameter using CV, MOE, and cost constraints. Another approach is to calculate the sample size required to detect the alternative value in a hypothesis test. Power is a measure of the likelihood of detecting some magnitude difference $\delta$ between $H_0$ and $H_a$.^[See [statistics handbook](https://bookdown.org/mpfoley1973/statistics/frequentist-statistics.html) section on frequentist statistics for discussion of Type I and II errors.]
 
-- Suppose $H_0$ is true, so you should not reject it. The probability of correctly not rejecting $H_0$ is $1 - \alpha$ and the probability of incorrectly rejecting $H_0$ is $\alpha.$
-- Suppose $H_0$ is false, so you _should_ reject it. The probability of correctly rejecting $H_0$ is $1 - \beta$ and the probability of incorrectly not rejecting $H_0$ is $\beta$.
+A measured $t = \frac{\hat{\bar{y}} - \mu_0}{\sqrt{v(\hat{\bar{y}})}}$ test statistic would vary with repeated measurements and be distributed with the $t$ distribution. A complication about the degrees of freedom arises in survey analysis. It is usually defined using a rule of thumb: $df = n_{psu} - n_{strata}$. So if you have 10 strata and 100 PSUs per stratum, $df$ would equal 1,000 - 100 = 900.
 
-A measured $t = \frac{\hat{\bar{y}} - \mu_0}{\sqrt{v(\hat{\bar{y}})}}$ test statistic would vary with repeated measurements and be distributed with the $t$ distribution. 
+Power calculations are best suited for studies that estimate theoretical population values, not for studies that estimate group differences in a finite population @valliant2013.
 
 , $\alpha$ and $\beta$ are the probabilities of measuring $t$ when the
 
 $\alpha$ is the _level_ of the test and $1 - \beta$ is the _power_ of the test. $\alpha$ is often set at .05, meaning under repeated sampling, if the true value is zero, 5% of measured test statistics would be at least as large as the one associated with .05.
 
 confidence interval associated with the estimate will fail to include the true value in 5% of cases. $\beta$ is opten set at .20, meaning under repeated sampling, 
-
-
-
-https://sphweb.bumc.bu.edu/otlt/MPH-Modules/BS/BS704_Power/BS704_Power3.html
-
-### Case Study
-
-## Multi-Stage
-
-## Survey Weights
 
 ## Appendix: Bias
 
