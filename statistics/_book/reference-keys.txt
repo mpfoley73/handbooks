@@ -54,3 +54,6 @@ case-study-chi-square-fisher
 kruskals-lambda
 relative-risk
 odds-ratio
+tab:unnamed-chunk-37
+tab:unnamed-chunk-61
+tab:unnamed-chunk-62

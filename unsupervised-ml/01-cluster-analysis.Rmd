@@ -296,7 +296,7 @@ map(km_hsd, ~ .x$cluster %>%
   select(predictor = `...6`, everything()) %>%
   mutate(cluster_a = str_sub(rowname, start = 1, end = 1),
          cluster = paste0("c", str_sub(rowname, start = 3, end = 3))) %>%
-  pivot_wider(c(predictor, cluster_a, cluster, p.adj), 
+  pivot_wider(id_cols = c(predictor, cluster), 
               names_from = cluster_a, values_from = p.adj,
               names_prefix = "c") %>%
   flextable::flextable() %>%

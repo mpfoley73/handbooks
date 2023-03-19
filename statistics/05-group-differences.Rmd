@@ -1079,12 +1079,12 @@ y <- ind_discrete$chisq_test$expected %>%
   adorn_pct_formatting(digits = 0) %>% 
   adorn_ns(position = "front")
 
-bind_rows(list(Observed = x, Expected = y), .id = "Data") %>%
-  flextable() %>% 
-  set_caption("Chisq Data Set: Observed vs Expected") %>% 
-  autofit() %>%
-  flextable::border(i = 3, border.bottom = officer::fp_border()) %>%
-  flextable::merge_v(j = 1)
+# bind_rows(list(Observed = x, Expected = y), .id = "Data") %>%
+#   flextable() %>% 
+#   set_caption("Chisq Data Set: Observed vs Expected") %>% 
+#   autofit() %>%
+#   flextable::border(i = 3, border.bottom = officer::fp_border()) %>%
+#   flextable::merge_v(j = 1)
 ```
 
 The Fisher data set has the following summary statistics.
@@ -1106,12 +1106,12 @@ y <- ind_discrete$fisher_chisq_test$expected %>%
   adorn_pct_formatting(digits = 0) %>% 
   adorn_ns(position = "front")
 
-bind_rows(list(Observed = x, Expected = y), .id = "Data") %>%
-  flextable() %>% 
-  set_caption("Fisher Data Set: Observed vs Expected") %>% 
-  autofit() %>%
-  flextable::border(i = 3, border.bottom = officer::fp_border()) %>%
-  flextable::merge_v(j = 1)
+# bind_rows(list(Observed = x, Expected = y), .id = "Data") %>%
+#   flextable() %>% 
+#   set_caption("Fisher Data Set: Observed vs Expected") %>% 
+#   autofit() %>%
+#   flextable::border(i = 3, border.bottom = officer::fp_border()) %>%
+#   flextable::merge_v(j = 1)
 ```
 
 #### Conditions {-}

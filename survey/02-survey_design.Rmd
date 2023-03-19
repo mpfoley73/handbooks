@@ -2,6 +2,11 @@
 
 ```{r include=FALSE}
 library(tidyverse)
+library(scales)
+
+theme_set(
+  theme_light()
+)
 ```
 
 The survey design (aka, sampling strategy), ultimately depends on how study objective(s) are translated into survey questions, the units of analysis of the target population, the main variables and covariates, and the available sampling frame(s) for data collection [@valliant2013]. Exploratory surveys often sample individuals with qualifying characteristics by convenience, snowball (referrals), quota, or purposeful sampling [@lau2017]. In contrast to these *non-probability sampling* strategies, descriptive and explanatory surveys use *probability sampling*, including simple random sapling (SRS) and stratified sampling.^[Cluster sampling, systematic sampling and Poisson sampling are other sampling methods to at least be aware of. I'm not ready to deal with these yet.] Whichever survey design you use, you will employ one of three criteria to determine the sample size: i) set a target coefficient of variation, $CV_0(\theta) = SE / \theta$; ii) set a target $SE$; or iii) set a target margin of error (aka, *tolerance*), $MOE = \pm z_{1-\alpha} \cdot SE$.
@@ -213,17 +218,93 @@ smho98 %>%
 
 ## Power Analysis {#power-analysis}
 
-Sections \@ref(#srs) and \@ref(#stratified-srs) calculated sample sizes based on the desired precision of the population parameter using CV, MOE, and cost constraints. Another approach is to calculate the sample size required to detect the alternative value in a hypothesis test. Power is a measure of the likelihood of detecting some magnitude difference $\delta$ between $H_0$ and $H_a$.^[See [statistics handbook](https://bookdown.org/mpfoley1973/statistics/frequentist-statistics.html) section on frequentist statistics for discussion of Type I and II errors.]
+Sections \@ref(srs) and \@ref(stratified-srs) calculated sample sizes based on the desired precision of the population parameter using CV, MOE, and cost constraints. Another approach is to calculate the sample size required to detect the alternative value in a hypothesis test. Power is a measure of the likelihood of detecting some magnitude difference $\delta$ between $H_0$ and $H_a$.^[See [statistics handbook](https://bookdown.org/mpfoley1973/statistics/frequentist-statistics.html) section on frequentist statistics for discussion of Type I and II errors.] Power calculations are best suited for studies that estimate theoretical population values, not for studies that estimate group differences in a finite population [@valliant2013].
 
-A measured $t = \frac{\hat{\bar{y}} - \mu_0}{\sqrt{v(\hat{\bar{y}})}}$ test statistic would vary with repeated measurements and be distributed with the $t$ distribution. A complication about the degrees of freedom arises in survey analysis. It is usually defined using a rule of thumb: $df = n_{psu} - n_{strata}$. So if you have 10 strata and 100 PSUs per stratum, $df$ would equal 1,000 - 100 = 900.
+A measured $t = \frac{\hat{\bar{y}} - \mu_0}{\sqrt{v(\hat{\bar{y}})}}$ test statistic would vary with repeated measurements and have a $t$ distribution. A complication about the degrees of freedom arises in survey analysis. It is usually defined using a rule of thumb: $df = n_{psu} - n_{strata}$. So if you have 10 strata and 100 PSUs per stratum, $df$ would equal 1,000 - 100 = 900.
 
-Power calculations are best suited for studies that estimate theoretical population values, not for studies that estimate group differences in a finite population [@valliant2013].
+**Example**. Suppose you want to measure mean household income for married couples. From prior research, you expect the mean is \$55,000 with 6% CV. You hypothesize $\mu$ is greater than \$55,000, but only care if the difference is at least \$5,000.
 
-, $\alpha$ and $\beta$ are the probabilities of measuring $t$ when the
+The 6% CV implies SE = 6% * \$55,000 = \$3,300. Supposing $\sigma$ = \$74,000, the original research would have use a sample of size *n* = $(\$74,000 / \$3,300)^2$ = `r (74000/3300)^2 %>% comma(1)`. 
 
-$\alpha$ is the _level_ of the test and $1 - \beta$ is the _power_ of the test. $\alpha$ is often set at .05, meaning under repeated sampling, if the true value is zero, 5% of measured test statistics would be at least as large as the one associated with .05.
+Don't use *n* = `r (74000/3300)^2 %>% comma(1)` for your sample though. The probability of measuring a sample mean >= \$60,000 with an acceptable *p*-value is the power of the study. For *n* = `r (74000/3300)^2 %>% comma(1)` the power is only `r power.t.test(delta = 5000, sd = 74000, sig.level = .05, n = 503, alternative = "one.sided", type = "one.sample") %>% pluck("power") %>% comma(.001)`. The area of 1 - $\beta$ in the top panel below is only `pnorm(qnorm(.95, 50000, 3300), 55000, 3300, lower.tail = FALSE)` = `r pnorm(qnorm(.95, 50000, 3300), 55000, 3300, lower.tail = FALSE) %>% comma(.001)`. To achieve a 1-$\beta$ = .80 power, you need *n* = `r power.t.test(delta = 5000, sd = 74000, sig.level = .05, power = .80, alternative = "one.sided", type = "one.sample") %>% pluck("n") %>% comma(1)`. That's what the bottom panel shows. Notice that a sample mean of \$59,000 still rejects H0: $\mu$ = \$55,000. The power of the test tells you the sample size you need to draw a sample mean large enough to reject H0 1-$\beta$ percent of the time.
 
-confidence interval associated with the estimate will fail to include the true value in 5% of cases. $\beta$ is opten set at .20, meaning under repeated sampling, 
+```{r warning=FALSE, echo=FALSE}
+mu_0 <- 55000
+mu <- 60000
+x_bar <- 59000
+sigma <- 74000
+
+lbl <- tibble(
+  `Sample Size` = c(rep("n = 503", 2), rep("n = 1356", 2)),
+  income = c(57500, 62500, 57500, 58750),
+  lbl = c("beta", "alpha", "beta", "alpha")
+)
+
+tibble(
+  income = rep(seq(45000, 70000, 10), 2),
+  n = c(rep(503, 2501), rep(1356, 2501)),
+  `Sample Size` = map_chr(n, ~paste("n =", .)),
+  Presumed = map2_dbl(income, n, ~dnorm(.x, mean = mu_0, sd = sigma / sqrt(.y))),
+  Alternative = map2_dbl(income, n, ~dnorm(.x, mean = mu, sd = sigma / sqrt(.y))),
+  income_crit = map_dbl(n, ~qnorm(.95, mean = mu_0, sd = sigma / sqrt(.x)))
+) %>%
+  pivot_longer(cols = -c(`Sample Size`, income, income_crit, n), 
+               names_to = "curve", values_to = "density") %>%
+  mutate(area = if_else(income >= income_crit & curve == "Presumed" | 
+                          income < income_crit & curve == "Alternative", 
+                        density, NA_real_)) %>%
+  ggplot(aes(x = income)) +
+  geom_area(aes(y = area, fill = curve), show.legend = FALSE) +
+  geom_line(aes(y = density, color = curve)) +
+  geom_vline(xintercept = mu_0, linetype = 2, color = "gray40") +
+  geom_vline(xintercept = mu, linetype = 2, color = "goldenrod") +
+  geom_vline(xintercept = x_bar, linetype = 2, color = "forestgreen") +
+  geom_text(data = lbl, aes(y = .000025, label = lbl), parse = TRUE, size = 4.5, color = "gray40") +
+  scale_x_continuous(breaks = c(90, mu_0, 
+                                qnorm(.95, mean = mu_0, sd = sigma / sqrt(503)),
+                                qnorm(.95, mean = mu_0, sd = sigma / sqrt(1355)),
+                                x_bar, mu, 50000, 70000), 
+                     label = comma_format(1)) +
+  scale_y_continuous(expand = expansion(mult = c(0, .1))) +
+  scale_color_manual(values = c("goldenrod", "gray40")) +
+  scale_fill_manual(values = c("lightgoldenrod", "gray80")) +
+  facet_wrap(facets = vars(fct_rev(`Sample Size`)), ncol = 1) +
+  theme(
+    panel.grid = element_blank(),
+    axis.text.y = element_blank(),
+    axis.ticks.y = element_blank(),
+    axis.text.x = element_text(angle = 90, vjust = .5),
+    legend.position = "top"
+  ) +
+  labs(title = "X-bar is in the .05 significance level region of H0.", 
+       color = NULL, x = "IQ", y = NULL)
+```
+
+The power of the test from the original study was only `r power.t.test(delta = 5000, sd = 74000, sig.level = .05, n = 503, alternative = "one.sided", type = "one.sample") %>% pluck("power") %>% comma(.001)`.
+
+```{r}
+power.t.test(
+  type = "one.sample",
+  n = 503, 
+  delta = 5000, 
+  sd = 74000, 
+  sig.level = .05, 
+  alternative = "one.sided"
+)
+```
+
+With such a low power of the study, a sample mean of \$59,000 isn't large enough to reject H0. Its *p*-value would be `pt(q = (59000-55000)/(74000/sqrt(503)), df = 503 - 1, lower.tail = FALSE)` = `r pt(q = (59000-55000)/(74000/sqrt(503)), df = 503 - 1, lower.tail = FALSE) %>% comma(.001)`. To find the right sample size, use the power calculation with 1 - $\beta$ and *n* unspecified.
+
+```{r}
+power.t.test(
+  type = "one.sample",
+  delta = 5000, 
+  sd = 74000,
+  sig.level = .05,
+  power = .80,
+  alternative = "one.sided"
+)
+```
 
 ## Appendix: Bias
 

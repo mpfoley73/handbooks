@@ -19,7 +19,7 @@ If one of the variables is bivariate categorical, use **point-biserial correlati
 
 If both variables are ordinal, use **Goodman and Kruskal's gamma**. **Somers' d** is an alternative if you want to distinguish between a dependent and independent variable (instead of linear regression?). The **Mantel-Haenszel** test of trend is used to determine whether there is a linear trend (i.e., a linear relationship/association) between two ordinal variables that are represented in a contingency table. The **Cochran-Armitage** test of trend is used to determine whether there is a linear trend (i.e., a linear relationship/association) between an ordinal independent variable and a dichotomous dependent variable.
 
-**Goodman and Kruskal's λ** (the Greek symbol, λ, is pronounced "lambda") is also referred to as Goodman and Kruskal's lambda. It is a nonparametric measure of the strength of association between two nominal variables where a distinction is made between a dependent and independent variable
+**Goodman and Kruskal's λ** is a nonparametric measure of the strength of association between two nominal variables where a distinction is made between a dependent and independent variable
 
 **Loglinear analysis** is used to understand (and model) associations between two or more categorical variables (i.e., nominal or ordinal variables). However, loglinear analysis is usually employed when dealing with three or more categorical variables, as opposed to two variables, where a chi-square test for association is usually conducted instead. 
 
@@ -29,15 +29,13 @@ There are three common correlation tests for categorical variables^[See https://
 
 The Pearson product-moment correlation measures the strength and direction of a linear relationship between two continuous variables, *x* and *y*. The Pearson correlation coefficient, *r*, ranges from -1 (perfect negative linear relationship) to +1 (perfect positive linear relationship). A value of 0 indicates no relationship between two variables.
 
-$$r_{x,y} = \frac{cov(x,y)}{\sigma(x) \sigma(y)}$$
+$$r_{x,y} = \frac{\text{Cov}(x,y)}{\text{SD}(x) \text{SD}(y)}$$
 
 The statistic can be used as an estimate of the population correlation, $\rho$, in a test of statistical significance from 0 (H0: $\rho$ = 0).
 
-$$\rho_{X,Y} = \frac{cov(X,Y)}{\sigma(X) \sigma(Y)}$$
+$$\rho_{X,Y} = \frac{\text{Cov}(X,Y)}{\text{SD}(X) \text{SD}(Y)}$$
 
-A rule of thumb interpretation is that $|r|$ under .1 is "no correlation", .1 - .3 is "small", .3 - .5 "medium/moderate", and .5 - 1.0 "large/strong".
-
-The test statistic below follows a *t*-distribution with *n* − 2 degrees of freedom. 
+As rule of thumb, $|r|$ <.1 is _no correlation_, [.1, .3) is _small_, [.3, .5) is _moderate_, and [.5, 1.0] is _strong_. The test statistic follows a *t*-distribution with *n* − 2 degrees of freedom. 
 
 $$t = r_{x,y} \sqrt{\frac{n - 2}{1 - r^2_{x,y}}}$$
 
