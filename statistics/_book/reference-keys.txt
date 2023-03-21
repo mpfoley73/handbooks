@@ -57,3 +57,7 @@ odds-ratio
 tab:unnamed-chunk-37
 tab:unnamed-chunk-61
 tab:unnamed-chunk-62
+matrix-algebra
+measures-of-central-tendancy
+measures-of-association
+central-tendancy-dispersion-ans-association

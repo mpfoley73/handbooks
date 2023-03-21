@@ -1,0 +1,77 @@
+# Matrix Algebra
+
+```{r include=FALSE}
+library(tidyverse)
+library(glue)
+library(scales)
+
+theme_set(
+  theme_light()
+)
+```
+
+This section is a primer on basic matrix algebra and its application to multivariate statistics.^[Notes are primarily from [PSU STAT 505: Applied Multivariate Statistical Analysis](https://online.stat.psu.edu/stat505).] 
+
+Matrix algebra treats data *transposed* to how it is actually stored. An $n$-row $\times$ $p$-column data set is represented in matrix $X$ as $n$ _columns_ and $p$ rows. Think of $X$ as a column vector of variables with each variable represented by a row vector of observations.
+
+$$
+X_i = \begin{pmatrix}X_{i1} \\ X_{i2} \\ \vdots \\ X_{ip} \end{pmatrix}
+$$
+
+So $X_{ij}$ refers to *column* $i$ of row vector $j$, opposite of how the data frame is organized.
+
+## Central Tendancy, Dispersion, ans Association
+
+The mean of variable $j$ is the average of row vector $X_j$, $\bar{x}_j = \frac{1}{n} \sum_{i = 1}^n X_{ij}$. It estimates the population mean, $\mu_j = E(X_j)$. Note that the means are a _column vector_ of the variable means,
+
+$$\boldsymbol{\mu} = \begin{pmatrix} \mu_1 \\ \mu_2 \\ \cdots \\ \mu_p  \end{pmatrix}$$
+
+The variance of variable $j$ is the average squared difference from the mean for row vector $X_j$, $s_j^2 = \frac{1}{n-1} \sum_{i=1}^n (X_{ij} - \bar{x}_j)^2$. It estimates the population variance, $\sigma_j^2 = E(X_j - \mu_j)^2$. Again, the variances are represented as a column vector,
+
+$$\boldsymbol{\sigma}^2 = \begin{pmatrix} \sigma_1^2 \\ \sigma_2^2 \\ \cdots \\ \sigma_p^2  \end{pmatrix}$$
+
+The covariance of variables $j$ and $k$ population covariance is is the average product of differences from their respective means, $s_{jk} = \frac{1}{n-1} \sum_{i=1}^n (X_{ij} - \bar{x}_j) (X_{ik} - \bar{x}_k)$. It estimates the population covariance, $\sigma_{jk} = E\{ (X_{ij} - \mu_j) (X_{ik} - \mu_k)\}$. It can be shown that the covariance is equivalently expressed as 
+
+$$
+s_{jk} = \frac{1}{n-1} \left[ \sum_{i=1}^n X_{ij}X_{ik} - \frac{\sum_{i = 1}^n X_{ij} \sum_{i = 1}^n X_{ik}}{n} \right]
+$$
+
+This is closer to how it is actually calculated. The first term is dot product $X_j \cdot X_k$. The second term is the product of the averages. You can generalize this across the entire set of variables as
+
+$$
+\begin{align}
+S &= \frac{1}{n-1} \sum_{i=1}^n (X_i - \bar{x}) (X_i - \bar{x})' \\
+&= \frac{1}{n-1} \left[ \sum_{i=1}^n X_i X_i^{'} - \frac{\sum_{i = 1}^n X_i \sum_{i = 1}^n X_i}{n} \right]
+\end{align}
+$$
+
+#### Example {-}
+
+File nutrient.txt is from [PSU STAT 505](https://online.stat.psu.edu/stat505/lesson/1/1.4).
+
+```{r}
+nutrient <- readr::read_fwf(
+  file = "./input/nutrient.txt", 
+  col_positions = readr::fwf_widths(
+    c(3, 8, 8, 8, 8, 8),
+    col_names = c("ID", "Calcium", "Iron", "Protien", "Vitamin A", "Vitamin C")
+  ),
+  show_col_types = FALSE
+) 
+```
+
+Here are the summary statistics.
+
+```{r}
+nutrient %>% pivot_longer(cols = -ID) %>%
+  summarize(M = mean(value), SD = sd(value), .by = name)
+```
+
+```{r}
+X <- nutrient %>% select(-ID) %>% as.matrix() %>% t()
+
+1 / nrow(nutrient) * (X %*% t(X) - rowSums(X) %*% t(rowSums(X)) / nrow(nutrient))
+```
+
+
+https://online.stat.psu.edu/stat505/lesson/1/1.3

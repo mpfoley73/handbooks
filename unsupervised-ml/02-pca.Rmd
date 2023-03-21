@@ -13,8 +13,7 @@ flextable::set_flextable_defaults(
 )
 ```
 
-
-When a study includes a large number of response variables, there are too many pairwise correlations to consider properly. Principle components analysis (PCA) reduces the number of variables to a few, interpretable linear combinations of the data while retaining as much information as possible.^[Material from [PSU](https://online.stat.psu.edu/stat505/lesson/11), [Laerd](https://statistics.laerd.com/premium/spss/pca/pca-in-spss.php), and @shlens2014tutorial.] PCA is commonly used to remove superfluous variables. If a component only loads to one variable, this may mean the variable is unrelated to the other variables and not measuring anything of importance in the study. Highly correlated variables can be reduced to a single artificial component. This second use is especially useful for handling multicollinearity.
+Data sets with many variables are often redundant. Multiple columns are correlated because they measure the same latent construct. You could drop redundant variables, but this can involve an enormous number of combinations. Principle components analysis (PCA) reduces the number of variables to a few, interpretable linear combinations of the data while retaining as much information as possible.^[Material from [PSU](https://online.stat.psu.edu/stat505/lesson/11), [Laerd](https://statistics.laerd.com/premium/spss/pca/pca-in-spss.php), and @shlens2014tutorial.] PCA is commonly used to remove superfluous variables. If a component only loads to one variable, this may mean the variable is unrelated to the other variables and not measuring anything of importance in the study. Highly correlated variables can be reduced to a single artificial component. This second use is especially useful for handling multicollinearity.
 
 @shlens2014tutorial presents an intuitive motivating example. Suppose you are studying the motion of springs. It oscillates at a set frequency along the x-axis, but you don't understand that yet. You collect movement data from cameras set up along three axes $\{ \vec{a}, \vec{b}, \vec{c} \}$ - more dimensional data than you need! The goal of PCA is to reveal the hidden structure from your noisy data set. In this case, PCA should identify $\hat{x}$ as the important dimension.
 
@@ -126,6 +125,7 @@ $$
 ```{r include=FALSE}
 likert_scale <- c("Strongly Agree", "Agree", "Agree Somewhat", "Undecided", 
                   "Disagree Somewhat", "Disagree", "Strongly Disagree")
+
 pca_dat <- foreign::read.spss("./input/pca.sav", to.data.frame = TRUE) %>%
   mutate(across(where(is.factor), ~factor(., levels = likert_scale, ordered = TRUE)))
 
@@ -172,10 +172,9 @@ Three assumptions underlie a principal components analysis.
 All variables should have at least one correlation coefficients >= .3. Coefficients below .3 may be measuring a different latent variable. Remove or transform any variable that fails this assumption. There are seven levels to the ordinal output, so the Pearson coefficient could be justified. Otherwise, you should use Spearman or Kendall.
 
 ```{r}
-corr_mtrx <- pca_dat %>% 
-  select(all_of(q_colnames)) %>% 
-  mutate(across(where(is.factor), as.numeric)) %>%
-  cor(method = "pearson")
+pca_numeric <- pca_dat %>% mutate(across(where(is.factor), as.numeric))
+
+corr_mtrx <- select(pca_numeric, all_of(q_colnames)) %>% cor(method = "pearson")
 
 ggcorrplot::ggcorrplot(corr_mtrx)
 ```
@@ -194,7 +193,7 @@ as_tibble(corr_mtrx) %>%
 
 #### Sampling Adequacy {-}
 
-Each variable and the complete model should have an "adequate sample". The Kaiser-Meyer-Olkin (KMO) measure of sampling adequacy compares the variable's correlations with other variables to the partial correlations in the data.
+Each variable and the complete model should have an "adequate sample". The Kaiser-Meyer-Olkin (KMO) measure of sampling adequacy compares the variable's correlations with other variables to the partial correlations in the data. The test measures sampling adequacy for each variable in the model and for the complete model.^[See [Statistics How-to](https://www.statisticshowto.com/kaiser-meyer-olkin/).] 
 
 $$
 \text{KMO}_j = \frac{\sum_{i \ne j}r_{ij}^2}{\sum_{i \ne j}r_{ij}^2 + \sum_{i \ne j} u}
@@ -206,10 +205,36 @@ where $r_{ij}$ are correlations, and $u_{ij}$ are partial covariances.
 EFAtools::KMO(corr_mtrx)
 ```
 
+Scores range from 0 to 1. Values should be at least .6 to justify a PCA. Values over .8 are preferable.
 
-The Kaiser-Meyer-Olkin (KMO) Test is a measure of how suited your data is for Factor Analysis. The test measures sampling adequacy for each variable in the model and for the complete model. The statistic is a measure of the proportion of variance among variables that might be common variance. The lower the proportion, the more suited your data is to Factor Analysis.
+Bartlett's test of sphericity tests the null hypothesis that the correlation matrix is an identity matrix, i.e., there are no correlations between any variables.
 
-[Statistics How-to](https://www.statisticshowto.com/kaiser-meyer-olkin/)
+```{r}
+EFAtools::BARTLETT(corr_mtrx, N = nrow(pca_dat))
+```
+
+#### Perform PCA {-}
+
+```{r}
+princomp(
+  ~ ., data = pca_numeric %>% select(Qu1:Qu25),
+  cor = TRUE
+) %>% summary()
+
+pca_result <- prcomp(~ ., data = pca_numeric %>% select(Qu1:Qu25), center = TRUE, scale = TRUE) 
+
+pca_result$rotation
+
+biplot(pca_result, scale = 0)
+
+pca_result$sdev^2 / sum(pca_result$sdev^2)
+```
+
+
+The communality is the proportion of each variable's variance that is accounted for by the principal components analysis and can also be expressed as a percentage. 
+
+A principal components analysis will produce as many components as there are variables. However, the purpose of principal components analysis is to explain as much of the variance in your variables as possible using as few components as possible. After you have extracted your components, there are four major criteria that can help you decide on the number of components to retain: (a) the eigenvalue-one criterion, (b) the proportion of total variance accounted for, (c) the scree plot test, and (d) the interpretability criterion. All except for the first criterion will require some degree of subjective analysis. 
+
 
 ## Appendix: Eigenvectors
 
