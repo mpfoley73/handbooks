@@ -12,31 +12,31 @@ theme_set(
 
 This section is a primer on basic matrix algebra and its application to multivariate statistics.^[Notes are primarily from [PSU STAT 505: Applied Multivariate Statistical Analysis](https://online.stat.psu.edu/stat505).] 
 
-Matrix algebra treats data *transposed* to how it is actually stored. An $n$-row $\times$ $p$-column data set is represented in matrix $X$ as $n$ _columns_ and $p$ rows. Think of $X$ as a column vector of variables with each variable represented by a row vector of observations.
+**An initial remark on these notes**: Matrix algebra treats data *transposed* to how it is actually stored. An $n$-row $\times$ $p$-column data set is represented in matrix $X$ as $n$ _columns_ and $p$ rows. Think of $X$ as a column vector of variables with each variable represented by a row vector of observations.
 
 $$
 X_i = \begin{pmatrix}X_{i1} \\ X_{i2} \\ \vdots \\ X_{ip} \end{pmatrix}
 $$
 
-So $X_{ij}$ refers to *column* $i$ of row vector $j$, opposite of how the data frame is organized.
+So $X_{ij}$ refers to index $i$ of row vector $j$, opposite of how the data frame is organized. Observation $i$ is represented as $X_i$, but it is a _column_ vector of the matrix.
 
-## Central Tendancy, Dispersion, ans Association
+## Central Tendancy, Dispersion, and Association
 
-The mean of variable $j$ is the average of row vector $X_j$, $\bar{x}_j = \frac{1}{n} \sum_{i = 1}^n X_{ij}$. It estimates the population mean, $\mu_j = E(X_j)$. Note that the means are a _column vector_ of the variable means,
+The mean of variable $j$ is the average of row vector $X_j$, $\bar{x}_j = \frac{1}{n} \sum_{i = 1}^n X_{ij}$. $\bar{x}_j$ estimates the population mean, $\mu_j = E(X_j)$. The collection of means are a column vector.
 
 $$\boldsymbol{\mu} = \begin{pmatrix} \mu_1 \\ \mu_2 \\ \cdots \\ \mu_p  \end{pmatrix}$$
 
-The variance of variable $j$ is the average squared difference from the mean for row vector $X_j$, $s_j^2 = \frac{1}{n-1} \sum_{i=1}^n (X_{ij} - \bar{x}_j)^2$. It estimates the population variance, $\sigma_j^2 = E(X_j - \mu_j)^2$. Again, the variances are represented as a column vector,
+The variance of variable $j$ is the average squared difference from the mean for row vector $X_j$, $s_j^2 = \frac{1}{n-1} \sum_{i=1}^n (X_{ij} - \bar{x}_j)^2$. It estimates the population variance, $\sigma_j^2 = E(X_j - \mu_j)^2$. Again, the collection is represented as a column vector,
 
 $$\boldsymbol{\sigma}^2 = \begin{pmatrix} \sigma_1^2 \\ \sigma_2^2 \\ \cdots \\ \sigma_p^2  \end{pmatrix}$$
 
-The covariance of variables $j$ and $k$ population covariance is is the average product of differences from their respective means, $s_{jk} = \frac{1}{n-1} \sum_{i=1}^n (X_{ij} - \bar{x}_j) (X_{ik} - \bar{x}_k)$. It estimates the population covariance, $\sigma_{jk} = E\{ (X_{ij} - \mu_j) (X_{ik} - \mu_k)\}$. It can be shown that the covariance is equivalently expressed as 
+The covariance of variables $j$ and $k$ is the average product of differences from their respective means, $s_{jk} = \frac{1}{n-1} \sum_{i=1}^n (X_{ij} - \bar{x}_j) (X_{ik} - \bar{x}_k)$. It estimates the population covariance, $\sigma_{jk} = E\{ (X_{ij} - \mu_j) (X_{ik} - \mu_k)\}$. Notice how the covariance is positive if when one variable is larger than its mean, so is the other. A zero covariance implies the value of one variable tells you nothing about the other. It can be shown that the covariance is equivalently expressed as 
 
 $$
 s_{jk} = \frac{1}{n-1} \left[ \sum_{i=1}^n X_{ij}X_{ik} - \frac{\sum_{i = 1}^n X_{ij} \sum_{i = 1}^n X_{ik}}{n} \right]
 $$
 
-This is closer to how it is actually calculated. The first term is dot product $X_j \cdot X_k$. The second term is the product of the averages. You can generalize this across the entire set of variables as
+This is how it is actually calculated (see example below). The first term is dot product $X_j \cdot X_k$. The second term is the product of the averages. The generalization across the entire matrix is the _variance-covariance matrix_.
 
 $$
 \begin{align}
@@ -44,6 +44,20 @@ S &= \frac{1}{n-1} \sum_{i=1}^n (X_i - \bar{x}) (X_i - \bar{x})' \\
 &= \frac{1}{n-1} \left[ \sum_{i=1}^n X_i X_i^{'} - \frac{\sum_{i = 1}^n X_i \sum_{i = 1}^n X_i}{n} \right]
 \end{align}
 $$
+
+Divide the covariance of two variables by the product of their standard deviations to get the _correlation_.
+
+$$
+\rho_{jk} = \frac{\sigma_{jk}}{\sigma_j \sigma_k}
+$$
+
+The sum of the diagonal of any square matrix is called the _trace_. The trace of the covariance matrix is a single number that expresses the total dispersion of the data set.
+
+$$\mathrm{Trace}(S) = \sum_p S_{pp}$$
+
+The trace has the shortcoming of not taking the variable correlations into account. A data set can have a large trace, but really high correlations. Instead, the _generalized variance_ expresses total variation with the _determinant_.
+
+$$|S| = \sum_{j = 1}^p (-1)^{j+1} b_{1j} |B_{1j}|$$
 
 #### Example {-}
 
@@ -60,18 +74,279 @@ nutrient <- readr::read_fwf(
 ) 
 ```
 
-Here are the summary statistics.
+This is an `r nrow(nutrient)` $\times$ `r ncol(nutrient) - 1` data set.
 
 ```{r}
-nutrient %>% pivot_longer(cols = -ID) %>%
-  summarize(M = mean(value), SD = sd(value), .by = name)
+(nutrient_smry <- nutrient %>% pivot_longer(cols = -ID) %>%
+  summarize(M = mean(value), SD = sd(value), .by = name))
 ```
+
+Calculate the variance-covariance matrix with matrix algebra. Notice the transpose step, `t()`, to convert the $i \times j$ data set into the $j \times i$ matrix .
 
 ```{r}
 X <- nutrient %>% select(-ID) %>% as.matrix() %>% t()
 
-1 / nrow(nutrient) * (X %*% t(X) - rowSums(X) %*% t(rowSums(X)) / nrow(nutrient))
+varcov_mtrx <- 1 / (nrow(nutrient) - 1) * 
+    (X %*% t(X) - rowSums(X) %*% t(rowSums(X)) / nrow(nutrient))
+
+round(varcov_mtrx, 0)
+```
+
+Divide by the product of the standard deviations to get the correlation matrix.
+
+```{r}
+sd_prd <- nutrient_smry$SD %*% t(nutrient_smry$SD)
+
+corr_mtrx <- varcov_mtrx / sd_prd
+
+round(corr_mtrx, 3)
+```
+
+That's what `cor()` does.
+
+```{r}
+nutrient %>% select(-ID) %>% cor() %>% round(digits = 3)
+```
+
+The _coefficient of determination_ is the square of the correlation coefficient. Interpret cell (1, 2) below as `r percent((corr_mtrx^2)[1, 2], .1)` of the variation in iron is explained by calcium intake, or vice-versa.
+
+```{r}
+r_sqr_mtrx <- corr_mtrx^2
+
+round(r_sqr_mtrx, 3)
+```
+
+The total variation of the nutrient data set is the trace of the covariance-variance matrix.
+
+```{r collapse=TRUE}
+psych::tr(varcov_mtrx)
+
+# Or just the sum of the variances
+sum((nutrient_smry$SD)^2)
+```
+
+The generalized variance is the determinant.
+
+```{r}
+det(varcov_mtrx)
+```
+
+## Linear Transformations
+
+Linear combinations can be expressed as the multiplication of a matrix by the transpose of a column vector, $\textbf{Y} = \textbf{c}^{'} \textbf{X}$. A trivial example can be taken from the `nutrient.txt` example data from the prior section. Vitamin A is measured in micrograms and vitamin C is measured in milligrams. The total intake in milligrams is measured by the transformation, $\textbf{Y} = .001 X_4 + X_5$.
+
+The mean of linear combination is the linear combination of the means, $\bar{\textbf{y}} = \textbf{c}'\bar{x}$. $\bar{\textbf{y}}$ estimates the population mean, $\textbf{c}'\mathbf{\mu} = E(\textbf{Y})$.
+
+$\text{Var}(Y) = \textbf{c}' \mathbf{\Sigma} \textbf{c}$ where $\mathbf{\Sigma}$ is the variance-covariance matrix.
+
+Suppose you have two linear transformations, $\textbf{Y}_1 = \textbf{c}^{'} \textbf{X}$ and $\textbf{Y}_1 = \textbf{d}^{'} \textbf{X}$. Their covariance, $\sigma_{Y_1 Y_2}$, is $\text{Cov}(Y_1, Y_2) = \textbf{c}' \mathbf{\Sigma} \textbf{d}$. Their correlation is their covariance divided by the individual standard deviations, $\rho = \frac{\sigma_{Y_1 Y_2}}{\sigma_{Y_1}\sigma_{Y_2}}$.
+
+#### Example {-}
+
+Using file nutrient.txt from the prior section, if $Y = .001 X_4 + X5$, then the mean of $Y$ is 79.8.
+
+```{r collapse=TRUE}
+C <- c(0, 0, 0, .001, 1)
+x_bar <- nutrient_smry$M
+
+# Mean
+t(C) %*% x_bar
+
+# Variance
+(VarY1 <- t(C) %*% varcov_mtrx %*% C)
+
+# Covariance between Y1 = cX and Y2 = dX
+d <- c(1, 1, 0, 0, 0)
+(CovY1Y2 <- t(C) %*% varcov_mtrx %*% d)
+
+# Correlation
+VarY2 <- t(d) %*% varcov_mtrx %*% d
+(CorY1Y2 <- CovY1Y2 / sqrt(VarY1 * VarY2))
+```
+
+## Multivariate Normal Distribution
+
+The univariate normal distribution, $X \sim N(\mu, \sigma^2)$, is a function of the variable's mean and variance, $\phi(x) = \frac{1}{\sqrt{2 \pi \sigma^2}}\exp\{-\frac{1}{2\sigma^2} (x - \mu)^2\}$. The multivariate normal distribution is similar except that the mean is the mean vector and the variance is the variance-covariance matrix, $\textbf{X} \sim N(\mu, \Sigma)$. Notice the determinant $|\Sigma|$ and [matrix inverse](https://www.mathsisfun.com/algebra/matrix-inverse-row-operations-gauss-jordan.html) in the equation.
+
+$$
+\begin{equation}
+\phi(\textbf{X}) = \left(\frac{1}{2 \pi}\right)^{p/2}|\Sigma|^{-1/2}\exp\{-\frac{1}{2} (\textbf{x} - \mathbf{\mu})'\Sigma^{-1}(\textbf{x} - \mathbf{\mu})\}
+\end{equation}
+(\#eq:multivariate-normal)
+$$
+
+If $p$ is 2, then you have a bi-variate normal distribution. The exponentiated term $(\textbf{x} - \mathbf{\mu})'\Sigma^{-1}(\textbf{x} - \mathbf{\mu})$ is called the squared _Mahalanobis distance_ between $x$ and $\mu$.
+
+A linear transformation is distributed $\textbf{Y} \sim N(\textbf{c}'\mu, \textbf{c}'\Sigma \textbf{c})$. It's useful to note that each variable in the multivariate normal distribution is normal, as are subsets of variables, linear combinations, and conditional distributions.
+
+For an intuitive understanding of the material, consider the bivariate case.
+
+$$
+\begin{pmatrix}X_1 \\ X_2 \end{pmatrix} \sim N \left[ \begin{pmatrix} \mu_1 \\ \mu_2 \end{pmatrix} \begin{pmatrix} \sigma_1^2 & \rho \sigma_1 \sigma_2 \\ \rho \sigma_1 \sigma_2 & \sigma_2^2 \end{pmatrix}\right]
+$$
+
+If $\rho$ is 0, then the bivariate normal density function is symmetric in all dimension. As $\rho \rightarrow 1$, the curve gets increasing skinny along the diagonal.
+
+```{r}
+x <- seq(-4, 4, .1)
+y <- seq(-4, 4, .1)
+
+z_values <- function(x, y, r = .8) {
+  exp(-(x^2-2*r*x*y+y^2)/2/(1-r^2))/2/pi/sqrt(1-r^2)
+}
+```
+
+<!-- The colons (::::, :::) create a style html within document -->
+:::: {style="display: grid; grid-template-columns: 1fr 1fr; grid-column-gap: 10px;"}
+::: {}
+```{r}
+# correlation is .3
+z <- outer(x, y, z_values, .3)
+persp(x, y, z)
+```
+:::
+::: {}
+```{r}
+# correlation is .9
+z <- outer(x, y, z_values, .9)
+persp(x, y, z)
+```
+:::
+::::
+
+The squared Mahalanobis distance, $d^2 = (\textbf{x} - \mathbf{\mu})'\Sigma^{-1}(\textbf{x} - \mathbf{\mu})$, is the equation for a hyper-ellipse centered at $\mu$. In two dimensions, it looks like this:
+
+```{r}
+bvn_mtrx <- MASS::mvrnorm(
+  n = 100,
+  mu = c(10, 5),
+  Sigma = matrix(c(10, 5, 2, 9), ncol = 2)
+)
+colnames(bvn_mtrx) <- c("x1", "x2")
+
+d2 <- mahalanobis(bvn_mtrx, colMeans(bvn_mtrx), cov(bvn_mtrx))
+
+bvn <- as_tibble(bvn_mtrx) %>% bind_cols(d2 = d2)
+
+bvn %>% ggplot(aes(x = x1, y = x2, color = d2)) + 
+  geom_point() +
+  scale_color_continuous(type = "viridis")
+```
+
+$d^2$ has a chi-square distribution with $p$ degrees of freedom. The distribution can be used to evaluate whether a point is an outlier or whether the data is multivariate normal. A Q-Q plot shows the ordered Mahalanobis distances versus the quantiles for a sample of size $n$ from a chi-squared distribution with $p$ degrees of freedom.
+
+```{r}
+qqplot(dchisq(bvn$d2, 2), bvn$d2)
+```
+
+Describe the shape of the ellipse mathematically with eigenvalues and eigenvectors of the variance-covariance matrix.^[Eigenvalues and eigenvectors show up in confidence ellipses, PCA, and factor analysis.] A $p \times p$ matrix $\textbf{A}$ has $p$ _eigenvalues_, $[\lambda_1, .., \lambda_p]$, that solve the expression 
+
+$$
+\begin{equation}
+|\textbf{A} - \lambda \textbf{I}| = 0.
+(\#eq:eigenvalue)
+\end{equation}
+$$
+
+Calculate $\lambda$ by taking the determinant and solving the resulting $p$-ordered polynomial. The result is $p$ solutions, not necessarily all unique. Plug the eigenvectors into the following equation and solve for the $p$ _eigenvectors_, $\textbf{e}$. The eigenvector solutions are generally not unique, so to obtain a unique solution, require that $\textbf{e}_j'\textbf{e}_j = 1$.
+
+$$
+\begin{equation}
+(\textbf{A} - \lambda_j \textbf{I}) \textbf{e}_j = \textbf{0}
+(\#eq:eigenvector)
+\end{equation}
+$$
+
+The eigenvalues and eigenvectors define the shape and orientation of the $(1 - \alpha)\%$ _prediction ellipse_. The ellipse is centered on the means with axes pointing in the directions of the eigenvectors. The distance from the origin to the ellipse boundary is
+
+$$
+\begin{equation}
+l_j = \sqrt{\lambda_j \chi_{p, \alpha}^2}
+(\#eq:prediction-ellipse-dist)
+\end{equation}
+$$
+
+```{r warning=FALSE}
+dat <- tibble(X = runif(40, 5, 20))
+dat$Y <- dat$X + rnorm(40, 0, 3)
+
+mu_X <- mean(dat$X)
+mu_Y <- mean(dat$Y)
+
+dat %>%
+  ggplot(aes(x = X, y = Y)) + 
+  geom_point() + 
+  stat_ellipse(type = "norm") +
+  geom_segment(aes(x = mu_X, y = 0, xend = mu_X, yend = mu_Y), linetype = 2) +
+  geom_segment(aes(x = 0, y = mu_Y, xend = mu_X, yend = mu_Y), linetype = 2) +
+  annotate("text", x = 0, y = mu_Y*1.1, label = expression(paste(mu[Y])), parse = TRUE, hjust = 0) +
+  annotate("text", x = mu_X*1.05, y = 0, label = expression(paste(mu[X])), parse = TRUE, hjust = 0) +
+  geom_segment(x = mu_X, y = mu_Y, xend = 8.5, yend = 16, 
+               arrow = arrow(length = unit(0.03, "npc")), color = "goldenrod") +
+  geom_segment(x = mu_X, y = mu_Y, xend = 22.5, yend = 24.5, 
+               arrow = arrow(length = unit(0.03, "npc")), color = "goldenrod") +
+  annotate("text", x = 8, y = 14.5, label = expression(paste(lambda[Y])), 
+           parse = TRUE, hjust = 0, color = "darkgoldenrod") +
+  annotate("text", x = 20, y = 23.5, label = expression(paste(lambda[X])), 
+           parse = TRUE, hjust = 0, color = "darkgoldenrod") +
+  tune::coord_obs_pred()
+```
+
+The elliptical shape is due to the correlation in the data. In the two-dimensional diagram above, the ellipse would be a perfect circle if the covariances were zero. The eigenvalues would equal the variances, $\lambda = \sigma^2$, and the eigenvectors would be parallel to the coordinate axis, $\textbf{e} = \begin{pmatrix}1 & 0 \\ 0 & 1 \end{pmatrix}$. The ellipse flattens with increasing correlation.
+
+#### Example {-}
+
+File wechsler.txt is a 37x4 data set from [PSU STAT 505](https://online.stat.psu.edu/stat505/lesson/4/4.7) with variance-covariance matrix
+
+```{r}
+wechsler <- readr::read_fwf(
+  file = "./input/wechsler.txt", 
+  col_positions = readr::fwf_widths(
+    c(2, 3, 3, 3, 3),
+    col_names = c("ID", "Information", "Similarities", "Arithmetic", "PictureCompletion")
+  ),
+  show_col_types = FALSE
+) 
+
+(weschler_cov <- cov(wechsler[, -1]))
+```
+
+and the eigenvalues and eigenvectors
+
+```{r}
+(weschler_eigen <- eigen(weschler_cov))
+```
+
+Now consider the 95% prediction ellipse formed by the multivariate normal distribution whose variance-covariance matrix. The half-lengths of the ellipse axes are $l_j = \sqrt{\lambda_j \chi_{p, \alpha}^2}$ where $\chi_{4, .05}^2$ is `r comma(qchisq(.95, 4), .01)`. 
+
+```{r}
+(weschler_half_len <- (weschler_eigen$values * qchisq(.95, 4))^.5)
+```
+
+The eigenvectors are the directions of the axes. The first vector, (`r paste(comma(weschler_eigen$vectors[, 1], .001), collapse = ", ")`) has large values for the first three variables (Information, Similarities, and Arithmetic) and a small value for the fourth (PictureCompletion), so the vector points toward the first three. The second axis has a half-length that is about half the size of the first. It's directed mostly toward the third variable (Arithmetic) and decreasing for the second variable (Similarities). Overall, the ellipse has one long axis and three shorter axes.
+
+
+```{r warning=FALSE, eval=FALSE}
+mu_Information <- mean(wechsler$Information)
+
+mu_Similarities <- mean(wechsler$Similarities)
+
+ggplot(wechsler, aes(x = Information, y = Similarities)) + 
+  geom_point() + 
+  stat_ellipse(type = "norm") +
+  geom_segment(aes(x = mu_Information, y = 0, xend = mu_Information, yend = mu_Similarities), linetype = 2) +
+  geom_segment(aes(x = 0, y = mu_Similarities, xend = mu_Information, yend = mu_Similarities), linetype = 2) +
+  annotate("text", x = 0, y = mu_Similarities*1.1, label = expression(paste(mu[2])), parse = TRUE, hjust = 0) +
+  annotate("text", x = mu_Information*1.05, y = 0, label = expression(paste(mu[1])), parse = TRUE, hjust = 0) +
+  geom_segment(x = mu_Information, y = mu_Similarities, xend = 10, yend=12.5, arrow = arrow(length = unit(0.03, "npc"))) +
+  geom_segment(x = mu_Information, y = mu_Similarities, xend = 21, yend=17.5, arrow = arrow(length = unit(0.03, "npc"))) +
+  annotate("text", x = 11, y = 12, label = expression(paste(lambda[2])), parse = TRUE, hjust = 0) +
+  annotate("text", x = 19, y = 17, label = expression(paste(lambda[1])), parse = TRUE, hjust = 0) +
+  tune::coord_obs_pred()
+
+
 ```
 
 
-https://online.stat.psu.edu/stat505/lesson/1/1.3
+
+https://online.stat.psu.edu/stat505/lesson/4

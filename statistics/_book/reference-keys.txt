@@ -61,3 +61,10 @@ matrix-algebra
 measures-of-central-tendancy
 measures-of-association
 central-tendancy-dispersion-ans-association
+central-tendancy-dispersion-and-association
+linear-transformations
+eq:multivariate-normal
+multivariate-normal-distribution
+eq:eigenvalue
+eq:eigenvector
+eq:prediction-ellipse-dist
