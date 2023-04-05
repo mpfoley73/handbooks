@@ -441,3 +441,101 @@ cs$rr2x2 <- read.spss(
 
 ```
 
+## Multivariate Statistics
+
+The tests of association have multivariate analogs. The covariance of variables $j$ and $k$ is the average product of differences from their respective means, $s_{jk} = \frac{1}{n-1} \sum_{i=1}^n (X_{ij} - \bar{x}_j) (X_{ik} - \bar{x}_k)$. It estimates the population covariance, $\sigma_{jk} = E\{ (X_{ij} - \mu_j) (X_{ik} - \mu_k)\}$. Notice how the covariance is positive if when one variable is larger than its mean, so is the other. A zero covariance implies the value of one variable tells you nothing about the other. It can be shown that the covariance is equivalently expressed as 
+
+$$
+s_{jk} = \frac{1}{n-1} \left[ \sum_{i=1}^n X_{ij}X_{ik} - \frac{\sum_{i = 1}^n X_{ij} \sum_{i = 1}^n X_{ik}}{n} \right]
+$$
+
+This is how it is actually calculated (see example below). The first term is dot product $X_j \cdot X_k$. The second term is the product of the averages. The generalization across the entire matrix is the _variance-covariance matrix_.
+
+$$
+\begin{align}
+S &= \frac{1}{n-1} \sum_{i=1}^n (X_i - \bar{x}) (X_i - \bar{x})' \\
+&= \frac{1}{n-1} \left[ \sum_{i=1}^n X_i X_i^{'} - \frac{\sum_{i = 1}^n X_i \sum_{i = 1}^n X_i}{n} \right]
+\end{align}
+$$
+
+Divide the covariance of two variables by the product of their standard deviations to get the _correlation_, $r_{jk} = \frac{s_{jk}}{s_j s_k}$. The sample corellation estimates the population correlation, $\rho_{jk} = \frac{\sigma_{jk}}{\sigma_j \sigma_k}$. Test the null hypothesis that $H_0: \rho_{jk} = 0$ with a *t*-test where
+
+$$
+t = r_{jk}\sqrt{\frac{n-2}{1-r_{jk}^2}}
+$$
+
+is distributed with $n - 2$ degrees of freedom. The 95% CI is complicated by the [-1, 1] bounding of the data which creates skew. The 95% CI is formed from the _Fisher transformation_ of the data,
+
+$$
+z_{jk} = \frac{1}{2} \log \frac{1 + r_{jk}}{1 - r_{jk}}
+$$
+
+$z_{jk}$ is distributed normally with variance $\frac{1}{n - 3}$.
+
+**Quick Example**. 
+
+```{r collapse=TRUE}
+# 37x5 data set from [PSU STAT 505](https://online.stat.psu.edu/stat505/lesson/4/4.7).
+wechsler <- readr::read_fwf(
+  file = "./input/wechsler.txt", 
+  col_positions = readr::fwf_widths(
+    c(2, 3, 3, 3, 3),
+    col_names = c("ID", "Information", "Similarities", "Arithmetic", "PictureCompletion")
+  ),
+  show_col_types = FALSE
+) 
+
+# Correlation between Information and Similarities
+cor(wechsler$Information, wechsler$Similarities)
+
+# t.test with 95% CI.
+cor.test(wechsler$Information, wechsler$Similarities)
+```
+
+
+The sum of the diagonal of any square matrix is called the _trace_. The trace of the covariance matrix is a single number that expresses the total dispersion of the data set.
+
+$$\mathrm{Trace}(S) = \sum_p S_{pp}$$
+
+The trace has the shortcoming of not taking the variable correlations into account. A data set can have a large trace, but really high correlations. Instead, the _generalized variance_ expresses total variation with the _determinant_.
+
+$$|S| = \sum_{j = 1}^p (-1)^{j+1} b_{1j} |B_{1j}|$$
+
+### Partial Correlation
+
+Build your intuition with the bivariate case. If variables $Y$ and $X$ have a multivariate normal distribution, the conditional distribution of $Y|X = x$ is normal with mean $\mu_Y + \frac{\sigma_{YX}}{\sigma_{XX}}(x - \mu_X)$ and variance $\sigma_{YY} - \frac{\sigma_{YX}^2}{\sigma_{XX}}$. For example, suppose $Y$ = height (in) and $X$ = weight (lbs) are distributed $\mu = \begin{pmatrix}175 \\ 71 \end{pmatrix}$ with variance-covariance matrix $\boldsymbol{\Sigma} = \begin{pmatrix} 550 & 40 \\ 40 & 8 \end{pmatrix}$. Conditioning on $X = x$, $\mu_{Y.x} = 175 + \frac{40}{8}(x - 71)$ and $\sigma_{Y.x} = 550 - \frac{40^2}{8}$.
+
+Extend this to the multivariate case. Let $\textbf{Y}$ be a set of outcomes (e.g., blood pressure and cholesterol) and $\textbf{X}$ be a set of conditioning variables (e.g., age, height, and weight). The multivariate conditional mean, $\mu_{\textbf{Y}.\textbf{x}}$, is 
+
+$$
+\begin{equation}
+E(\textbf{Y} | \textbf{X} = \textbf{x}) = \mu_{\textbf{Y}} + \boldsymbol{\Sigma}_{\textbf{YX}} \boldsymbol{\Sigma}_\textbf{X}^{-1}(\textbf{x} - \boldsymbol{\mu}_\textbf{X})
+(\#eq:multivariate-conditional-mean)
+\end{equation}
+$$
+
+The multivariate conditional variance-covariance matrix of $\textbf{Y}$, $\Sigma_{\textbf{Y}.\textbf{x}}$, is
+
+$$
+\begin{equation}
+E(\textbf{Y} | \textbf{X} = \textbf{x}) = \mu_{\textbf{Y}} + \boldsymbol{\Sigma}_{\textbf{YX}} \boldsymbol{\Sigma}_\textbf{X}^{-1}(\textbf{x} - \boldsymbol{\mu}_\textbf{X})
+(\#eq:multivariate-conditional-mean)
+\end{equation}
+$$
+
+ the mean of a set of outcomes, $\textbf{Y}$ (e.g., blood pressure and cholesterol) conditioned on a set of attributes, $\textbf{X}$ (e.g., age, height, and weight). Denote it as . Denote the conditional variance as $\sigma_{\textbf{Y}.x}^2 = \text{var}(\textbf{Y}|\textbf{X}=\textbf{x})$. It is equal to conditional squared difference from the mean, $E\{(\textbf{Y} - \boldsymbol{\mu}_{\textbf{Y}.\textbf{x}})^2|\textbf{X} = \textbf{x}\}$. Any two variables, $Y_i$ and $Y_j$ have a conditional covariance $\sigma_{i,j.\textbf{x}} = \text{cov}(Y_i,Y_j|\textbf{X} = \textbf{x})$. It is equal to $E\{ (Y_i - \mu_{Y_{i.x}}) (Y_j - \mu_{Y_{j.x}}) | \textbf{X} = \textbf{x}\}$. The set of all covariances is a matrix.
+
+$$
+\boldsymbol{\Sigma}_{\textbf{Y}.\textbf{x}} = \begin{pmatrix} 
+\sigma_{Y_{1}.\textbf{X}} & \sigma_{12.\textbf{X}} & \cdots & \sigma_{1p.\textbf{X}} \\
+\sigma_{21.\textbf{X}} & \sigma_{Y_{2}.\textbf{X}} & \cdots & \sigma_{2p.\textbf{X}} \\
+\vdots & \vdots & \ddots & \vdots \\
+\sigma_{p1.\textbf{X}} & \sigma_{p2.\textbf{X}} & \cdots & \sigma_{Y_{p}.\textbf{X}} 
+\end{pmatrix}
+$$
+
+Then the partial correlation between $Y_i$ and $Y_k$ given $\textbf{X} = \textbf{x}$ is
+
+$$
+\rho_{jk.\textbf{X}} = \frac{\sigma_{jk.\textbf{X}}}{\sigma_{Y_{j}.\textbf{X}} \sigma_{Y_{k}.\textbf{X}}}
+$$

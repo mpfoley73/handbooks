@@ -6,7 +6,7 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   <title>Statistical Inference</title>
   <meta name="description" content="Notes cobbled together from books, online classes, etc. to be used as quick reference for common work projects." />
-  <meta name="generator" content="bookdown 0.31 and GitBook 2.6.7" />
+  <meta name="generator" content="bookdown 0.33 and GitBook 2.6.7" />
 
   <meta property="og:title" content="Statistical Inference" />
   <meta property="og:type" content="book" />
@@ -23,7 +23,7 @@
 <meta name="author" content="Michael Foley" />
 
 
-<meta name="date" content="2023-03-01" />
+<meta name="date" content="2023-04-03" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -54,7 +54,6 @@
 <script src="assets/anchor-sections-1.1.0/anchor-sections.js"></script>
 <script src="assets/kePrint-0.0.1/kePrint.js"></script>
 <link href="assets/lightable-0.0.1/lightable.css" rel="stylesheet" />
-<link href="assets/tabwid-1.1.2/tabwid.css" rel="stylesheet" />
 
 
 <style type="text/css">
@@ -164,6 +163,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <li class="chapter" data-level="4.8" data-path="one-sample-proportion-z-test.html"><a href="one-sample-proportion-z-test.html"><i class="fa fa-check"></i><b>4.8</b> One-Sample Proportion z Test</a></li>
 <li class="chapter" data-level="4.9" data-path="sample-t-test-for-categorical-var.html"><a href="sample-t-test-for-categorical-var.html"><i class="fa fa-check"></i><b>4.9</b> 1 sample t Test for Categorical Var</a></li>
 <li class="chapter" data-level="4.10" data-path="wilcoxon-1-sample-median-test-for-categorical-var.html"><a href="wilcoxon-1-sample-median-test-for-categorical-var.html"><i class="fa fa-check"></i><b>4.10</b> Wilcoxon 1-Sample Median Test for Categorical Var</a></li>
+<li class="chapter" data-level="4.11" data-path="multivariate-statistics.html"><a href="multivariate-statistics.html"><i class="fa fa-check"></i><b>4.11</b> Multivariate Statistics</a></li>
 </ul></li>
 <li class="chapter" data-level="5" data-path="group-differences.html"><a href="group-differences.html"><i class="fa fa-check"></i><b>5</b> Group Differences</a>
 <ul>
@@ -194,6 +194,13 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <li class="chapter" data-level="6.8" data-path="kruskals-lambda.html"><a href="kruskals-lambda.html"><i class="fa fa-check"></i><b>6.8</b> Kruskal’s Lambda</a></li>
 <li class="chapter" data-level="6.9" data-path="relative-risk.html"><a href="relative-risk.html"><i class="fa fa-check"></i><b>6.9</b> Relative Risk</a></li>
 <li class="chapter" data-level="6.10" data-path="odds-ratio.html"><a href="odds-ratio.html"><i class="fa fa-check"></i><b>6.10</b> Odds Ratio</a></li>
+<li class="chapter" data-level="6.11" data-path="multivariate-statistics-1.html"><a href="multivariate-statistics-1.html"><i class="fa fa-check"></i><b>6.11</b> Multivariate Statistics</a></li>
+</ul></li>
+<li class="chapter" data-level="7" data-path="matrix-algebra.html"><a href="matrix-algebra.html"><i class="fa fa-check"></i><b>7</b> Matrix Algebra</a>
+<ul>
+<li class="chapter" data-level="7.1" data-path="central-tendancy-dispersion-and-association.html"><a href="central-tendancy-dispersion-and-association.html"><i class="fa fa-check"></i><b>7.1</b> Central Tendancy, Dispersion, and Association</a></li>
+<li class="chapter" data-level="7.2" data-path="linear-transformations.html"><a href="linear-transformations.html"><i class="fa fa-check"></i><b>7.2</b> Linear Transformations</a></li>
+<li class="chapter" data-level="7.3" data-path="multivariate-normal-distribution.html"><a href="multivariate-normal-distribution.html"><i class="fa fa-check"></i><b>7.3</b> Multivariate Normal Distribution</a></li>
 </ul></li>
 <li class="chapter" data-level="" data-path="references.html"><a href="references.html"><i class="fa fa-check"></i>References</a></li>
 </ul>
@@ -217,7 +224,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <h1 class="title">Statistical Inference</h1>
 <h2 class="subtitle"><em>Data Analyst Handbook</em></h2>
 <p class="author"><em>Michael Foley</em></p>
-<p class="date"><em>2023-03-01</em></p>
+<p class="date"><em>2023-04-03</em></p>
 </div>
 <div id="preface" class="section level1 unnumbered hasAnchor">
 <h1>Preface<a href="index.html#preface" class="anchor-section" aria-label="Anchor link to header"></a></h1>
@@ -276,7 +283,7 @@ gitbook.start({
 "link": null,
 "text": null
 },
-"download": ["statistics.pdf", "statistics.epub"],
+"download": null,
 "search": {
 "engine": "fuse",
 "options": null

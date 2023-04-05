@@ -9,9 +9,9 @@ library(flextable)
 
 Use *one-sample* tests to either *describe* a single variable's frequency or central tendency, or to *compare* the frequency or central tendency to a hypothesized distribution or value.
 
-If the data generating process produces continuous outcomes (interval or ratio), and the outcomes are symmetrically distributed, the sample mean, $\bar{x}$, is a random variable centered at the population mean, $\mu$. You can then use a theoretical distribution (normal or student t) to estimate a 95% confidence interval (CI) around $\mu$, or compare $\bar{x}$ to an hypothesized population mean, $\mu_0$. If you (somehow) know the population variance, or the Central Limit Theorem (CLT) conditions hold, you can assume the random variable is normally distributed and use the *z*-test, otherwise assume the random variable has student t distribution and use the *t*-test.^[The *t*-test returns nearly the same result as the *z*-test when the CLT holds, so in practice no one bothers with the *z*-test except as an aid to teach the *t*-test.] If the data generating process produces continuous outcomes that are *not* symmetrically distributed, use a non-parametric test like the Wilcoxon median test.
+If the data generating process produces continuous outcomes (interval or ratio), and the outcomes are symmetrically distributed, the sample mean, $\bar{x}$, is a random variable centered at the population mean, $\mu$. You can then use a theoretical distribution (normal or student t) to estimate a 95% confidence interval (CI) around $\mu$, or compare $\bar{x}$ to an hypothesized population mean, $\mu_0$. If you (somehow) know the population variance, or the Central Limit Theorem (CLT) conditions hold, you can assume the random variable is normally distributed and use the *z*-test, otherwise assume the random variable has student *t* distribution and use the *t*-test.^[The *t*-test returns nearly the same result as the *z*-test when the CLT holds, so in practice no one bothers with the *z*-test except as an aid to teach the *t*-test.] If the data generating process produces continuous outcomes that are *not* symmetrically distributed, use a non-parametric test like the Wilcoxon median test.
 
-If the data generating process produces discrete outcomes (counts), the sample count, $x$, is a random variable from a Poisson, binomial, normal, or multinomial distribution, or a random variable from a theoretical outcome.
+If the data generating process produces discrete outcomes (counts), the sample count, $x$, is a random variable from a Poisson, binomial, normal, or multinomial distribution, or a random variable from a theoretical outcome. Whatever the source of the expected values, you use either the *chi-squared goodness-of-fit* test or *G* test to test whether the observed values fit the expected values from the distribution. In the special case of binary outcomes with small (*n* < 1,000), you can use Fisher's exact test instead. The discrete variable tests are discussed in [PSU STATS 504](https://online.stat.psu.edu/stat504).
 
 * For counts over a fixed time or space, treat the count as a random variable from a Poisson distribution with expected value $\lambda$ and variance $\lambda$.
 
@@ -20,8 +20,6 @@ If the data generating process produces discrete outcomes (counts), the sample c
 * For binomial distributions where $n\ge30$ and the frequency counts of both levels is $\ge$ 5, treat the *proportion* as a random variable from the normal distribution with expected valued $\pi$ and variance $\frac{\pi(1-\pi)}{n}$.
 
 * For counts within a fixed total that are then classified into three or more levels, treat the count as a random variable from the multinomial distribution with expected value $n\pi_j$ and variance $n\pi_j(1-\pi_j)$.
-
-Whatever the source of the expected values, you use either the *chi-squared goodness-of-fit* test or *G* test to test whether the observed values fit the expected values from the distribution. In the special case of binary outcomes with small (*n* < 1,000), you can use Fisher's exact test instead. The discrete variable tests are discussed in [PSU STATS 504](https://online.stat.psu.edu/stat504).
 
 ## One-Sample Mean z Test
 
@@ -474,7 +472,7 @@ DescTools::GTest(pheno_obs, p = pheno_pi)
 According to the function documentation, the G-test is not usually used for 2x2 tables.
 
 
-```{r}
+```{r eval=FALSE}
 EMT::multinomial.test(o, f, useChisq = TRUE)
 ```
 
@@ -759,3 +757,68 @@ This test applies when you do not know the population variance.
 ## Wilcoxon 1-Sample Median Test for Categorical Var
 
 This test applies when the variable is not normally distributed.
+
+## Multivariate Statistics
+
+The t-tests and analysis of variance tests have multivariate analogs. Multivariate statistics apply when multiple variables are simultaneously analyzed. Hotellings's *T*^2 extends the independent samples *t*-test and MANOVA extends ANOVA to cases where there are two or more dependent variables (e.g., do math, science, and reading scores depend on students' anxiety level?). 
+
+The mean of variable $j$ is the average of row vector $X_j$, $\bar{x}_j = \frac{1}{n} \sum_{i = 1}^n X_{ij}$. $\bar{x}_j$ estimates the population mean, $\mu_j = E(X_j)$. The collection of means is a column vector, $\bar{\mathbf{x}}$ estimating $\boldsymbol{\mu}$.
+
+The variance of variable $j$ is the average squared difference from the mean for row vector $X_j$, $s_j^2 = \frac{1}{n-1} \sum_{i=1}^n (X_{ij} - \bar{x}_j)^2$. It estimates the population variance, $\sigma_j^2 = E(X_j - \mu_j)^2$. The collection of variances is a column vector, $\mathbf{s}^2$ estimating $\boldsymbol{\sigma}^2$. 
+
+The covariance of variables $j$ and $k$ is the average product of differences from their respective means, $s_{jk} = \frac{1}{n-1} \sum_{i=1}^n (X_{ij} - \bar{x}_j) (X_{ik} - \bar{x}_k)$. It estimates the population covariance, $\sigma_{jk} = E\{ (X_{ij} - \mu_j) (X_{ik} - \mu_k)\}$. The generalization across the entire matrix is the _variance-covariance matrix_, $\textbf{S}$ which estimates $\boldsymbol{\Sigma}$.
+
+$\bar{\mathbf{x}}$ is a function of random data, so it is also a random vector with a _sampling distribution_ mean and variance-covariance matrix. The variance of the sample mean is $V(\bar{\mathbf{x}}) = \frac{\textbf{S}}{n}$. It estimates the variance of the population mean,  $V(\bar{\mathbf{x}}) = \frac{\boldsymbol{\Sigma}}{n}$. If the samples are taken from a normal distribution or the sample size is large, the sampling distribution is approximately normal, $\bar{\textbf{x}} \sim N \left(\boldsymbol{\mu}, \frac{\boldsymbol{\Sigma}}{n} \right)$.
+
+The joint estimate of confidence intervals (CIs) around a multivariate set of population means is complicated by how the individual variables are treated.
+
+- **One at a time intervals**. The $1 - \alpha$ CI is $\bar{x}_j \pm t_{n-1}(\alpha / 2) \frac{s_j}{\sqrt{n}}$.
+
+- **Bonferroni method**. A family of confidence intervals has a family-wide error rate of at least one CI not capturing its population mean equal to the sum of the individual error rates. The Bonferroni method divides $\alpha$ by the $p$ variables in the family, so the $1 - \alpha$ CI is $\bar{x}_j \pm t_{n-1}(\alpha / 2p) \frac{s_j}{\sqrt{n}}$.
+
+- **Simultaneous confidence region**. This method considers the family of all possible linear combinations of the population means. The $1 - \alpha$ CI is $\bar{x}_j \pm \sqrt{\frac{p(n-1)}{n-p} F_{p, n-p}(\alpha)} \frac{s_j}{\sqrt{n}}$.
+
+**Quick Example**. 
+
+```{r collapse=TRUE}
+# Suppose you have p = 3 variables with mean and sd as follows.
+p <- 3
+n <- c(25, 25, 25)
+M <- c(.84390, 1.79268, .70440)
+SD <- c(.11402, .28347, .10756)
+SE <- SD / sqrt(n)
+
+# One at a time margins of error
+(prob <- 1 - .05/2)
+(mult <- qt(prob, n-1))
+(ME <- mult * SE)
+
+# Bonferonni
+(prob <- 1 - .05/(2*p))
+(mult <- qt(prob, n-1))
+(ME <- mult * SE)
+
+# Simultaneous
+(mult <- sqrt((p * (n-1) / (n-p)) * qf(.95, p, n-p)))
+(ME <- mult * SE)
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
