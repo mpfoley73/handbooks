@@ -13,6 +13,37 @@ theme_set(
 )
 ```
 
+## Central Tendancy and Dispersion
+
+Suppose you have a data set with $j = [1 .. p]$ variables. Each variable will have a distribution that can be characterized by its mean and variance. If you consider them together, you can see how variance and covariance are related. For the matrix algebra that follows, assume the data are organized in _rows_, so $X_j$ is a _row vector_ of $n$ observations. $X_{ij}$ refers to column $i$ of row $j$.
+
+The mean of row vector $X_j$ is $\bar{x}_j = \frac{1}{n} \sum_{i = 1}^n X_{ij}$. $\bar{x}_j$ estimates the population mean, $\mu_j = E(X_j)$. The collection of means are a column vector.
+
+$$\boldsymbol{\bar{x}} = \begin{pmatrix} \bar{x}_1 \\ \bar{x}_2 \\ \cdots \\ \bar{x}_p  \end{pmatrix}$$
+
+The variance of row vector $X_j$ is the average squared difference from the mean, $s_j^2 = \frac{1}{n-1} \sum_{i=1}^n (X_{ij} - \bar{x}_j)^2$. $s_j^2$ estimates the population variance, $\sigma_j^2 = E(X_j - \mu_j)^2$. Again, the collection is represented as a column vector,
+
+$$\boldsymbol{s}^2 = \begin{pmatrix} s_1^2 \\ s_2^2 \\ \cdots \\ s_p^2  \end{pmatrix}$$
+
+The square root of $s^2$ is called the standard deviation. The concept of variance can be extended to pairs of variables, $j$ and $k$. The covariance of $X_j$ and $X_k$ is the average product of differences from their respective means, $s_{jk} = \frac{1}{n-1} \sum_{i=1}^n (X_{ij} - \bar{x}_j) (X_{ik} - \bar{x}_k)$. $s_{jk}$ estimates the population covariance, $\sigma_{jk} = E\{ (X_{ij} - \mu_j) (X_{ik} - \mu_k)\}$. Notice how the sign of $s_{jk}$ tells you how the variables relate. It's positive if when one variable is larger than its mean, so is the other. It's zero if the value of one variable tells you nothing about the other. It can be shown that $s_{jk}$ is equivalently expressed as 
+
+$$
+s_{jk} = \frac{1}{n-1} \left[ \sum_{i=1}^n X_{ij}X_{ik} - \frac{\sum_{i = 1}^n X_{ij} \sum_{i = 1}^n X_{ik}}{n} \right]
+$$
+
+This is how it is actually calculated. The first term is dot product, $X_j \cdot X_k$. The second term is the product of the averages. Use matrix algebra to generalize across all $p$ variables to form the _variance-covariance matrix_.
+
+$$
+\begin{align}
+S &= \frac{1}{n-1} \sum_{i=1}^n (X_i - \bar{x}) (X_i - \bar{x})' \\
+&= \frac{1}{n-1} \left[ \sum_{i=1}^n X_i X_i^{'} - \frac{\sum_{i = 1}^n X_i \sum_{i = 1}^n X_i}{n} \right]
+\end{align}
+$$
+
+$S$ estimates the population variance-covariance matrix, $\boldsymbol{\Sigma}$. Divide the covariances by their product of their standard deviations to get their _correlation_, $r_{jk} = \frac{s_{jk}}{s_j s_k}$. $r_{jk}$ estimates the population correlation, $\rho_{jk} = \frac{\sigma_{jk}}{\sigma_j \sigma_k}$.
+
+## Hypothesis Testing
+
 *P*-values express how surprising a summary measure is given the null hypothesis (H0). Suppose you hypothesize that IQs have increased from the intended mean of $\mu$ = 100, $\sigma$ = 15. H0 is $\mu_0$ = 100 with alternative H1 that $\mu$ > 100. Suppose also that you are *right*: $\mu$ is actually 106.
 
 ```{r}

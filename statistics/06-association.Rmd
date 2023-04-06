@@ -441,24 +441,29 @@ cs$rr2x2 <- read.spss(
 
 ```
 
-## Multivariate Statistics
+## Partial Correlation
 
-The tests of association have multivariate analogs. The covariance of variables $j$ and $k$ is the average product of differences from their respective means, $s_{jk} = \frac{1}{n-1} \sum_{i=1}^n (X_{ij} - \bar{x}_j) (X_{ik} - \bar{x}_k)$. It estimates the population covariance, $\sigma_{jk} = E\{ (X_{ij} - \mu_j) (X_{ik} - \mu_k)\}$. Notice how the covariance is positive if when one variable is larger than its mean, so is the other. A zero covariance implies the value of one variable tells you nothing about the other. It can be shown that the covariance is equivalently expressed as 
+The _partial correlation_ of $\textbf{Y}_j$ and $\textbf{Y}_k$ is their correlation _conditioned on sampling from a sub-population of_ $X$. Express the sub-population as $\textbf{Z} = \begin{pmatrix}\textbf{X}_1 \\ \textbf{X}_2 \end{pmatrix}$. The mean vector can similarly be partitioned into $\boldsymbol{\bar{x}} = \begin{pmatrix}\boldsymbol{\bar{x}}_1 \\ \boldsymbol{\bar{x}}_2 \end{pmatrix}$. The variance-covariance matrix can also be partitioned, but now there is also the covariances between $\textbf{X}_1$ and $\textbf{X}_1$, so the partition is a matrix of variance-covariance matrices, $\boldsymbol{S} = \begin{pmatrix} \boldsymbol{S}_{11} & \boldsymbol{S}_{12} \\ \boldsymbol{S}_{21} & \boldsymbol{S}_{22} \end{pmatrix}$! So $\boldsymbol{S}_{11}$ and $\boldsymbol{S}_{22}$ are the variance-covariance matrices of $\textbf{X}_1$ and $\textbf{X}_2$, and $\boldsymbol{S}_{12}$ and $\boldsymbol{S}_{21}$ are the (identical) variance-covariance matrices between the variables in $\textbf{X}_1$ and the variables in $\textbf{X}_2$.
 
-$$
-s_{jk} = \frac{1}{n-1} \left[ \sum_{i=1}^n X_{ij}X_{ik} - \frac{\sum_{i = 1}^n X_{ij} \sum_{i = 1}^n X_{ik}}{n} \right]
-$$
-
-This is how it is actually calculated (see example below). The first term is dot product $X_j \cdot X_k$. The second term is the product of the averages. The generalization across the entire matrix is the _variance-covariance matrix_.
+What does this get you? You can now express the _conditional distribution_ of $\textbf{X}_1$ given $\textbf{X}_2 = \textbf{x}_2$.
 
 $$
-\begin{align}
-S &= \frac{1}{n-1} \sum_{i=1}^n (X_i - \bar{x}) (X_i - \bar{x})' \\
-&= \frac{1}{n-1} \left[ \sum_{i=1}^n X_i X_i^{'} - \frac{\sum_{i = 1}^n X_i \sum_{i = 1}^n X_i}{n} \right]
-\end{align}
+\begin{equation}
+\bar{y}_{\textbf{Y.x}} = \boldsymbol{\bar{x}}_1 + \boldsymbol{S}_{12} \boldsymbol{S}_{22}^{-1} (\textbf{x} - \boldsymbol{\bar{x}}_2)
+\end{equation}
+(\#eq:s06-cond-mean)
 $$
 
-Divide the covariance of two variables by the product of their standard deviations to get the _correlation_, $r_{jk} = \frac{s_{jk}}{s_j s_k}$. The sample corellation estimates the population correlation, $\rho_{jk} = \frac{\sigma_{jk}}{\sigma_j \sigma_k}$. Test the null hypothesis that $H_0: \rho_{jk} = 0$ with a *t*-test where
+$$
+\begin{equation}
+S_{\textbf{Y.x}} = \boldsymbol{S}_{11} - \boldsymbol{S}_{12} \boldsymbol{S}_{22}^{-1} \boldsymbol{S}_{21}
+\end{equation}
+(\#eq:s06-cond-cov)
+$$
+
+To see what this means, start with a simple bi-variate case.
+
+Divide the covariance of two variables by the product of their standard deviations to get the _correlation_, $r_{jk} = \frac{s_{jk}}{s_j s_k}$. The sample correlation estimates the population correlation, $\rho_{jk} = \frac{\sigma_{jk}}{\sigma_j \sigma_k}$. Test the null hypothesis that $H_0: \rho_{jk} = 0$ with a *t*-test where
 
 $$
 t = r_{jk}\sqrt{\frac{n-2}{1-r_{jk}^2}}
